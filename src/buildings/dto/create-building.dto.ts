@@ -1,6 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsEnum, IsOptional, IsString, IsUUID } from 'class-validator';
-import { BuildingType } from 'src/prisma/client';
+import { BuildingType } from '@prisma/client';
 
 export class CreateBuildingDto {
   @ApiProperty({ example: 'Sunset Towers' })
