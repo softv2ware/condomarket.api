@@ -3,6 +3,7 @@ import { ConfigModule } from '@nestjs/config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { UsersModule } from './users/users.module';
+import { LoggerModule } from './common/logger/logger.module';
 import { validate } from './config/validation';
 import appConfig from './config/app.config';
 import databaseConfig from './config/database.config';
@@ -17,6 +18,7 @@ import redisConfig from './config/redis.config';
       load: [appConfig, databaseConfig, jwtConfig, redisConfig],
       envFilePath: ['.env.local', '.env'],
     }),
+    LoggerModule,
     UsersModule,
   ],
   controllers: [AppController],
