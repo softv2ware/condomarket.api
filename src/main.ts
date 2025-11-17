@@ -63,7 +63,10 @@ async function bootstrap() {
     .setDescription('The CondoMarket API documentation')
     .setVersion('1.0')
     .addTag('auth', 'Authentication endpoints')
+    .addTag('buildings', 'Building and unit management')
+    .addTag('verification', 'Resident verification')
     .addTag('users', 'User management')
+    .addTag('health', 'Health check endpoints')
     .addBearerAuth()
     .build();
 

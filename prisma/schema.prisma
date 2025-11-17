@@ -6,6 +6,7 @@
 
 generator client {
   provider = "prisma-client-js"
+  output   = "../src/prisma/client"
 }
 
 datasource db {
@@ -26,6 +27,33 @@ enum UserStatus {
   BANNED
 }
 
+enum BuildingType {
+  APARTMENT_COMPLEX
+  CONDOMINIUM
+  GATED_COMMUNITY
+  RESIDENTIAL_TOWER
+  MIXED_USE
+  OTHER
+}
+
+enum BuildingStatus {
+  ACTIVE
+  INACTIVE
+  ARCHIVED
+}
+
+enum VerificationMethod {
+  INVITATION_CODE
+  UNIT_CODE_LASTNAME
+  MANUAL_APPROVAL
+}
+
+enum VerificationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
 model User {
   id        String     @id @default(uuid())
   email     String     @unique
@@ -36,22 +64,123 @@ model User {
   createdAt DateTime   @default(now())
   updatedAt DateTime   @updatedAt
 
-  profile UserProfile?
+  profile              UserProfile?
+  residences           ResidentBuilding[]
+  managedBuildings     Building[]         @relation("BuildingAdmin")
+  createdInvitations   InvitationCode[]   @relation("InvitationCreator")
+  usedInvitation       InvitationCode?    @relation("InvitationUser")
+  verificationsApproved ResidentBuilding[] @relation("VerificationApprover")
 
   @@map("users")
 }
 
 model UserProfile {
-  id               String   @id @default(uuid())
-  userId           String   @unique
-  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  firstName        String?
-  lastName         String?
-  bio              String?
+  id                String   @id @default(uuid())
+  userId            String   @unique
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  firstName         String?
+  lastName          String?
+  bio               String?
   profilePictureUrl String?
-  privacySettings  Json?
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+  privacySettings   Json?
+  acceptedPaymentMethods String[]
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
 
   @@map("user_profiles")
+}
+
+model Building {
+  id          String         @id @default(uuid())
+  name        String
+  address     String
+  city        String?
+  state       String?
+  zipCode     String?
+  country     String?        @default("USA")
+  type        BuildingType   @default(APARTMENT_COMPLEX)
+  status      BuildingStatus @default(ACTIVE)
+  description String?
+  adminId     String?
+  admin       User?          @relation("BuildingAdmin", fields: [adminId], references: [id])
+  
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  units              Unit[]
+  residents          ResidentBuilding[]
+  invitationCodes    InvitationCode[]
+
+  @@map("buildings")
+  @@index([status])
+  @@index([adminId])
+}
+
+model Unit {
+  id          String   @id @default(uuid())
+  buildingId  String
+  building    Building @relation(fields: [buildingId], references: [id], onDelete: Cascade)
+  unitNumber  String
+  floor       Int?
+  type        String?  // Studio, 1BR, 2BR, etc.
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  residents   ResidentBuilding[]
+
+  @@unique([buildingId, unitNumber])
+  @@map("units")
+  @@index([buildingId])
+}
+
+model ResidentBuilding {
+  id                 String              @id @default(uuid())
+  userId             String
+  user               User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  buildingId         String
+  building           Building            @relation(fields: [buildingId], references: [id], onDelete: Cascade)
+  unitId             String?
+  unit               Unit?               @relation(fields: [unitId], references: [id], onDelete: SetNull)
+  
+  verificationMethod VerificationMethod?
+  verificationStatus VerificationStatus  @default(PENDING)
+  verificationData   Json?               // Store additional verification info
+  verifiedAt         DateTime?
+  verifiedBy         String?
+  verifier           User?               @relation("VerificationApprover", fields: [verifiedBy], references: [id])
+  
+  moveInDate         DateTime?
+  moveOutDate        DateTime?
+  isActive           Boolean             @default(true)
+  
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+
+  @@unique([userId, buildingId])
+  @@map("resident_buildings")
+  @@index([buildingId])
+  @@index([userId])
+  @@index([verificationStatus])
+}
+
+model InvitationCode {
+  id         String    @id @default(uuid())
+  buildingId String
+  building   Building  @relation(fields: [buildingId], references: [id], onDelete: Cascade)
+  code       String    @unique
+  createdBy  String
+  creator    User      @relation("InvitationCreator", fields: [createdBy], references: [id])
+  usedBy     String?   @unique
+  usedByUser User?     @relation("InvitationUser", fields: [usedBy], references: [id])
+  usedAt     DateTime?
+  expiresAt  DateTime?
+  isActive   Boolean   @default(true)
+  
+  createdAt  DateTime  @default(now())
+
+  @@map("invitation_codes")
+  @@index([buildingId])
+  @@index([code])
+  @@index([isActive])
 }

@@ -5,6 +5,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
+import { BuildingsModule } from './buildings/buildings.module';
 import { LoggerModule } from './common/logger/logger.module';
 import { PrismaModule } from './common/prisma/prisma.module';
 import { HealthModule } from './common/health/health.module';
@@ -36,6 +37,7 @@ import redisConfig from './config/redis.config';
     PrismaModule,
     HealthModule,
     AuthModule,
+    BuildingsModule,
     UsersModule,
   ],
   controllers: [AppController],
