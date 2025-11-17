@@ -235,6 +235,50 @@ export class SellerSubscriptionsService {
   }
 
   /**
+   * Check if user can create a listing in a building
+   * Returns whether user can create listing and how many slots remaining
+   */
+  async canCreateListing(userId: string, buildingId: string) {
+    const subscription = await this.getActiveSubscriptionForBuilding(
+      userId,
+      buildingId,
+    );
+
+    if (!subscription) {
+      return {
+        canCreate: false,
+        reason: 'No active subscription found for this building',
+        maxListings: 0,
+        currentListings: 0,
+        remainingSlots: 0,
+      };
+    }
+
+    // TODO: Count active listings when Listing model is created in Stage 4
+    // For now, we'll assume 0 listings
+    const currentListings = 0;
+    // await this.prisma.listing.count({
+    //   where: {
+    //     userId,
+    //     buildingId,
+    //     status: ListingStatus.ACTIVE,
+    //   },
+    // });
+
+    const maxListings = subscription.plan.maxActiveListings;
+    const remainingSlots = maxListings - currentListings;
+
+    return {
+      canCreate: currentListings < maxListings,
+      maxListings,
+      currentListings,
+      remainingSlots,
+      subscriptionPlan: subscription.plan.name,
+      subscriptionTier: subscription.plan.tier,
+    };
+  }
+
+  /**
    * Admin: Get all subscriptions with filters
    */
   async findAll(buildingId?: string, status?: SubscriptionStatus) {

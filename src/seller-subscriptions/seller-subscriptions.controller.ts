@@ -44,6 +44,19 @@ export class SellerSubscriptionsController {
     return this.sellerSubscriptionsService.getMySubscriptions(userId);
   }
 
+  @Get('can-create-listing/:buildingId')
+  @ApiOperation({
+    summary: 'Check if user can create a listing in a building',
+    description:
+      'Returns whether user has reached their listing limit for the specified building',
+  })
+  canCreateListing(
+    @CurrentUser('id') userId: string,
+    @Param('buildingId') buildingId: string,
+  ) {
+    return this.sellerSubscriptionsService.canCreateListing(userId, buildingId);
+  }
+
   @Get('admin/all')
   @UseGuards(RolesGuard)
   @Roles(UserRole.PLATFORM_ADMIN)
