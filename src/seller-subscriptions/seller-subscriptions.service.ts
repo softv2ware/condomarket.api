@@ -480,4 +480,84 @@ export class SellerSubscriptionsService {
       orderBy: { createdAt: 'desc' },
     });
   }
+
+  /**
+   * Log a subscription event for audit trail
+   */
+  private async logSubscriptionEvent(
+    subscriptionId: string,
+    event: string,
+    metadata?: Record<string, any>,
+  ) {
+    return this.prisma.subscriptionLog.create({
+      data: {
+        subscriptionId,
+        event,
+        metadata: metadata || {},
+      },
+    });
+  }
+
+  /**
+   * Auto-assign default FREE plan to a user for a building
+   * Called when a user is verified or assigned to a building
+   */
+  async autoAssignFreePlan(userId: string, buildingId: string) {
+    // Check if user already has a subscription for this building
+    const existing = await this.prisma.sellerSubscription.findFirst({
+      where: {
+        userId,
+        buildingId,
+      },
+    });
+
+    if (existing) {
+      // User already has a subscription, don't create another
+      return existing;
+    }
+
+    // Get the default free plan
+    const freePlan = await this.prisma.subscriptionPlan.findFirst({
+      where: {
+        isDefaultFree: true,
+        isActive: true,
+      },
+    });
+
+    if (!freePlan) {
+      // No default free plan available, skip auto-assignment
+      console.warn('No default FREE plan found for auto-assignment');
+      return null;
+    }
+
+    // Create FREE subscription
+    const startDate = new Date();
+    const renewsAt = new Date(startDate);
+    renewsAt.setMonth(renewsAt.getMonth() + 1);
+
+    const subscription = await this.prisma.sellerSubscription.create({
+      data: {
+        userId,
+        buildingId,
+        planId: freePlan.id,
+        status: SubscriptionStatus.ACTIVE,
+        startDate,
+        renewsAt,
+      },
+      include: {
+        plan: true,
+        building: true,
+      },
+    });
+
+    // Log the event
+    await this.logSubscriptionEvent(subscription.id, 'created', {
+      planId: freePlan.id,
+      planName: freePlan.name,
+      tier: freePlan.tier,
+      autoAssigned: true,
+    });
+
+    return subscription;
+  }
 }

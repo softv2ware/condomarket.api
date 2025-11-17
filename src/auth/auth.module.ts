@@ -9,6 +9,7 @@ import { JwtStrategy } from './strategies/jwt.strategy';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { RolesGuard } from './guards/roles.guard';
 import { PrismaModule } from '../common/prisma/prisma.module';
+import { SubscriptionPlansModule } from '../subscription-plans/subscription-plans.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { PrismaModule } from '../common/prisma/prisma.module';
     JwtModule.register({}), // Configuration is done dynamically in the service
     ConfigModule,
     PrismaModule,
+    SubscriptionPlansModule,
   ],
   controllers: [AuthController],
   providers: [
