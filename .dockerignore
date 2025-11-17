@@ -1,0 +1,36 @@
+# Node modules
+node_modules
+npm-debug.log
+
+# Distribution
+dist
+build
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+logs
+*.log
+
+# Testing
+coverage
+
+# Prisma
+prisma/migrations
+
+# Git
+.git
+.gitignore
