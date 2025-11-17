@@ -3,7 +3,9 @@ import { ConfigModule } from '@nestjs/config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { UsersModule } from './users/users.module';
+import { AuthModule } from './auth/auth.module';
 import { LoggerModule } from './common/logger/logger.module';
+import { PrismaModule } from './common/prisma/prisma.module';
 import { validate } from './config/validation';
 import appConfig from './config/app.config';
 import databaseConfig from './config/database.config';
@@ -19,6 +21,8 @@ import redisConfig from './config/redis.config';
       envFilePath: ['.env.local', '.env'],
     }),
     LoggerModule,
+    PrismaModule,
+    AuthModule,
     UsersModule,
   ],
   controllers: [AppController],
