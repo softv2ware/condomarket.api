@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ThrottlerModule } from '@nestjs/throttler';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { UsersModule } from './users/users.module';
@@ -19,6 +20,16 @@ import redisConfig from './config/redis.config';
       validate,
       load: [appConfig, databaseConfig, jwtConfig, redisConfig],
       envFilePath: ['.env.local', '.env'],
+    }),
+    ThrottlerModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) => [
+        {
+          ttl: config.get('app.rateLimit.ttl') || 60000,
+          limit: config.get('app.rateLimit.limit') || 10,
+        },
+      ],
     }),
     LoggerModule,
     PrismaModule,

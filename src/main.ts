@@ -1,9 +1,11 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ConfigService } from '@nestjs/config';
+import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { apiReference } from '@scalar/nestjs-api-reference';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
+import helmet from 'helmet';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -13,13 +15,38 @@ async function bootstrap() {
 
   const configService = app.get(ConfigService);
   const port = configService.get<number>('app.port') || 3000;
+  const corsOrigins = configService.get<string[]>('app.corsOrigins') || ['http://localhost:3000'];
+
+  // Security - Helmet
+  app.use(helmet());
+
+  // CORS configuration
+  app.enableCors({
+    origin: corsOrigins,
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+  });
+
+  // Global validation pipe
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      forbidNonWhitelisted: true,
+      transform: true,
+      transformOptions: {
+        enableImplicitConversion: true,
+      },
+    }),
+  );
 
   // Swagger configuration
   const config = new DocumentBuilder()
     .setTitle('CondoMarket API')
     .setDescription('The CondoMarket API documentation')
     .setVersion('1.0')
-    .addTag('condomarket')
+    .addTag('auth', 'Authentication endpoints')
+    .addTag('users', 'User management')
     .addBearerAuth()
     .build();
 
