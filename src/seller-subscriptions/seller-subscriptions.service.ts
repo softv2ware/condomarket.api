@@ -279,6 +279,185 @@ export class SellerSubscriptionsService {
   }
 
   /**
+   * Renew a subscription (move to next billing period)
+   */
+  async renewSubscription(subscriptionId: string) {
+    const subscription = await this.prisma.sellerSubscription.findUnique({
+      where: { id: subscriptionId },
+      include: { plan: true },
+    });
+
+    if (!subscription) {
+      throw new NotFoundException('Subscription not found');
+    }
+
+    if (subscription.status === SubscriptionStatus.CANCELLED) {
+      throw new BadRequestException('Cannot renew cancelled subscription');
+    }
+
+    const now = new Date();
+    const newRenewsAt = new Date(now);
+    newRenewsAt.setMonth(newRenewsAt.getMonth() + 1);
+
+    return this.prisma.sellerSubscription.update({
+      where: { id: subscriptionId },
+      data: {
+        status: SubscriptionStatus.ACTIVE,
+        renewsAt: newRenewsAt,
+      },
+      include: {
+        plan: true,
+        building: true,
+      },
+    });
+  }
+
+  /**
+   * Put subscription into grace period after payment failure
+   */
+  async enterGracePeriod(subscriptionId: string) {
+    const subscription = await this.prisma.sellerSubscription.findUnique({
+      where: { id: subscriptionId },
+    });
+
+    if (!subscription) {
+      throw new NotFoundException('Subscription not found');
+    }
+
+    if (subscription.status !== SubscriptionStatus.ACTIVE) {
+      throw new BadRequestException('Only active subscriptions can enter grace period');
+    }
+
+    // Grace period is 7 days
+    const gracePeriodEnd = new Date();
+    gracePeriodEnd.setDate(gracePeriodEnd.getDate() + 7);
+
+    return this.prisma.sellerSubscription.update({
+      where: { id: subscriptionId },
+      data: {
+        status: SubscriptionStatus.GRACE_PERIOD,
+        renewsAt: gracePeriodEnd,
+      },
+      include: {
+        plan: true,
+        building: true,
+      },
+    });
+  }
+
+  /**
+   * Expire a subscription (after grace period or manual expiration)
+   */
+  async expireSubscription(subscriptionId: string) {
+    const subscription = await this.prisma.sellerSubscription.findUnique({
+      where: { id: subscriptionId },
+    });
+
+    if (!subscription) {
+      throw new NotFoundException('Subscription not found');
+    }
+
+    return this.prisma.sellerSubscription.update({
+      where: { id: subscriptionId },
+      data: {
+        status: SubscriptionStatus.EXPIRED,
+        endDate: new Date(),
+      },
+      include: {
+        plan: true,
+        building: true,
+      },
+    });
+  }
+
+  /**
+   * Admin: Get subscription statistics
+   */
+  async getSubscriptionStats(buildingId?: string) {
+    const where = buildingId ? { buildingId } : {};
+
+    // Get counts by tier
+    const subscriptionsByTier = await this.prisma.sellerSubscription.groupBy({
+      by: ['status'],
+      where: {
+        ...where,
+        status: { in: [SubscriptionStatus.ACTIVE, SubscriptionStatus.GRACE_PERIOD] },
+      },
+      _count: true,
+    });
+
+    // Get all active/grace subscriptions with plan details
+    const activeSubscriptions = await this.prisma.sellerSubscription.findMany({
+      where: {
+        ...where,
+        status: { in: [SubscriptionStatus.ACTIVE, SubscriptionStatus.GRACE_PERIOD] },
+      },
+      include: {
+        plan: true,
+      },
+    });
+
+    // Calculate revenue and tier distribution
+    const tierStats = {
+      FREE: { count: 0, revenue: 0 },
+      STANDARD: { count: 0, revenue: 0 },
+      PREMIUM: { count: 0, revenue: 0 },
+    };
+
+    let totalRevenue = 0;
+    for (const sub of activeSubscriptions) {
+      const tier = sub.plan.tier;
+      tierStats[tier].count++;
+      tierStats[tier].revenue += sub.plan.monthlyPrice;
+      totalRevenue += sub.plan.monthlyPrice;
+    }
+
+    return {
+      totalActiveSubscriptions: activeSubscriptions.length,
+      byStatus: subscriptionsByTier,
+      byTier: tierStats,
+      totalMonthlyRevenue: totalRevenue,
+      buildingId: buildingId || 'all',
+    };
+  }
+
+  /**
+   * Admin: Override subscription status (manual intervention)
+   */
+  async overrideSubscription(
+    subscriptionId: string,
+    status: SubscriptionStatus,
+    reason: string,
+  ) {
+    const subscription = await this.prisma.sellerSubscription.findUnique({
+      where: { id: subscriptionId },
+    });
+
+    if (!subscription) {
+      throw new NotFoundException('Subscription not found');
+    }
+
+    return this.prisma.sellerSubscription.update({
+      where: { id: subscriptionId },
+      data: {
+        status,
+        ...(status === SubscriptionStatus.CANCELLED && { endDate: new Date() }),
+      },
+      include: {
+        plan: true,
+        building: true,
+        user: {
+          select: {
+            id: true,
+            email: true,
+            role: true,
+          },
+        },
+      },
+    });
+  }
+
+  /**
    * Admin: Get all subscriptions with filters
    */
   async findAll(buildingId?: string, status?: SubscriptionStatus) {

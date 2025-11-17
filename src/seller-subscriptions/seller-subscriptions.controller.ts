@@ -14,6 +14,7 @@ import { SellerSubscriptionsService } from './seller-subscriptions.service';
 import { CreateSellerSubscriptionDto } from './dto/create-seller-subscription.dto';
 import { ChangePlanDto } from './dto/change-plan.dto';
 import { CancelSubscriptionDto } from './dto/cancel-subscription.dto';
+import { OverrideSubscriptionDto } from './dto/override-subscription.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
@@ -70,6 +71,15 @@ export class SellerSubscriptionsController {
     return this.sellerSubscriptionsService.findAll(buildingId, status);
   }
 
+  @Get('admin/stats')
+  @UseGuards(RolesGuard)
+  @Roles(UserRole.PLATFORM_ADMIN)
+  @ApiOperation({ summary: 'Admin: Get subscription statistics' })
+  @ApiQuery({ name: 'buildingId', required: false })
+  getStats(@Query('buildingId') buildingId?: string) {
+    return this.sellerSubscriptionsService.getSubscriptionStats(buildingId);
+  }
+
   @Get(':id')
   @ApiOperation({ summary: 'Get subscription by ID' })
   findOne(@Param('id') id: string, @CurrentUser('id') userId: string) {
@@ -84,6 +94,21 @@ export class SellerSubscriptionsController {
     @Body() changePlanDto: ChangePlanDto,
   ) {
     return this.sellerSubscriptionsService.changePlan(id, userId, changePlanDto);
+  }
+
+  @Post('admin/:id/override')
+  @UseGuards(RolesGuard)
+  @Roles(UserRole.PLATFORM_ADMIN)
+  @ApiOperation({ summary: 'Admin: Override subscription status' })
+  overrideSubscription(
+    @Param('id') id: string,
+    @Body() overrideDto: OverrideSubscriptionDto,
+  ) {
+    return this.sellerSubscriptionsService.overrideSubscription(
+      id,
+      overrideDto.status,
+      overrideDto.reason,
+    );
   }
 
   @Delete(':id')
