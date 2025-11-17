@@ -1,4 +1,4 @@
-import { PrismaClient, UserRole, UserStatus, BuildingType, BuildingStatus } from '@prisma/client';
+import { PrismaClient, UserRole, UserStatus, BuildingType, BuildingStatus, SubscriptionTier } from '../src/prisma/client';
 import * as bcrypt from 'bcrypt';
 import { randomBytes } from 'crypto';
 
@@ -27,6 +27,61 @@ async function main() {
     },
   });
   console.log('✅ Platform Admin created:', platformAdmin.email);
+
+  // Create Subscription Plans
+  const freePlan = await prisma.subscriptionPlan.upsert({
+    where: { tier: SubscriptionTier.FREE },
+    update: {},
+    create: {
+      name: 'Free Plan',
+      tier: SubscriptionTier.FREE,
+      description: 'Perfect for trying out the marketplace with basic features',
+      monthlyPrice: 0,
+      currency: 'USD',
+      maxActiveListings: 1,
+      sortPriority: 0,
+      isHighlightEnabled: false,
+      isDefaultFree: true,
+      isActive: true,
+    },
+  });
+  console.log('✅ Subscription Plan created:', freePlan.name);
+
+  const standardPlan = await prisma.subscriptionPlan.upsert({
+    where: { tier: SubscriptionTier.STANDARD },
+    update: {},
+    create: {
+      name: 'Standard Plan',
+      tier: SubscriptionTier.STANDARD,
+      description: 'Great for active sellers with multiple listings',
+      monthlyPrice: 9.99,
+      currency: 'USD',
+      maxActiveListings: 10,
+      sortPriority: 5,
+      isHighlightEnabled: false,
+      isDefaultFree: false,
+      isActive: true,
+    },
+  });
+  console.log('✅ Subscription Plan created:', standardPlan.name);
+
+  const premiumPlan = await prisma.subscriptionPlan.upsert({
+    where: { tier: SubscriptionTier.PREMIUM },
+    update: {},
+    create: {
+      name: 'Premium Plan',
+      tier: SubscriptionTier.PREMIUM,
+      description: 'Best for power sellers - unlimited listings with premium features',
+      monthlyPrice: 29.99,
+      currency: 'USD',
+      maxActiveListings: 999999, // Unlimited
+      sortPriority: 10,
+      isHighlightEnabled: true,
+      isDefaultFree: false,
+      isActive: true,
+    },
+  });
+  console.log('✅ Subscription Plan created:', premiumPlan.name);
 
   // Create Building 1: Sunset Towers
   const buildingAdmin1Password = await bcrypt.hash('admin123', 10);
@@ -310,7 +365,11 @@ async function main() {
   console.log('│   Email: jane.smith@example.com                             │');
   console.log('│   Password: resident123                                     │');
   console.log('└─────────────────────────────────────────────────────────────┘');
-  console.log('\n📌 Invitation Codes:');
+  console.log('\n� Subscription Plans:');
+  console.log('  - FREE: $0/month, 1 active listing (default)');
+  console.log('  - STANDARD: $9.99/month, 10 active listings');
+  console.log('  - PREMIUM: $29.99/month, unlimited listings + highlights');
+  console.log('\n�📌 Invitation Codes:');
   console.log('  - SUNSET2024ABC (Sunset Towers, Unit 102)');
   console.log('  - HARBOR2024XYZ (Harbor View, Unit 301)');
 }

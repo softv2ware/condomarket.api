@@ -66,6 +66,7 @@ async function bootstrap() {
     .addTag('buildings', 'Building and unit management')
     .addTag('verification', 'Resident verification')
     .addTag('users', 'User management')
+    .addTag('subscription-plans', 'Subscription plans management')
     .addTag('health', 'Health check endpoints')
     .addBearerAuth()
     .build();

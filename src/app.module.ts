@@ -11,6 +11,7 @@ import { LoggerModule } from './common/logger/logger.module';
 import { PrismaModule } from './common/prisma/prisma.module';
 import { HealthModule } from './common/health/health.module';
 import { validate } from './config/validation';
+import { SubscriptionPlansModule } from './subscription-plans/subscription-plans.module';
 import appConfig from './config/app.config';
 import databaseConfig from './config/database.config';
 import jwtConfig from './config/jwt.config';
@@ -41,6 +42,7 @@ import redisConfig from './config/redis.config';
     BuildingsModule,
     VerificationModule,
     UsersModule,
+    SubscriptionPlansModule,
   ],
   controllers: [AppController],
   providers: [AppService],

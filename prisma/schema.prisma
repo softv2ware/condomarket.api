@@ -70,6 +70,8 @@ model User {
   createdInvitations   InvitationCode[]   @relation("InvitationCreator")
   usedInvitation       InvitationCode?    @relation("InvitationUser")
   verificationsApproved ResidentBuilding[] @relation("VerificationApprover")
+  subscriptions        SellerSubscription[]
+  paymentMethods       PaymentMethod[]
 
   @@map("users")
 }
@@ -110,6 +112,8 @@ model Building {
   units              Unit[]
   residents          ResidentBuilding[]
   invitationCodes    InvitationCode[]
+  subscriptionPlans  SubscriptionPlan[]
+  sellerSubscriptions SellerSubscription[]
 
   @@map("buildings")
   @@index([status])
@@ -183,4 +187,140 @@ model InvitationCode {
   @@index([buildingId])
   @@index([code])
   @@index([isActive])
+}
+
+enum SubscriptionTier {
+  FREE
+  STANDARD
+  PREMIUM
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  CANCELLED
+  EXPIRED
+  PAYMENT_FAILED
+  GRACE_PERIOD
+}
+
+enum PaymentStatus {
+  PENDING
+  SUCCESS
+  FAILED
+  REFUNDED
+}
+
+enum PaymentMethodType {
+  CREDIT_CARD
+  DEBIT_CARD
+  BANK_ACCOUNT
+  PAYPAL
+  OTHER
+}
+
+model SubscriptionPlan {
+  id                  String           @id @default(uuid())
+  name                String
+  tier                SubscriptionTier @unique
+  description         String?
+  monthlyPrice        Float            @default(0)
+  currency            String           @default("USD")
+  maxActiveListings   Int              @default(1)
+  sortPriority        Int              @default(0) // Higher = better placement in search
+  isHighlightEnabled  Boolean          @default(false) // Premium feature
+  isDefaultFree       Boolean          @default(false) // Auto-assign this plan to new users
+  buildingId          String?          // null = platform-wide, else building-specific
+  building            Building?        @relation(fields: [buildingId], references: [id], onDelete: Cascade)
+  
+  isActive            Boolean          @default(true)
+  createdAt           DateTime         @default(now())
+  updatedAt           DateTime         @updatedAt
+
+  subscriptions       SellerSubscription[]
+
+  @@map("subscription_plans")
+  @@index([tier])
+  @@index([buildingId])
+  @@index([isActive])
+}
+
+model SellerSubscription {
+  id                 String             @id @default(uuid())
+  userId             String
+  user               User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  buildingId         String
+  building           Building           @relation(fields: [buildingId], references: [id], onDelete: Cascade)
+  planId             String
+  plan               SubscriptionPlan   @relation(fields: [planId], references: [id])
+  
+  status             SubscriptionStatus @default(ACTIVE)
+  startDate          DateTime           @default(now())
+  endDate            DateTime?          // null = ongoing
+  renewsAt           DateTime?          // Next renewal date
+  lastPaymentStatus  PaymentStatus?
+  
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+
+  payments           SubscriptionPayment[]
+  logs               SubscriptionLog[]
+
+  @@unique([userId, buildingId]) // One subscription per user per building
+  @@map("seller_subscriptions")
+  @@index([userId])
+  @@index([buildingId])
+  @@index([planId])
+  @@index([status])
+}
+
+model PaymentMethod {
+  id         String            @id @default(uuid())
+  userId     String
+  user       User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type       PaymentMethodType
+  provider   String            // e.g., "Stripe", "PayPal"
+  externalId String?           // ID from payment provider
+  last4      String?           // Last 4 digits of card
+  isDefault  Boolean           @default(false)
+  isActive   Boolean           @default(true)
+  
+  createdAt  DateTime          @default(now())
+  updatedAt  DateTime          @updatedAt
+
+  @@map("payment_methods")
+  @@index([userId])
+}
+
+model SubscriptionPayment {
+  id             String             @id @default(uuid())
+  subscriptionId String
+  subscription   SellerSubscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+  amount         Float
+  currency       String             @default("USD")
+  status         PaymentStatus      @default(PENDING)
+  paidAt         DateTime?
+  failureReason  String?
+  externalId     String?            // Payment provider transaction ID
+  
+  createdAt      DateTime           @default(now())
+
+  @@map("subscription_payments")
+  @@index([subscriptionId])
+  @@index([status])
+}
+
+model SubscriptionLog {
+  id             String             @id @default(uuid())
+  subscriptionId String
+  subscription   SellerSubscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+  action         String             // e.g., "created", "renewed", "cancelled", "upgraded", "downgraded"
+  oldStatus      String?
+  newStatus      String?
+  metadata       Json?              // Additional context
+  
+  createdAt      DateTime           @default(now())
+
+  @@map("subscription_logs")
+  @@index([subscriptionId])
+  @@index([action])
 }
