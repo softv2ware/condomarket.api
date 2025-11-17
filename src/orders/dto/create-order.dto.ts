@@ -8,7 +8,7 @@ import {
   IsOptional,
   IsDateString,
 } from 'class-validator';
-import { DeliveryMethod } from '../../prisma/client';
+import { DeliveryMethod } from 'src/prisma/client';
 
 export class CreateOrderDto {
   @ApiProperty({

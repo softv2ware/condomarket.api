@@ -3,7 +3,7 @@ import {
   Transaction as PrismaTransaction,
   TransactionStatus,
   TransactionPaymentMethod,
-} from '../../prisma/client';
+} from 'src/prisma/client';
 
 export class Transaction implements Partial<PrismaTransaction> {
   @ApiProperty()

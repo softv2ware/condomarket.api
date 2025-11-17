@@ -9,7 +9,7 @@ import {
   IsDateString,
   ValidateIf,
 } from 'class-validator';
-import { TransactionPaymentMethod } from '../../prisma/client';
+import { TransactionPaymentMethod } from 'src/prisma/client';
 
 export class CreateTransactionDto {
   @ApiPropertyOptional({

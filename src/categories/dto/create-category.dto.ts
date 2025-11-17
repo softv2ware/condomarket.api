@@ -7,7 +7,7 @@ import {
   MaxLength,
   MinLength,
 } from 'class-validator';
-import { CategoryType } from '../../prisma/client';
+import { CategoryType } from 'src/prisma/client';
 
 export class CreateCategoryDto {
   @ApiProperty({

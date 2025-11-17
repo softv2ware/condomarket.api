@@ -1,6 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsEnum, IsOptional, IsString } from 'class-validator';
-import { BookingStatus } from '../../prisma/client';
+import { BookingStatus } from 'src/prisma/client';
 
 export class UpdateBookingStatusDto {
   @ApiProperty({
