@@ -16,6 +16,7 @@ import { SubscriptionPlansModule } from './subscription-plans/subscription-plans
 import { SellerSubscriptionsModule } from './seller-subscriptions/seller-subscriptions.module';
 import { ListingsModule } from './listings/listings.module';
 import { CategoriesModule } from './categories/categories.module';
+import { OrdersModule } from './orders/orders.module';
 import appConfig from './config/app.config';
 import databaseConfig from './config/database.config';
 import jwtConfig from './config/jwt.config';
@@ -51,6 +52,7 @@ import redisConfig from './config/redis.config';
     SellerSubscriptionsModule,
     ListingsModule,
     CategoriesModule,
+    OrdersModule,
   ],
   controllers: [AppController],
   providers: [AppService],

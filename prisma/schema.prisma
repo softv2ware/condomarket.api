@@ -75,6 +75,10 @@ model User {
   listings             Listing[]
   listingViews         ListingView[]
   savedListings        SavedListing[]
+  ordersBought         Order[]            @relation("OrderBuyer")
+  ordersSold           Order[]            @relation("OrderSeller")
+  bookingsBought       Booking[]          @relation("BookingBuyer")
+  bookingsSold         Booking[]          @relation("BookingSeller")
 
   @@map("users")
 }
@@ -119,6 +123,8 @@ model Building {
   sellerSubscriptions SellerSubscription[]
   categories         Category[]
   listings           Listing[]
+  orders             Order[]            @relation("OrderBuilding")
+  bookings           Booking[]          @relation("BookingBuilding")
 
   @@map("buildings")
   @@index([status])
@@ -426,6 +432,8 @@ model Listing {
   availability            ListingAvailability[]
   views                   ListingView[]
   savedBy                 SavedListing[]
+  orders                  Order[]
+  bookings                Booking[]
 
   @@unique([slug, buildingId])
   @@map("listings")
@@ -495,4 +503,189 @@ model SavedListing {
   @@map("saved_listings")
   @@index([userId])
   @@index([listingId])
+}
+
+// ============================================
+// ORDERS & BOOKINGS (Stage 5)
+// ============================================
+
+enum OrderStatus {
+  PENDING_CONFIRMATION  // Waiting for seller to confirm
+  CONFIRMED             // Seller confirmed, ready to proceed
+  READY_FOR_PICKUP      // Product ready for buyer to collect
+  OUT_FOR_DELIVERY      // Product out for delivery
+  COMPLETED             // Order completed
+  CANCELLED             // Cancelled by buyer or seller
+  EXPIRED               // Auto-expired (not confirmed within 48h)
+}
+
+enum BookingStatus {
+  REQUESTED             // Buyer requested booking
+  CONFIRMED             // Seller confirmed booking
+  IN_PROGRESS           // Service in progress
+  COMPLETED             // Service completed
+  CANCELLED             // Cancelled by either party
+  NO_SHOW               // Buyer didn't show up
+}
+
+enum TransactionStatus {
+  PENDING               // Payment pending
+  COMPLETED             // Payment completed
+  FAILED                // Payment failed
+  REFUNDED              // Payment refunded
+}
+
+enum TransactionPaymentMethod {
+  CASH
+  BANK_TRANSFER
+  VENMO
+  PAYPAL
+  ZELLE
+  CHECK
+  OTHER
+}
+
+enum DeliveryMethod {
+  PICKUP                // Buyer picks up
+  DELIVERY              // Seller delivers
+  MEETING_POINT         // Meet at agreed location
+}
+
+model Order {
+  id                  String          @id @default(uuid())
+  listingId           String
+  listing             Listing         @relation(fields: [listingId], references: [id])
+  buyerId             String
+  buyer               User            @relation("OrderBuyer", fields: [buyerId], references: [id])
+  sellerId            String
+  seller              User            @relation("OrderSeller", fields: [sellerId], references: [id])
+  buildingId          String
+  building            Building        @relation("OrderBuilding", fields: [buildingId], references: [id])
+  
+  type                ListingType     @default(PRODUCT)
+  status              OrderStatus     @default(PENDING_CONFIRMATION)
+  quantity            Int             @default(1)
+  totalPrice          Float
+  currency            String          @default("USD")
+  
+  deliveryMethod      DeliveryMethod
+  pickupLocation      String?
+  deliveryAddress     String?
+  
+  scheduledFor        DateTime?       // When buyer wants to pickup/receive
+  notes               String?         @db.Text
+  
+  createdAt           DateTime        @default(now())
+  updatedAt           DateTime        @updatedAt
+  confirmedAt         DateTime?
+  completedAt         DateTime?
+  cancelledAt         DateTime?
+  cancellationReason  String?         @db.Text
+  
+  statusHistory       OrderStatusHistory[]
+  transactions        Transaction[]
+
+  @@map("orders")
+  @@index([listingId])
+  @@index([buyerId])
+  @@index([sellerId])
+  @@index([buildingId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model OrderStatusHistory {
+  id        String      @id @default(uuid())
+  orderId   String
+  order     Order       @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  status    OrderStatus
+  changedBy String      // userId
+  reason    String?     @db.Text
+  createdAt DateTime    @default(now())
+
+  @@map("order_status_history")
+  @@index([orderId])
+  @@index([createdAt])
+}
+
+model Booking {
+  id                  String          @id @default(uuid())
+  listingId           String
+  listing             Listing         @relation(fields: [listingId], references: [id])
+  buyerId             String
+  buyer               User            @relation("BookingBuyer", fields: [buyerId], references: [id])
+  sellerId            String
+  seller              User            @relation("BookingSeller", fields: [sellerId], references: [id])
+  buildingId          String
+  building            Building        @relation("BookingBuilding", fields: [buildingId], references: [id])
+  
+  status              BookingStatus   @default(REQUESTED)
+  startTime           DateTime
+  endTime             DateTime
+  durationMinutes     Int
+  totalPrice          Float
+  currency            String          @default("USD")
+  
+  location            String?
+  notes               String?         @db.Text
+  
+  createdAt           DateTime        @default(now())
+  updatedAt           DateTime        @updatedAt
+  confirmedAt         DateTime?
+  completedAt         DateTime?
+  cancelledAt         DateTime?
+  cancellationReason  String?         @db.Text
+  
+  statusHistory       BookingStatusHistory[]
+  transactions        Transaction[]
+
+  @@map("bookings")
+  @@index([listingId])
+  @@index([buyerId])
+  @@index([sellerId])
+  @@index([buildingId])
+  @@index([status])
+  @@index([startTime])
+  @@index([endTime])
+  @@index([createdAt])
+}
+
+model BookingStatusHistory {
+  id        String        @id @default(uuid())
+  bookingId String
+  booking   Booking       @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  status    BookingStatus
+  changedBy String        // userId
+  reason    String?       @db.Text
+  createdAt DateTime      @default(now())
+
+  @@map("booking_status_history")
+  @@index([bookingId])
+  @@index([createdAt])
+}
+
+model Transaction {
+  id            String                     @id @default(uuid())
+  orderId       String?
+  order         Order?                     @relation(fields: [orderId], references: [id])
+  bookingId     String?
+  booking       Booking?                   @relation(fields: [bookingId], references: [id])
+  
+  amount        Float
+  currency      String                     @default("USD")
+  paymentMethod TransactionPaymentMethod
+  status        TransactionStatus          @default(PENDING)
+  
+  paidAt        DateTime?
+  metadata      Json?             // Additional payment details
+  notes         String?           @db.Text
+  
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+
+  @@map("transactions")
+  @@index([orderId])
+  @@index([bookingId])
+  @@index([status])
+  @@index([createdAt])
 }
