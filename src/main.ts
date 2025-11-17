@@ -18,8 +18,21 @@ async function bootstrap() {
   const port = configService.get<number>('app.port') || 3000;
   const corsOrigins = configService.get<string[]>('app.corsOrigins') || ['http://localhost:3000'];
 
-  // Security - Helmet
-  app.use(helmet());
+  // Security - Helmet with CSP configured for Scalar
+  app.use(
+    helmet({
+      contentSecurityPolicy: {
+        directives: {
+          defaultSrc: ["'self'"],
+          styleSrc: ["'self'", "'unsafe-inline'", 'https://cdn.jsdelivr.net'],
+          scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", 'https://cdn.jsdelivr.net'],
+          imgSrc: ["'self'", 'data:', 'https:'],
+          fontSrc: ["'self'", 'data:', 'https://cdn.jsdelivr.net'],
+          connectSrc: ["'self'"],
+        },
+      },
+    }),
+  );
 
   // CORS configuration
   app.enableCors({
