@@ -13,6 +13,8 @@ import { HealthModule } from './common/health/health.module';
 import { validate } from './config/validation';
 import { SubscriptionPlansModule } from './subscription-plans/subscription-plans.module';
 import { SellerSubscriptionsModule } from './seller-subscriptions/seller-subscriptions.module';
+import { ListingsModule } from './listings/listings.module';
+import { CategoriesModule } from './categories/categories.module';
 import appConfig from './config/app.config';
 import databaseConfig from './config/database.config';
 import jwtConfig from './config/jwt.config';
@@ -45,6 +47,8 @@ import redisConfig from './config/redis.config';
     UsersModule,
     SubscriptionPlansModule,
     SellerSubscriptionsModule,
+    ListingsModule,
+    CategoriesModule,
   ],
   controllers: [AppController],
   providers: [AppService],

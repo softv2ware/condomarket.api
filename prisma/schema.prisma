@@ -72,6 +72,9 @@ model User {
   verificationsApproved ResidentBuilding[] @relation("VerificationApprover")
   subscriptions        SellerSubscription[]
   paymentMethods       PaymentMethod[]
+  listings             Listing[]
+  listingViews         ListingView[]
+  savedListings        SavedListing[]
 
   @@map("users")
 }
@@ -114,6 +117,8 @@ model Building {
   invitationCodes    InvitationCode[]
   subscriptionPlans  SubscriptionPlan[]
   sellerSubscriptions SellerSubscription[]
+  categories         Category[]
+  listings           Listing[]
 
   @@map("buildings")
   @@index([status])
@@ -323,4 +328,171 @@ model SubscriptionLog {
   @@map("subscription_logs")
   @@index([subscriptionId])
   @@index([action])
+}
+
+// ============================================
+// STAGE 4: MARKETPLACE LISTINGS
+// ============================================
+
+enum ListingType {
+  PRODUCT
+  SERVICE
+}
+
+enum ListingStatus {
+  DRAFT             // Created but not published
+  PENDING_APPROVAL  // Submitted for moderation
+  ACTIVE            // Published and visible
+  PAUSED            // Temporarily hidden by seller
+  REJECTED          // Rejected by moderator
+  EXPIRED           // Past availability
+  SOLD              // Product sold
+}
+
+enum AvailabilityType {
+  ALWAYS            // Always available
+  SCHEDULED         // Service with scheduled times
+  LIMITED_STOCK     // Product with quantity
+}
+
+enum CategoryType {
+  PRODUCT
+  SERVICE
+}
+
+model Category {
+  id          String        @id @default(uuid())
+  name        String
+  slug        String
+  type        CategoryType
+  description String?
+  icon        String?       // Icon name or emoji
+  parentId    String?       // For hierarchical categories
+  parent      Category?     @relation("CategoryHierarchy", fields: [parentId], references: [id], onDelete: Cascade)
+  children    Category[]    @relation("CategoryHierarchy")
+  buildingId  String?       // null = platform-wide, set = building-specific
+  building    Building?     @relation(fields: [buildingId], references: [id], onDelete: Cascade)
+  
+  listings    Listing[]
+  
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  @@unique([slug, buildingId])
+  @@map("categories")
+  @@index([type])
+  @@index([buildingId])
+  @@index([parentId])
+}
+
+model Listing {
+  id                      String              @id @default(uuid())
+  sellerId                String
+  seller                  User                @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+  buildingId              String
+  building                Building            @relation(fields: [buildingId], references: [id], onDelete: Cascade)
+  
+  type                    ListingType
+  title                   String
+  slug                    String
+  description             String              @db.Text
+  categoryId              String
+  category                Category            @relation(fields: [categoryId], references: [id])
+  
+  price                   Float
+  currency                String              @default("USD")
+  status                  ListingStatus       @default(DRAFT)
+  
+  // Subscription tier snapshot at time of creation
+  subscriptionTierSnapshot SubscriptionTier?
+  
+  // Availability info
+  availabilityType        AvailabilityType    @default(ALWAYS)
+  pickupLocation          String?             // For products
+  deliveryAvailable       Boolean             @default(false)
+  durationMinutes         Int?                // For services (e.g., 60 = 1 hour service)
+  
+  // Lifecycle
+  createdAt               DateTime            @default(now())
+  updatedAt               DateTime            @updatedAt
+  publishedAt             DateTime?
+  
+  // Analytics
+  viewCount               Int                 @default(0)
+  orderCount              Int                 @default(0)
+  
+  // Relations
+  photos                  ListingPhoto[]
+  availability            ListingAvailability[]
+  views                   ListingView[]
+  savedBy                 SavedListing[]
+
+  @@unique([slug, buildingId])
+  @@map("listings")
+  @@index([sellerId])
+  @@index([buildingId])
+  @@index([categoryId])
+  @@index([type])
+  @@index([status])
+  @@index([subscriptionTierSnapshot])
+  @@index([publishedAt])
+}
+
+model ListingPhoto {
+  id        String   @id @default(uuid())
+  listingId String
+  listing   Listing  @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  url       String
+  order     Int      @default(0)
+  isMain    Boolean  @default(false)
+  
+  createdAt DateTime @default(now())
+
+  @@map("listing_photos")
+  @@index([listingId])
+  @@index([isMain])
+}
+
+model ListingAvailability {
+  id        String   @id @default(uuid())
+  listingId String
+  listing   Listing  @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  dayOfWeek Int      // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
+  startTime String   // Format: "HH:mm" (e.g., "09:00")
+  endTime   String   // Format: "HH:mm" (e.g., "17:00")
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("listing_availability")
+  @@index([listingId])
+  @@index([dayOfWeek])
+}
+
+model ListingView {
+  id        String   @id @default(uuid())
+  listingId String
+  listing   Listing  @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  userId    String?  // null if anonymous
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  viewedAt  DateTime @default(now())
+
+  @@map("listing_views")
+  @@index([listingId])
+  @@index([userId])
+  @@index([viewedAt])
+}
+
+model SavedListing {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  listingId String
+  listing   Listing  @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  savedAt   DateTime @default(now())
+
+  @@unique([userId, listingId])
+  @@map("saved_listings")
+  @@index([userId])
+  @@index([listingId])
 }
