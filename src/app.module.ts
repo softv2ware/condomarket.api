@@ -12,6 +12,7 @@ import { PrismaModule } from './common/prisma/prisma.module';
 import { HealthModule } from './common/health/health.module';
 import { validate } from './config/validation';
 import { SubscriptionPlansModule } from './subscription-plans/subscription-plans.module';
+import { SellerSubscriptionsModule } from './seller-subscriptions/seller-subscriptions.module';
 import appConfig from './config/app.config';
 import databaseConfig from './config/database.config';
 import jwtConfig from './config/jwt.config';
@@ -43,6 +44,7 @@ import redisConfig from './config/redis.config';
     VerificationModule,
     UsersModule,
     SubscriptionPlansModule,
+    SellerSubscriptionsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
