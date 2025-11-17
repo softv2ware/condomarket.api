@@ -11,12 +11,15 @@ import { LoggerModule } from './common/logger/logger.module';
 import { PrismaModule } from './common/prisma/prisma.module';
 import { HealthModule } from './common/health/health.module';
 import { S3Module } from './common/s3/s3.module';
+import { SchedulerModule } from './common/scheduler/scheduler.module';
 import { validate } from './config/validation';
 import { SubscriptionPlansModule } from './subscription-plans/subscription-plans.module';
 import { SellerSubscriptionsModule } from './seller-subscriptions/seller-subscriptions.module';
 import { ListingsModule } from './listings/listings.module';
 import { CategoriesModule } from './categories/categories.module';
 import { OrdersModule } from './orders/orders.module';
+import { BookingsModule } from './bookings/bookings.module';
+import { TransactionsModule } from './transactions/transactions.module';
 import appConfig from './config/app.config';
 import databaseConfig from './config/database.config';
 import jwtConfig from './config/jwt.config';
@@ -44,6 +47,7 @@ import redisConfig from './config/redis.config';
     PrismaModule,
     HealthModule,
     S3Module,
+    SchedulerModule,
     AuthModule,
     BuildingsModule,
     VerificationModule,
@@ -53,6 +57,8 @@ import redisConfig from './config/redis.config';
     ListingsModule,
     CategoriesModule,
     OrdersModule,
+    BookingsModule,
+    TransactionsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
