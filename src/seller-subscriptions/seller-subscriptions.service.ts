@@ -75,7 +75,7 @@ export class SellerSubscriptionsService {
     const renewsAt = new Date(startDate);
     renewsAt.setMonth(renewsAt.getMonth() + 1); // Next renewal in 1 month
 
-    return this.prisma.sellerSubscription.create({
+    const subscription = await this.prisma.sellerSubscription.create({
       data: {
         userId,
         buildingId,
@@ -89,6 +89,21 @@ export class SellerSubscriptionsService {
         building: true,
       },
     });
+
+    // Log the subscription creation
+    await this.logSubscriptionEvent(
+      subscription.id,
+      'created',
+      undefined,
+      SubscriptionStatus.ACTIVE,
+      {
+        planId: plan.id,
+        planName: plan.name,
+        tier: plan.tier,
+      },
+    );
+
+    return subscription;
   }
 
   /**
@@ -150,7 +165,8 @@ export class SellerSubscriptionsService {
       throw new BadRequestException('Subscription is already cancelled');
     }
 
-    return this.prisma.sellerSubscription.update({
+    const oldStatus = subscription.status;
+    const updatedSubscription = await this.prisma.sellerSubscription.update({
       where: { id: subscriptionId },
       data: {
         status: SubscriptionStatus.CANCELLED,
@@ -161,6 +177,19 @@ export class SellerSubscriptionsService {
         building: true,
       },
     });
+
+    // Log the cancellation
+    await this.logSubscriptionEvent(
+      subscriptionId,
+      'cancelled',
+      oldStatus,
+      SubscriptionStatus.CANCELLED,
+      {
+        reason: cancelDto?.reason,
+      },
+    );
+
+    return updatedSubscription;
   }
 
   /**
@@ -206,7 +235,8 @@ export class SellerSubscriptionsService {
       throw new BadRequestException('You are already on this plan');
     }
 
-    return this.prisma.sellerSubscription.update({
+    const oldPlanId = subscription.planId;
+    const updatedSubscription = await this.prisma.sellerSubscription.update({
       where: { id: subscriptionId },
       data: {
         planId: newPlan.id,
@@ -216,6 +246,28 @@ export class SellerSubscriptionsService {
         building: true,
       },
     });
+
+    // Determine if this is an upgrade or downgrade
+    const oldPlan = subscription.plan;
+    const action = newPlan.monthlyPrice > oldPlan.monthlyPrice ? 'upgraded' : 'downgraded';
+
+    // Log the plan change
+    await this.logSubscriptionEvent(
+      subscriptionId,
+      action,
+      subscription.status,
+      subscription.status,
+      {
+        oldPlanId,
+        oldPlanName: oldPlan.name,
+        oldTier: oldPlan.tier,
+        newPlanId: newPlan.id,
+        newPlanName: newPlan.name,
+        newTier: newPlan.tier,
+      },
+    );
+
+    return updatedSubscription;
   }
 
   /**
@@ -299,7 +351,8 @@ export class SellerSubscriptionsService {
     const newRenewsAt = new Date(now);
     newRenewsAt.setMonth(newRenewsAt.getMonth() + 1);
 
-    return this.prisma.sellerSubscription.update({
+    const oldStatus = subscription.status;
+    const updatedSubscription = await this.prisma.sellerSubscription.update({
       where: { id: subscriptionId },
       data: {
         status: SubscriptionStatus.ACTIVE,
@@ -310,6 +363,20 @@ export class SellerSubscriptionsService {
         building: true,
       },
     });
+
+    // Log the renewal
+    await this.logSubscriptionEvent(
+      subscriptionId,
+      'renewed',
+      oldStatus,
+      SubscriptionStatus.ACTIVE,
+      {
+        previousRenewsAt: subscription.renewsAt,
+        newRenewsAt,
+      },
+    );
+
+    return updatedSubscription;
   }
 
   /**
@@ -332,7 +399,7 @@ export class SellerSubscriptionsService {
     const gracePeriodEnd = new Date();
     gracePeriodEnd.setDate(gracePeriodEnd.getDate() + 7);
 
-    return this.prisma.sellerSubscription.update({
+    const updatedSubscription = await this.prisma.sellerSubscription.update({
       where: { id: subscriptionId },
       data: {
         status: SubscriptionStatus.GRACE_PERIOD,
@@ -343,6 +410,19 @@ export class SellerSubscriptionsService {
         building: true,
       },
     });
+
+    // Log entering grace period (usually due to payment failure)
+    await this.logSubscriptionEvent(
+      subscriptionId,
+      'payment_failed',
+      SubscriptionStatus.ACTIVE,
+      SubscriptionStatus.GRACE_PERIOD,
+      {
+        gracePeriodEnd,
+      },
+    );
+
+    return updatedSubscription;
   }
 
   /**
@@ -357,7 +437,8 @@ export class SellerSubscriptionsService {
       throw new NotFoundException('Subscription not found');
     }
 
-    return this.prisma.sellerSubscription.update({
+    const oldStatus = subscription.status;
+    const updatedSubscription = await this.prisma.sellerSubscription.update({
       where: { id: subscriptionId },
       data: {
         status: SubscriptionStatus.EXPIRED,
@@ -368,6 +449,17 @@ export class SellerSubscriptionsService {
         building: true,
       },
     });
+
+    // Log the expiration
+    await this.logSubscriptionEvent(
+      subscriptionId,
+      'expired',
+      oldStatus,
+      SubscriptionStatus.EXPIRED,
+      {},
+    );
+
+    return updatedSubscription;
   }
 
   /**
@@ -486,13 +578,17 @@ export class SellerSubscriptionsService {
    */
   private async logSubscriptionEvent(
     subscriptionId: string,
-    event: string,
+    action: string,
+    oldStatus?: string,
+    newStatus?: string,
     metadata?: Record<string, any>,
   ) {
     return this.prisma.subscriptionLog.create({
       data: {
         subscriptionId,
-        event,
+        action,
+        oldStatus,
+        newStatus,
         metadata: metadata || {},
       },
     });
@@ -551,12 +647,18 @@ export class SellerSubscriptionsService {
     });
 
     // Log the event
-    await this.logSubscriptionEvent(subscription.id, 'created', {
-      planId: freePlan.id,
-      planName: freePlan.name,
-      tier: freePlan.tier,
-      autoAssigned: true,
-    });
+    await this.logSubscriptionEvent(
+      subscription.id,
+      'created',
+      undefined,
+      SubscriptionStatus.ACTIVE,
+      {
+        planId: freePlan.id,
+        planName: freePlan.name,
+        tier: freePlan.tier,
+        autoAssigned: true,
+      },
+    );
 
     return subscription;
   }
