@@ -1,4 +1,4 @@
-import { PrismaClient, UserRole, UserStatus, BuildingType, BuildingStatus, SubscriptionTier } from '../src/prisma/client';
+import { PrismaClient, UserRole, UserStatus, BuildingType, BuildingStatus, SubscriptionTier, CategoryType } from '../src/prisma/client';
 import * as bcrypt from 'bcrypt';
 import { randomBytes } from 'crypto';
 
@@ -82,6 +82,167 @@ async function main() {
     },
   });
   console.log('✅ Subscription Plan created:', premiumPlan.name);
+
+  // Create Categories (Platform-wide)
+  console.log('🏷️  Creating categories...');
+  
+  // Check if categories already exist
+  const existingCategories = await prisma.category.findMany();
+  
+  if (existingCategories.length === 0) {
+    // Create all categories at once
+    await prisma.category.createMany({
+      data: [
+        // Product Categories
+        {
+          name: 'Electronics',
+          slug: 'electronics',
+          type: CategoryType.PRODUCT,
+          description: 'Electronic devices, gadgets, and accessories',
+          icon: '📱',
+        },
+        {
+          name: 'Furniture',
+          slug: 'furniture',
+          type: CategoryType.PRODUCT,
+          description: 'Home and office furniture',
+          icon: '🛋️',
+        },
+        {
+          name: 'Appliances',
+          slug: 'appliances',
+          type: CategoryType.PRODUCT,
+          description: 'Kitchen and home appliances',
+          icon: '🔌',
+        },
+        {
+          name: 'Clothing & Accessories',
+          slug: 'clothing',
+          type: CategoryType.PRODUCT,
+          description: 'Clothing, shoes, and fashion accessories',
+          icon: '👔',
+        },
+        {
+          name: 'Books & Media',
+          slug: 'books-media',
+          type: CategoryType.PRODUCT,
+          description: 'Books, magazines, CDs, DVDs, and games',
+          icon: '📚',
+        },
+        {
+          name: 'Sports & Outdoors',
+          slug: 'sports-outdoors',
+          type: CategoryType.PRODUCT,
+          description: 'Sports equipment, fitness gear, and outdoor items',
+          icon: '⚽',
+        },
+        {
+          name: 'Kitchen & Dining',
+          slug: 'kitchen-dining',
+          type: CategoryType.PRODUCT,
+          description: 'Cookware, dishware, and kitchen accessories',
+          icon: '🍳',
+        },
+        {
+          name: 'Home Decor',
+          slug: 'home-decor',
+          type: CategoryType.PRODUCT,
+          description: 'Decorative items, art, and home accessories',
+          icon: '🖼️',
+        },
+        {
+          name: 'Baby & Kids',
+          slug: 'baby-kids',
+          type: CategoryType.PRODUCT,
+          description: 'Baby gear, toys, and children\'s items',
+          icon: '👶',
+        },
+        {
+          name: 'Pet Supplies',
+          slug: 'pet-supplies',
+          type: CategoryType.PRODUCT,
+          description: 'Pet food, toys, and accessories',
+          icon: '🐾',
+        },
+        // Service Categories
+        {
+          name: 'Cleaning Services',
+          slug: 'cleaning',
+          type: CategoryType.SERVICE,
+          description: 'House cleaning and maintenance services',
+          icon: '🧹',
+        },
+        {
+          name: 'Handyman Services',
+          slug: 'handyman',
+          type: CategoryType.SERVICE,
+          description: 'Home repairs and maintenance',
+          icon: '🔧',
+        },
+        {
+          name: 'Pet Care',
+          slug: 'pet-care',
+          type: CategoryType.SERVICE,
+          description: 'Pet sitting, walking, and grooming services',
+          icon: '🐕',
+        },
+        {
+          name: 'Tutoring & Education',
+          slug: 'tutoring',
+          type: CategoryType.SERVICE,
+          description: 'Educational tutoring and lessons',
+          icon: '📖',
+        },
+        {
+          name: 'Moving & Delivery',
+          slug: 'moving-delivery',
+          type: CategoryType.SERVICE,
+          description: 'Moving help and delivery services',
+          icon: '📦',
+        },
+        {
+          name: 'Babysitting & Childcare',
+          slug: 'babysitting',
+          type: CategoryType.SERVICE,
+          description: 'Childcare and babysitting services',
+          icon: '👨‍👩‍👧',
+        },
+        {
+          name: 'Personal Training',
+          slug: 'personal-training',
+          type: CategoryType.SERVICE,
+          description: 'Fitness training and coaching',
+          icon: '💪',
+        },
+        {
+          name: 'Beauty & Wellness',
+          slug: 'beauty-wellness',
+          type: CategoryType.SERVICE,
+          description: 'Hair, makeup, massage, and wellness services',
+          icon: '💅',
+        },
+        {
+          name: 'Tech Support',
+          slug: 'tech-support',
+          type: CategoryType.SERVICE,
+          description: 'Computer and tech troubleshooting',
+          icon: '💻',
+        },
+        {
+          name: 'Event Planning',
+          slug: 'event-planning',
+          type: CategoryType.SERVICE,
+          description: 'Event planning and coordination services',
+          icon: '🎉',
+        },
+      ],
+      skipDuplicates: true,
+    });
+    
+    console.log('✅ Created 20 categories (10 products + 10 services)');
+  } else {
+    console.log('✅ Categories already exist, skipping creation');
+  }
 
   // Create Building 1: Sunset Towers
   const buildingAdmin1Password = await bcrypt.hash('admin123', 10);
