@@ -10,6 +10,7 @@ import { VerificationModule } from './verification/verification.module';
 import { LoggerModule } from './common/logger/logger.module';
 import { PrismaModule } from './common/prisma/prisma.module';
 import { HealthModule } from './common/health/health.module';
+import { S3Module } from './common/s3/s3.module';
 import { validate } from './config/validation';
 import { SubscriptionPlansModule } from './subscription-plans/subscription-plans.module';
 import { SellerSubscriptionsModule } from './seller-subscriptions/seller-subscriptions.module';
@@ -41,6 +42,7 @@ import redisConfig from './config/redis.config';
     LoggerModule,
     PrismaModule,
     HealthModule,
+    S3Module,
     AuthModule,
     BuildingsModule,
     VerificationModule,

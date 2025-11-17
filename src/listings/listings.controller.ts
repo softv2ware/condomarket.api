@@ -9,8 +9,14 @@ import {
   UseGuards,
   Query,
   Req,
+  UseInterceptors,
+  UploadedFiles,
+  ParseFilePipe,
+  MaxFileSizeValidator,
+  FileTypeValidator,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiBearerAuth, ApiResponse } from '@nestjs/swagger';
+import { FilesInterceptor } from '@nestjs/platform-express';
+import { ApiTags, ApiOperation, ApiBearerAuth, ApiResponse, ApiConsumes } from '@nestjs/swagger';
 import { ListingsService } from './listings.service';
 import { CreateListingDto } from './dto/create-listing.dto';
 import { UpdateListingDto } from './dto/update-listing.dto';
@@ -208,5 +214,76 @@ export class ListingsController {
       req.user.userId,
       updateDto.availability,
     );
+  }
+
+  // Photo management endpoints
+  @Post(':id/photos')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @UseInterceptors(FilesInterceptor('photos', 10))
+  @ApiConsumes('multipart/form-data')
+  @ApiOperation({ summary: 'Upload photos to a listing (max 10 photos, 5MB each)' })
+  @ApiResponse({ status: 201, description: 'Photos uploaded successfully' })
+  @ApiResponse({ status: 400, description: 'Invalid file or limit exceeded' })
+  @ApiResponse({ status: 403, description: 'Not authorized' })
+  @ApiResponse({ status: 404, description: 'Listing not found' })
+  uploadPhotos(
+    @Param('id') id: string,
+    @Req() req,
+    @UploadedFiles(
+      new ParseFilePipe({
+        validators: [
+          new MaxFileSizeValidator({ maxSize: 5 * 1024 * 1024 }), // 5MB
+          new FileTypeValidator({ fileType: /(jpg|jpeg|png|webp)$/ }),
+        ],
+        fileIsRequired: true,
+      }),
+    )
+    files: Express.Multer.File[],
+    @Query('isMain') isMain?: string,
+  ) {
+    return this.listingsService.uploadPhotos(
+      id,
+      req.user.userId,
+      files,
+      isMain === 'true',
+    );
+  }
+
+  @Delete(':id/photos/:photoId')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Delete a photo from a listing' })
+  @ApiResponse({ status: 200, description: 'Photo deleted successfully' })
+  @ApiResponse({ status: 403, description: 'Not authorized' })
+  @ApiResponse({ status: 404, description: 'Photo not found' })
+  deletePhoto(@Param('photoId') photoId: string, @Req() req) {
+    return this.listingsService.deletePhoto(photoId, req.user.userId);
+  }
+
+  @Patch('photos/:photoId/set-main')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Set a photo as the main photo' })
+  @ApiResponse({ status: 200, description: 'Main photo updated successfully' })
+  @ApiResponse({ status: 403, description: 'Not authorized' })
+  @ApiResponse({ status: 404, description: 'Photo not found' })
+  setMainPhoto(@Param('photoId') photoId: string, @Req() req) {
+    return this.listingsService.setMainPhoto(photoId, req.user.userId);
+  }
+
+  @Patch(':id/photos/reorder')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Reorder listing photos' })
+  @ApiResponse({ status: 200, description: 'Photos reordered successfully' })
+  @ApiResponse({ status: 403, description: 'Not authorized' })
+  @ApiResponse({ status: 404, description: 'Listing not found' })
+  reorderPhotos(
+    @Param('id') id: string,
+    @Req() req,
+    @Body() body: { photoOrders: Array<{ photoId: string; order: number }> },
+  ) {
+    return this.listingsService.reorderPhotos(id, req.user.userId, body.photoOrders);
   }
 }
