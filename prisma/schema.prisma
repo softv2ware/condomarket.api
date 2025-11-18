@@ -63,37 +63,42 @@ model User {
   createdAt DateTime   @default(now())
   updatedAt DateTime   @updatedAt
 
-  profile              UserProfile?
-  residences           ResidentBuilding[]
-  managedBuildings     Building[]         @relation("BuildingAdmin")
-  createdInvitations   InvitationCode[]   @relation("InvitationCreator")
-  usedInvitation       InvitationCode?    @relation("InvitationUser")
-  verificationsApproved ResidentBuilding[] @relation("VerificationApprover")
-  subscriptions        SellerSubscription[]
-  paymentMethods       PaymentMethod[]
-  listings             Listing[]
-  listingViews         ListingView[]
-  savedListings        SavedListing[]
-  ordersBought         Order[]            @relation("OrderBuyer")
-  ordersSold           Order[]            @relation("OrderSeller")
-  bookingsBought       Booking[]          @relation("BookingBuyer")
-  bookingsSold         Booking[]          @relation("BookingSeller")
+  profile               UserProfile?
+  residences            ResidentBuilding[]
+  managedBuildings      Building[]               @relation("BuildingAdmin")
+  createdInvitations    InvitationCode[]         @relation("InvitationCreator")
+  usedInvitation        InvitationCode?          @relation("InvitationUser")
+  verificationsApproved ResidentBuilding[]       @relation("VerificationApprover")
+  subscriptions         SellerSubscription[]
+  paymentMethods        PaymentMethod[]
+  listings              Listing[]
+  listingViews          ListingView[]
+  savedListings         SavedListing[]
+  ordersBought          Order[]                  @relation("OrderBuyer")
+  ordersSold            Order[]                  @relation("OrderSeller")
+  bookingsBought        Booking[]                @relation("BookingBuyer")
+  bookingsSold          Booking[]                @relation("BookingSeller")
+  messages              Message[]
+  reviewsGiven          Review[]                 @relation("ReviewsGiven")
+  reviewsReceived       Review[]                 @relation("ReviewsReceived")
+  notifications         Notification[]
+  notificationPrefs     NotificationPreference[]
 
   @@map("users")
 }
 
 model UserProfile {
-  id                String   @id @default(uuid())
-  userId            String   @unique
-  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  firstName         String?
-  lastName          String?
-  bio               String?
-  profilePictureUrl String?
-  privacySettings   Json?
+  id                     String   @id @default(uuid())
+  userId                 String   @unique
+  user                   User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  firstName              String?
+  lastName               String?
+  bio                    String?
+  profilePictureUrl      String?
+  privacySettings        Json?
   acceptedPaymentMethods String[]
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
 
   @@map("user_profiles")
 }
@@ -111,71 +116,71 @@ model Building {
   description String?
   adminId     String?
   admin       User?          @relation("BuildingAdmin", fields: [adminId], references: [id])
-  
-  createdAt   DateTime       @default(now())
-  updatedAt   DateTime       @updatedAt
 
-  units              Unit[]
-  residents          ResidentBuilding[]
-  invitationCodes    InvitationCode[]
-  subscriptionPlans  SubscriptionPlan[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  units               Unit[]
+  residents           ResidentBuilding[]
+  invitationCodes     InvitationCode[]
+  subscriptionPlans   SubscriptionPlan[]
   sellerSubscriptions SellerSubscription[]
-  categories         Category[]
-  listings           Listing[]
-  orders             Order[]            @relation("OrderBuilding")
-  bookings           Booking[]          @relation("BookingBuilding")
+  categories          Category[]
+  listings            Listing[]
+  orders              Order[]              @relation("OrderBuilding")
+  bookings            Booking[]            @relation("BookingBuilding")
 
-  @@map("buildings")
   @@index([status])
   @@index([adminId])
+  @@map("buildings")
 }
 
 model Unit {
-  id          String   @id @default(uuid())
-  buildingId  String
-  building    Building @relation(fields: [buildingId], references: [id], onDelete: Cascade)
-  unitNumber  String
-  floor       Int?
-  type        String?  // Studio, 1BR, 2BR, etc.
-  
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id         String   @id @default(uuid())
+  buildingId String
+  building   Building @relation(fields: [buildingId], references: [id], onDelete: Cascade)
+  unitNumber String
+  floor      Int?
+  type       String? // Studio, 1BR, 2BR, etc.
 
-  residents   ResidentBuilding[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  residents ResidentBuilding[]
 
   @@unique([buildingId, unitNumber])
-  @@map("units")
   @@index([buildingId])
+  @@map("units")
 }
 
 model ResidentBuilding {
-  id                 String              @id @default(uuid())
-  userId             String
-  user               User                @relation(fields: [userId], references: [id], onDelete: Cascade)
-  buildingId         String
-  building           Building            @relation(fields: [buildingId], references: [id], onDelete: Cascade)
-  unitId             String?
-  unit               Unit?               @relation(fields: [unitId], references: [id], onDelete: SetNull)
-  
+  id         String   @id @default(uuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  buildingId String
+  building   Building @relation(fields: [buildingId], references: [id], onDelete: Cascade)
+  unitId     String?
+  unit       Unit?    @relation(fields: [unitId], references: [id], onDelete: SetNull)
+
   verificationMethod VerificationMethod?
   verificationStatus VerificationStatus  @default(PENDING)
-  verificationData   Json?               // Store additional verification info
+  verificationData   Json? // Store additional verification info
   verifiedAt         DateTime?
   verifiedBy         String?
   verifier           User?               @relation("VerificationApprover", fields: [verifiedBy], references: [id])
-  
-  moveInDate         DateTime?
-  moveOutDate        DateTime?
-  isActive           Boolean             @default(true)
-  
-  createdAt          DateTime            @default(now())
-  updatedAt          DateTime            @updatedAt
+
+  moveInDate  DateTime?
+  moveOutDate DateTime?
+  isActive    Boolean   @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@unique([userId, buildingId])
-  @@map("resident_buildings")
   @@index([buildingId])
   @@index([userId])
   @@index([verificationStatus])
+  @@map("resident_buildings")
 }
 
 model InvitationCode {
@@ -190,13 +195,13 @@ model InvitationCode {
   usedAt     DateTime?
   expiresAt  DateTime?
   isActive   Boolean   @default(true)
-  
-  createdAt  DateTime  @default(now())
 
-  @@map("invitation_codes")
+  createdAt DateTime @default(now())
+
   @@index([buildingId])
   @@index([code])
   @@index([isActive])
+  @@map("invitation_codes")
 }
 
 enum SubscriptionTier {
@@ -229,58 +234,58 @@ enum PaymentMethodType {
 }
 
 model SubscriptionPlan {
-  id                  String           @id @default(uuid())
-  name                String
-  tier                SubscriptionTier @unique
-  description         String?
-  monthlyPrice        Float            @default(0)
-  currency            String           @default("USD")
-  maxActiveListings   Int              @default(1)
-  sortPriority        Int              @default(0) // Higher = better placement in search
-  isHighlightEnabled  Boolean          @default(false) // Premium feature
-  isDefaultFree       Boolean          @default(false) // Auto-assign this plan to new users
-  buildingId          String?          // null = platform-wide, else building-specific
-  building            Building?        @relation(fields: [buildingId], references: [id], onDelete: Cascade)
-  
-  isActive            Boolean          @default(true)
-  createdAt           DateTime         @default(now())
-  updatedAt           DateTime         @updatedAt
+  id                 String           @id @default(uuid())
+  name               String
+  tier               SubscriptionTier @unique
+  description        String?
+  monthlyPrice       Float            @default(0)
+  currency           String           @default("USD")
+  maxActiveListings  Int              @default(1)
+  sortPriority       Int              @default(0) // Higher = better placement in search
+  isHighlightEnabled Boolean          @default(false) // Premium feature
+  isDefaultFree      Boolean          @default(false) // Auto-assign this plan to new users
+  buildingId         String? // null = platform-wide, else building-specific
+  building           Building?        @relation(fields: [buildingId], references: [id], onDelete: Cascade)
 
-  subscriptions       SellerSubscription[]
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  @@map("subscription_plans")
+  subscriptions SellerSubscription[]
+
   @@index([tier])
   @@index([buildingId])
   @@index([isActive])
+  @@map("subscription_plans")
 }
 
 model SellerSubscription {
-  id                 String             @id @default(uuid())
-  userId             String
-  user               User               @relation(fields: [userId], references: [id], onDelete: Cascade)
-  buildingId         String
-  building           Building           @relation(fields: [buildingId], references: [id], onDelete: Cascade)
-  planId             String
-  plan               SubscriptionPlan   @relation(fields: [planId], references: [id])
-  
-  status             SubscriptionStatus @default(ACTIVE)
-  startDate          DateTime           @default(now())
-  endDate            DateTime?          // null = ongoing
-  renewsAt           DateTime?          // Next renewal date
-  lastPaymentStatus  PaymentStatus?
-  
-  createdAt          DateTime           @default(now())
-  updatedAt          DateTime           @updatedAt
+  id         String           @id @default(uuid())
+  userId     String
+  user       User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  buildingId String
+  building   Building         @relation(fields: [buildingId], references: [id], onDelete: Cascade)
+  planId     String
+  plan       SubscriptionPlan @relation(fields: [planId], references: [id])
 
-  payments           SubscriptionPayment[]
-  logs               SubscriptionLog[]
+  status            SubscriptionStatus @default(ACTIVE)
+  startDate         DateTime           @default(now())
+  endDate           DateTime? // null = ongoing
+  renewsAt          DateTime? // Next renewal date
+  lastPaymentStatus PaymentStatus?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  payments SubscriptionPayment[]
+  logs     SubscriptionLog[]
 
   @@unique([userId, buildingId]) // One subscription per user per building
-  @@map("seller_subscriptions")
   @@index([userId])
   @@index([buildingId])
   @@index([planId])
   @@index([status])
+  @@map("seller_subscriptions")
 }
 
 model PaymentMethod {
@@ -288,17 +293,17 @@ model PaymentMethod {
   userId     String
   user       User              @relation(fields: [userId], references: [id], onDelete: Cascade)
   type       PaymentMethodType
-  provider   String            // e.g., "Stripe", "PayPal"
-  externalId String?           // ID from payment provider
-  last4      String?           // Last 4 digits of card
+  provider   String // e.g., "Stripe", "PayPal"
+  externalId String? // ID from payment provider
+  last4      String? // Last 4 digits of card
   isDefault  Boolean           @default(false)
   isActive   Boolean           @default(true)
-  
-  createdAt  DateTime          @default(now())
-  updatedAt  DateTime          @updatedAt
 
-  @@map("payment_methods")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   @@index([userId])
+  @@map("payment_methods")
 }
 
 model SubscriptionPayment {
@@ -310,29 +315,29 @@ model SubscriptionPayment {
   status         PaymentStatus      @default(PENDING)
   paidAt         DateTime?
   failureReason  String?
-  externalId     String?            // Payment provider transaction ID
-  
-  createdAt      DateTime           @default(now())
+  externalId     String? // Payment provider transaction ID
 
-  @@map("subscription_payments")
+  createdAt DateTime @default(now())
+
   @@index([subscriptionId])
   @@index([status])
+  @@map("subscription_payments")
 }
 
 model SubscriptionLog {
   id             String             @id @default(uuid())
   subscriptionId String
   subscription   SellerSubscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
-  action         String             // e.g., "created", "renewed", "cancelled", "upgraded", "downgraded"
+  action         String // e.g., "created", "renewed", "cancelled", "upgraded", "downgraded"
   oldStatus      String?
   newStatus      String?
-  metadata       Json?              // Additional context
-  
-  createdAt      DateTime           @default(now())
+  metadata       Json? // Additional context
 
-  @@map("subscription_logs")
+  createdAt DateTime @default(now())
+
   @@index([subscriptionId])
   @@index([action])
+  @@map("subscription_logs")
 }
 
 // ============================================
@@ -345,19 +350,19 @@ enum ListingType {
 }
 
 enum ListingStatus {
-  DRAFT             // Created but not published
-  PENDING_APPROVAL  // Submitted for moderation
-  ACTIVE            // Published and visible
-  PAUSED            // Temporarily hidden by seller
-  REJECTED          // Rejected by moderator
-  EXPIRED           // Past availability
-  SOLD              // Product sold
+  DRAFT // Created but not published
+  PENDING_APPROVAL // Submitted for moderation
+  ACTIVE // Published and visible
+  PAUSED // Temporarily hidden by seller
+  REJECTED // Rejected by moderator
+  EXPIRED // Past availability
+  SOLD // Product sold
 }
 
 enum AvailabilityType {
-  ALWAYS            // Always available
-  SCHEDULED         // Service with scheduled times
-  LIMITED_STOCK     // Product with quantity
+  ALWAYS // Always available
+  SCHEDULED // Service with scheduled times
+  LIMITED_STOCK // Product with quantity
 }
 
 enum CategoryType {
@@ -366,76 +371,76 @@ enum CategoryType {
 }
 
 model Category {
-  id          String        @id @default(uuid())
+  id          String       @id @default(uuid())
   name        String
   slug        String
   type        CategoryType
   description String?
-  icon        String?       // Icon name or emoji
-  parentId    String?       // For hierarchical categories
-  parent      Category?     @relation("CategoryHierarchy", fields: [parentId], references: [id], onDelete: Cascade)
-  children    Category[]    @relation("CategoryHierarchy")
-  buildingId  String?       // null = platform-wide, set = building-specific
-  building    Building?     @relation(fields: [buildingId], references: [id], onDelete: Cascade)
-  
-  listings    Listing[]
-  
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
+  icon        String? // Icon name or emoji
+  parentId    String? // For hierarchical categories
+  parent      Category?    @relation("CategoryHierarchy", fields: [parentId], references: [id], onDelete: Cascade)
+  children    Category[]   @relation("CategoryHierarchy")
+  buildingId  String? // null = platform-wide, set = building-specific
+  building    Building?    @relation(fields: [buildingId], references: [id], onDelete: Cascade)
+
+  listings Listing[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@unique([slug, buildingId])
-  @@map("categories")
   @@index([type])
   @@index([buildingId])
   @@index([parentId])
+  @@map("categories")
 }
 
 model Listing {
-  id                      String              @id @default(uuid())
-  sellerId                String
-  seller                  User                @relation(fields: [sellerId], references: [id], onDelete: Cascade)
-  buildingId              String
-  building                Building            @relation(fields: [buildingId], references: [id], onDelete: Cascade)
-  
-  type                    ListingType
-  title                   String
-  slug                    String
-  description             String              @db.Text
-  categoryId              String
-  category                Category            @relation(fields: [categoryId], references: [id])
-  
-  price                   Float
-  currency                String              @default("USD")
-  status                  ListingStatus       @default(DRAFT)
-  
+  id         String   @id @default(uuid())
+  sellerId   String
+  seller     User     @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+  buildingId String
+  building   Building @relation(fields: [buildingId], references: [id], onDelete: Cascade)
+
+  type        ListingType
+  title       String
+  slug        String
+  description String      @db.Text
+  categoryId  String
+  category    Category    @relation(fields: [categoryId], references: [id])
+
+  price    Float
+  currency String        @default("USD")
+  status   ListingStatus @default(DRAFT)
+
   // Subscription tier snapshot at time of creation
   subscriptionTierSnapshot SubscriptionTier?
-  
+
   // Availability info
-  availabilityType        AvailabilityType    @default(ALWAYS)
-  pickupLocation          String?             // For products
-  deliveryAvailable       Boolean             @default(false)
-  durationMinutes         Int?                // For services (e.g., 60 = 1 hour service)
-  
+  availabilityType  AvailabilityType @default(ALWAYS)
+  pickupLocation    String? // For products
+  deliveryAvailable Boolean          @default(false)
+  durationMinutes   Int? // For services (e.g., 60 = 1 hour service)
+
   // Lifecycle
-  createdAt               DateTime            @default(now())
-  updatedAt               DateTime            @updatedAt
-  publishedAt             DateTime?
-  
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  publishedAt DateTime?
+
   // Analytics
-  viewCount               Int                 @default(0)
-  orderCount              Int                 @default(0)
-  
+  viewCount  Int @default(0)
+  orderCount Int @default(0)
+
   // Relations
-  photos                  ListingPhoto[]
-  availability            ListingAvailability[]
-  views                   ListingView[]
-  savedBy                 SavedListing[]
-  orders                  Order[]
-  bookings                Booking[]
+  photos       ListingPhoto[]
+  availability ListingAvailability[]
+  views        ListingView[]
+  savedBy      SavedListing[]
+  orders       Order[]
+  bookings     Booking[]
+  reviews      Review[]
 
   @@unique([slug, buildingId])
-  @@map("listings")
   @@index([sellerId])
   @@index([buildingId])
   @@index([categoryId])
@@ -443,51 +448,52 @@ model Listing {
   @@index([status])
   @@index([subscriptionTierSnapshot])
   @@index([publishedAt])
+  @@map("listings")
 }
 
 model ListingPhoto {
-  id        String   @id @default(uuid())
+  id        String  @id @default(uuid())
   listingId String
-  listing   Listing  @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  listing   Listing @relation(fields: [listingId], references: [id], onDelete: Cascade)
   url       String
-  order     Int      @default(0)
-  isMain    Boolean  @default(false)
-  
+  order     Int     @default(0)
+  isMain    Boolean @default(false)
+
   createdAt DateTime @default(now())
 
-  @@map("listing_photos")
   @@index([listingId])
   @@index([isMain])
+  @@map("listing_photos")
 }
 
 model ListingAvailability {
-  id        String   @id @default(uuid())
+  id        String  @id @default(uuid())
   listingId String
-  listing   Listing  @relation(fields: [listingId], references: [id], onDelete: Cascade)
-  dayOfWeek Int      // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
-  startTime String   // Format: "HH:mm" (e.g., "09:00")
-  endTime   String   // Format: "HH:mm" (e.g., "17:00")
-  
+  listing   Listing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  dayOfWeek Int // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
+  startTime String // Format: "HH:mm" (e.g., "09:00")
+  endTime   String // Format: "HH:mm" (e.g., "17:00")
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@map("listing_availability")
   @@index([listingId])
   @@index([dayOfWeek])
+  @@map("listing_availability")
 }
 
 model ListingView {
   id        String   @id @default(uuid())
   listingId String
   listing   Listing  @relation(fields: [listingId], references: [id], onDelete: Cascade)
-  userId    String?  // null if anonymous
+  userId    String? // null if anonymous
   user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
   viewedAt  DateTime @default(now())
 
-  @@map("listing_views")
   @@index([listingId])
   @@index([userId])
   @@index([viewedAt])
+  @@map("listing_views")
 }
 
 model SavedListing {
@@ -499,9 +505,9 @@ model SavedListing {
   savedAt   DateTime @default(now())
 
   @@unique([userId, listingId])
-  @@map("saved_listings")
   @@index([userId])
   @@index([listingId])
+  @@map("saved_listings")
 }
 
 // ============================================
@@ -509,29 +515,29 @@ model SavedListing {
 // ============================================
 
 enum OrderStatus {
-  PENDING_CONFIRMATION  // Waiting for seller to confirm
-  CONFIRMED             // Seller confirmed, ready to proceed
-  READY_FOR_PICKUP      // Product ready for buyer to collect
-  OUT_FOR_DELIVERY      // Product out for delivery
-  COMPLETED             // Order completed
-  CANCELLED             // Cancelled by buyer or seller
-  EXPIRED               // Auto-expired (not confirmed within 48h)
+  PENDING_CONFIRMATION // Waiting for seller to confirm
+  CONFIRMED // Seller confirmed, ready to proceed
+  READY_FOR_PICKUP // Product ready for buyer to collect
+  OUT_FOR_DELIVERY // Product out for delivery
+  COMPLETED // Order completed
+  CANCELLED // Cancelled by buyer or seller
+  EXPIRED // Auto-expired (not confirmed within 48h)
 }
 
 enum BookingStatus {
-  REQUESTED             // Buyer requested booking
-  CONFIRMED             // Seller confirmed booking
-  IN_PROGRESS           // Service in progress
-  COMPLETED             // Service completed
-  CANCELLED             // Cancelled by either party
-  NO_SHOW               // Buyer didn't show up
+  REQUESTED // Buyer requested booking
+  CONFIRMED // Seller confirmed booking
+  IN_PROGRESS // Service in progress
+  COMPLETED // Service completed
+  CANCELLED // Cancelled by either party
+  NO_SHOW // Buyer didn't show up
 }
 
 enum TransactionStatus {
-  PENDING               // Payment pending
-  COMPLETED             // Payment completed
-  FAILED                // Payment failed
-  REFUNDED              // Payment refunded
+  PENDING // Payment pending
+  COMPLETED // Payment completed
+  FAILED // Payment failed
+  REFUNDED // Payment refunded
 }
 
 enum TransactionPaymentMethod {
@@ -545,52 +551,54 @@ enum TransactionPaymentMethod {
 }
 
 enum DeliveryMethod {
-  PICKUP                // Buyer picks up
-  DELIVERY              // Seller delivers
-  MEETING_POINT         // Meet at agreed location
+  PICKUP // Buyer picks up
+  DELIVERY // Seller delivers
+  MEETING_POINT // Meet at agreed location
 }
 
 model Order {
-  id                  String          @id @default(uuid())
-  listingId           String
-  listing             Listing         @relation(fields: [listingId], references: [id])
-  buyerId             String
-  buyer               User            @relation("OrderBuyer", fields: [buyerId], references: [id])
-  sellerId            String
-  seller              User            @relation("OrderSeller", fields: [sellerId], references: [id])
-  buildingId          String
-  building            Building        @relation("OrderBuilding", fields: [buildingId], references: [id])
-  
-  type                ListingType     @default(PRODUCT)
-  status              OrderStatus     @default(PENDING_CONFIRMATION)
-  quantity            Int             @default(1)
-  totalPrice          Float
-  currency            String          @default("USD")
-  
-  deliveryMethod      DeliveryMethod
-  pickupLocation      String?
-  deliveryAddress     String?
-  
-  scheduledFor        DateTime?       // When buyer wants to pickup/receive
-  notes               String?         @db.Text
-  
-  createdAt           DateTime        @default(now())
-  updatedAt           DateTime        @updatedAt
-  confirmedAt         DateTime?
-  completedAt         DateTime?
-  cancelledAt         DateTime?
-  cancellationReason  String?         @db.Text
-  
-  statusHistory       OrderStatusHistory[]
-  transactions        Transaction[]
+  id         String   @id @default(uuid())
+  listingId  String
+  listing    Listing  @relation(fields: [listingId], references: [id])
+  buyerId    String
+  buyer      User     @relation("OrderBuyer", fields: [buyerId], references: [id])
+  sellerId   String
+  seller     User     @relation("OrderSeller", fields: [sellerId], references: [id])
+  buildingId String
+  building   Building @relation("OrderBuilding", fields: [buildingId], references: [id])
 
-  @@map("orders")
+  type       ListingType @default(PRODUCT)
+  status     OrderStatus @default(PENDING_CONFIRMATION)
+  quantity   Int         @default(1)
+  totalPrice Float
+  currency   String      @default("USD")
+
+  deliveryMethod  DeliveryMethod
+  pickupLocation  String?
+  deliveryAddress String?
+
+  scheduledFor DateTime? // When buyer wants to pickup/receive
+  notes        String?   @db.Text
+
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+  confirmedAt        DateTime?
+  completedAt        DateTime?
+  cancelledAt        DateTime?
+  cancellationReason String?   @db.Text
+
+  statusHistory OrderStatusHistory[]
+  transactions  Transaction[]
+  chatThread    ChatThread?
+  reviews       Review[]
+
   @@index([listingId])
   @@index([buyerId])
   @@index([sellerId])
   @@index([buildingId])
   @@index([status])
   @@index([createdAt])
+  @@map("orders")
 }
 
 model OrderStatusHistory {
@@ -598,47 +606,48 @@ model OrderStatusHistory {
   orderId   String
   order     Order       @relation(fields: [orderId], references: [id], onDelete: Cascade)
   status    OrderStatus
-  changedBy String      // userId
+  changedBy String // userId
   reason    String?     @db.Text
   createdAt DateTime    @default(now())
 
-  @@map("order_status_history")
   @@index([orderId])
   @@index([createdAt])
+  @@map("order_status_history")
 }
 
 model Booking {
-  id                  String          @id @default(uuid())
-  listingId           String
-  listing             Listing         @relation(fields: [listingId], references: [id])
-  buyerId             String
-  buyer               User            @relation("BookingBuyer", fields: [buyerId], references: [id])
-  sellerId            String
-  seller              User            @relation("BookingSeller", fields: [sellerId], references: [id])
-  buildingId          String
-  building            Building        @relation("BookingBuilding", fields: [buildingId], references: [id])
-  
-  status              BookingStatus   @default(REQUESTED)
-  startTime           DateTime
-  endTime             DateTime
-  durationMinutes     Int
-  totalPrice          Float
-  currency            String          @default("USD")
-  
-  location            String?
-  notes               String?         @db.Text
-  
-  createdAt           DateTime        @default(now())
-  updatedAt           DateTime        @updatedAt
-  confirmedAt         DateTime?
-  completedAt         DateTime?
-  cancelledAt         DateTime?
-  cancellationReason  String?         @db.Text
-  
-  statusHistory       BookingStatusHistory[]
-  transactions        Transaction[]
+  id         String   @id @default(uuid())
+  listingId  String
+  listing    Listing  @relation(fields: [listingId], references: [id])
+  buyerId    String
+  buyer      User     @relation("BookingBuyer", fields: [buyerId], references: [id])
+  sellerId   String
+  seller     User     @relation("BookingSeller", fields: [sellerId], references: [id])
+  buildingId String
+  building   Building @relation("BookingBuilding", fields: [buildingId], references: [id])
 
-  @@map("bookings")
+  status          BookingStatus @default(REQUESTED)
+  startTime       DateTime
+  endTime         DateTime
+  durationMinutes Int
+  totalPrice      Float
+  currency        String        @default("USD")
+
+  location String?
+  notes    String? @db.Text
+
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+  confirmedAt        DateTime?
+  completedAt        DateTime?
+  cancelledAt        DateTime?
+  cancellationReason String?   @db.Text
+
+  statusHistory BookingStatusHistory[]
+  transactions  Transaction[]
+  chatThread    ChatThread?
+  reviews       Review[]
+
   @@index([listingId])
   @@index([buyerId])
   @@index([sellerId])
@@ -647,6 +656,7 @@ model Booking {
   @@index([startTime])
   @@index([endTime])
   @@index([createdAt])
+  @@map("bookings")
 }
 
 model BookingStatusHistory {
@@ -654,37 +664,210 @@ model BookingStatusHistory {
   bookingId String
   booking   Booking       @relation(fields: [bookingId], references: [id], onDelete: Cascade)
   status    BookingStatus
-  changedBy String        // userId
+  changedBy String // userId
   reason    String?       @db.Text
   createdAt DateTime      @default(now())
 
-  @@map("booking_status_history")
   @@index([bookingId])
   @@index([createdAt])
+  @@map("booking_status_history")
 }
 
 model Transaction {
-  id            String                     @id @default(uuid())
-  orderId       String?
-  order         Order?                     @relation(fields: [orderId], references: [id])
-  bookingId     String?
-  booking       Booking?                   @relation(fields: [bookingId], references: [id])
-  
-  amount        Float
-  currency      String                     @default("USD")
-  paymentMethod TransactionPaymentMethod
-  status        TransactionStatus          @default(PENDING)
-  
-  paidAt        DateTime?
-  metadata      Json?             // Additional payment details
-  notes         String?           @db.Text
-  
-  createdAt     DateTime          @default(now())
-  updatedAt     DateTime          @updatedAt
+  id        String   @id @default(uuid())
+  orderId   String?
+  order     Order?   @relation(fields: [orderId], references: [id])
+  bookingId String?
+  booking   Booking? @relation(fields: [bookingId], references: [id])
 
-  @@map("transactions")
+  amount        Float
+  currency      String                   @default("USD")
+  paymentMethod TransactionPaymentMethod
+  status        TransactionStatus        @default(PENDING)
+
+  paidAt   DateTime?
+  metadata Json? // Additional payment details
+  notes    String?   @db.Text
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   @@index([orderId])
   @@index([bookingId])
   @@index([status])
   @@index([createdAt])
+  @@map("transactions")
+}
+
+// ============================================================================
+// STAGE 6: COMMUNICATION & REVIEWS
+// ============================================================================
+
+enum MessageType {
+  TEXT
+  SYSTEM
+  IMAGE
+  FILE
+}
+
+enum ReviewType {
+  ORDER
+  BOOKING
+}
+
+enum ReviewStatus {
+  ACTIVE
+  FLAGGED
+  REMOVED
+}
+
+enum NotificationType {
+  REGISTRATION
+  VERIFICATION
+  ORDER_PLACED
+  ORDER_CONFIRMED
+  ORDER_READY
+  ORDER_DELIVERED
+  ORDER_COMPLETED
+  ORDER_CANCELLED
+  BOOKING_REQUESTED
+  BOOKING_CONFIRMED
+  BOOKING_STARTED
+  BOOKING_COMPLETED
+  BOOKING_CANCELLED
+  CHAT_MESSAGE
+  REVIEW_RECEIVED
+  REVIEW_RESPONSE
+  SUBSCRIPTION_EXPIRING
+  SUBSCRIPTION_EXPIRED
+  SYSTEM_ANNOUNCEMENT
+}
+
+enum NotificationChannel {
+  IN_APP
+  EMAIL
+  PUSH
+}
+
+model ChatThread {
+  id        String   @id @default(uuid())
+  orderId   String?  @unique
+  order     Order?   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  bookingId String?  @unique
+  booking   Booking? @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+
+  participantIds String[] // Array of user IDs
+  lastMessageAt  DateTime?
+
+  messages Message[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([orderId])
+  @@index([bookingId])
+  @@index([lastMessageAt])
+  @@map("chat_threads")
+}
+
+model Message {
+  id       String     @id @default(uuid())
+  threadId String
+  thread   ChatThread @relation(fields: [threadId], references: [id], onDelete: Cascade)
+
+  senderId String
+  sender   User   @relation(fields: [senderId], references: [id])
+
+  content  String      @db.Text
+  type     MessageType @default(TEXT)
+  metadata Json? // For images, files, etc.
+
+  readBy String[] @default([]) // Array of user IDs who read the message
+
+  sentAt    DateTime  @default(now())
+  editedAt  DateTime?
+  deletedAt DateTime?
+
+  @@index([threadId])
+  @@index([senderId])
+  @@index([sentAt])
+  @@map("messages")
+}
+
+model Review {
+  id        String   @id @default(uuid())
+  orderId   String?
+  order     Order?   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  bookingId String?
+  booking   Booking? @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+
+  reviewerId String
+  reviewer   User   @relation("ReviewsGiven", fields: [reviewerId], references: [id])
+
+  revieweeId String
+  reviewee   User   @relation("ReviewsReceived", fields: [revieweeId], references: [id])
+
+  listingId String
+  listing   Listing @relation(fields: [listingId], references: [id])
+
+  rating   Int // 1-5 stars
+  comment  String? @db.Text
+  response String? @db.Text
+
+  type   ReviewType
+  status ReviewStatus @default(ACTIVE)
+
+  createdAt   DateTime  @default(now())
+  respondedAt DateTime?
+  updatedAt   DateTime  @updatedAt
+
+  @@unique([orderId, reviewerId])
+  @@unique([bookingId, reviewerId])
+  @@index([orderId])
+  @@index([bookingId])
+  @@index([reviewerId])
+  @@index([revieweeId])
+  @@index([listingId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("reviews")
+}
+
+model Notification {
+  id     String @id @default(uuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  type    NotificationType
+  title   String
+  message String           @db.Text
+  data    Json? // Additional context data
+
+  channels NotificationChannel[] @default([IN_APP])
+
+  readAt DateTime?
+  sentAt DateTime  @default(now())
+
+  @@index([userId])
+  @@index([type])
+  @@index([readAt])
+  @@index([sentAt])
+  @@map("notifications")
+}
+
+model NotificationPreference {
+  id     String @id @default(uuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  channel NotificationChannel
+  type    NotificationType
+  enabled Boolean             @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, channel, type])
+  @@index([userId])
+  @@map("notification_preferences")
 }

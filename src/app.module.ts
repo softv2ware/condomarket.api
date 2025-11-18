@@ -20,6 +20,7 @@ import { CategoriesModule } from './categories/categories.module';
 import { OrdersModule } from './orders/orders.module';
 import { BookingsModule } from './bookings/bookings.module';
 import { TransactionsModule } from './transactions/transactions.module';
+import { ChatModule } from './chat/chat.module';
 import appConfig from './config/app.config';
 import databaseConfig from './config/database.config';
 import jwtConfig from './config/jwt.config';
@@ -59,6 +60,7 @@ import redisConfig from './config/redis.config';
     OrdersModule,
     BookingsModule,
     TransactionsModule,
+    ChatModule,
   ],
   controllers: [AppController],
   providers: [AppService],
