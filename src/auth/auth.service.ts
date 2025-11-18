@@ -3,20 +3,25 @@ import {
   UnauthorizedException,
   ConflictException,
   BadRequestException,
+  Logger,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '~/prisma';
+import { NotificationsService } from '~/notifications/notifications.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class AuthService {
+  private readonly logger = new Logger(AuthService.name);
+
   constructor(
     private prisma: PrismaService,
     private jwtService: JwtService,
     private configService: ConfigService,
+    private notificationsService: NotificationsService,
   ) {}
 
   async register(registerDto: RegisterDto) {
@@ -53,6 +58,17 @@ export class AuthService {
         profile: true,
       },
     });
+
+    // Initialize notification preferences for the new user
+    try {
+      await this.notificationsService.initializePreferences(user.id);
+      this.logger.log(`Initialized notification preferences for user ${user.id}`);
+    } catch (error) {
+      this.logger.error(
+        `Failed to initialize notification preferences for user ${user.id}: ${error.message}`,
+      );
+      // Non-blocking: user registration should succeed even if preferences fail
+    }
 
     // Generate tokens
     const tokens = await this.generateTokens(user.id, user.email, user.role);

@@ -10,6 +10,7 @@ import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { RolesGuard } from './guards/roles.guard';
 import { PrismaModule } from '../common/prisma/prisma.module';
 import { SubscriptionPlansModule } from '../subscription-plans/subscription-plans.module';
+import { NotificationsModule } from '../notifications/notifications.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { SubscriptionPlansModule } from '../subscription-plans/subscription-plan
     ConfigModule,
     PrismaModule,
     SubscriptionPlansModule,
+    NotificationsModule,
   ],
   controllers: [AuthController],
   providers: [
