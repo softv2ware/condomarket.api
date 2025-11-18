@@ -8,7 +8,7 @@ import {
   Min,
   IsUUID,
 } from 'class-validator';
-import { SubscriptionTier } from 'src/prisma/client';
+import { SubscriptionTier } from '@prisma/client';
 
 export class CreateSubscriptionPlanDto {
   @ApiProperty({ example: 'Free Plan', description: 'Plan name' })

@@ -4,9 +4,9 @@ import {
   BadRequestException,
   ForbiddenException,
 } from '@nestjs/common';
-import { PrismaService } from '../common/prisma/prisma.service';
+import { PrismaService } from '~/prisma';
 import { CreateTransactionDto } from './dto/create-transaction.dto';
-import { TransactionStatus } from '../prisma/client';
+import { TransactionStatus } from '@prisma/client';
 
 @Injectable()
 export class TransactionsService {

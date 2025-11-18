@@ -4,11 +4,11 @@ import {
   ConflictException,
   BadRequestException,
 } from '@nestjs/common';
-import { PrismaService } from '../common/prisma/prisma.service';
+import { PrismaService } from '~/prisma';
 import { CreateSellerSubscriptionDto } from './dto/create-seller-subscription.dto';
 import { ChangePlanDto } from './dto/change-plan.dto';
 import { CancelSubscriptionDto } from './dto/cancel-subscription.dto';
-import { SubscriptionStatus } from '../prisma/client';
+import { SubscriptionStatus } from '@prisma/client';
 
 @Injectable()
 export class SellerSubscriptionsService {

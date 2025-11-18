@@ -1,6 +1,6 @@
 import { IsString, IsEnum, IsNumber, IsOptional, IsBoolean, IsUUID, Min, MaxLength } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
-import { ListingType, AvailabilityType } from 'src/prisma/client';
+import { ListingType, AvailabilityType } from '@prisma/client';
 
 export class CreateListingDto {
   @ApiProperty({

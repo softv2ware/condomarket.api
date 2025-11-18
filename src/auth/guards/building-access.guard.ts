@@ -5,7 +5,7 @@ import {
   ForbiddenException,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { PrismaService } from '../../common/prisma/prisma.service';
+import { PrismaService } from '~/prisma';
 
 @Injectable()
 export class BuildingAccessGuard implements CanActivate {

@@ -1,4 +1,4 @@
-import { PrismaClient, UserRole, UserStatus, BuildingType, BuildingStatus, SubscriptionTier, CategoryType } from '../src/prisma/client';
+import { PrismaClient, UserRole, UserStatus, BuildingType, BuildingStatus, SubscriptionTier, CategoryType } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import { randomBytes } from 'crypto';
 

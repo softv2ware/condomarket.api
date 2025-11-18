@@ -2,7 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import {
   Booking as PrismaBooking,
   BookingStatus,
-} from 'src/prisma/client';
+} from '@prisma/client';
 
 export class Booking implements Partial<PrismaBooking> {
   @ApiProperty()

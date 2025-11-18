@@ -4,7 +4,7 @@ import {
   BadRequestException,
   ForbiddenException,
 } from '@nestjs/common';
-import { PrismaService } from '../common/prisma/prisma.service';
+import { PrismaService } from '~/prisma';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderStatusDto } from './dto/update-order-status.dto';
 import {
@@ -12,7 +12,7 @@ import {
   ListingType,
   ListingStatus,
   Prisma,
-} from '../prisma/client';
+} from '@prisma/client';
 
 @Injectable()
 export class OrdersService {

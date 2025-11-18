@@ -1,10 +1,10 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ListingsService } from './listings.service';
-import { PrismaService } from '../common/prisma/prisma.service';
+import { PrismaService } from '~/prisma';
 import { SellerSubscriptionsService } from '../seller-subscriptions/seller-subscriptions.service';
 import { S3Service } from '../common/s3/s3.service';
 import { NotFoundException, BadRequestException, ForbiddenException } from '@nestjs/common';
-import { ListingStatus, ListingType, SubscriptionTier, CategoryType, AvailabilityType } from '../prisma/client';
+import { ListingStatus, ListingType, SubscriptionTier, CategoryType, AvailabilityType } from '@prisma/client';
 
 describe('ListingsService', () => {
   let service: ListingsService;

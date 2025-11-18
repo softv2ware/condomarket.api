@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { SellerSubscriptionsController } from './seller-subscriptions.controller';
 import { SellerSubscriptionsService } from './seller-subscriptions.service';
-import { SubscriptionTier, SubscriptionStatus, UserRole } from '../prisma/client';
+import { SubscriptionTier, SubscriptionStatus, UserRole } from '@prisma/client';
 
 describe('SellerSubscriptionsController', () => {
   let controller: SellerSubscriptionsController;

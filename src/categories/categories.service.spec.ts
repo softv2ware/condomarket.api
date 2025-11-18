@@ -1,8 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { CategoriesService } from './categories.service';
-import { PrismaService } from '../common/prisma/prisma.service';
+import { PrismaService } from '~/prisma';
 import { NotFoundException, BadRequestException } from '@nestjs/common';
-import { CategoryType } from '../prisma/client';
+import { CategoryType } from '@prisma/client';
 
 describe('CategoriesService', () => {
   let service: CategoriesService;

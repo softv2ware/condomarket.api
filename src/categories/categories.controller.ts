@@ -16,7 +16,7 @@ import { UpdateCategoryDto } from './dto/update-category.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
-import { UserRole, CategoryType } from '../prisma/client';
+import { UserRole, CategoryType } from '@prisma/client';
 
 @ApiTags('Categories')
 @Controller('categories')

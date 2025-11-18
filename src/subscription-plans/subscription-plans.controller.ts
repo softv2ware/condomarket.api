@@ -22,7 +22,7 @@ import { UpdateSubscriptionPlanDto } from './dto/update-subscription-plan.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
-import { UserRole } from '../prisma/client';
+import { UserRole } from '@prisma/client';
 
 @ApiTags('subscription-plans')
 @Controller('subscription-plans')

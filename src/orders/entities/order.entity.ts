@@ -4,7 +4,7 @@ import {
   OrderStatus,
   DeliveryMethod,
   ListingType,
-} from 'src/prisma/client';
+} from '@prisma/client';
 
 export class Order implements Partial<PrismaOrder> {
   @ApiProperty()

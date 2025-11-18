@@ -4,7 +4,7 @@ import {
   BadRequestException,
   ConflictException,
 } from '@nestjs/common';
-import { PrismaService } from '../common/prisma/prisma.service';
+import { PrismaService } from '~/prisma';
 import { VerifyWithInvitationCodeDto } from './dto/verify-with-code.dto';
 import { VerifyWithUnitDto } from './dto/verify-with-unit.dto';
 import { RequestVerificationDto } from './dto/request-verification.dto';

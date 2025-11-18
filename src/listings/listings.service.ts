@@ -4,13 +4,13 @@ import {
   BadRequestException,
   ForbiddenException,
 } from '@nestjs/common';
-import { PrismaService } from '../common/prisma/prisma.service';
+import { PrismaService } from '~/prisma';
 import { SellerSubscriptionsService } from '../seller-subscriptions/seller-subscriptions.service';
 import { S3Service } from '../common/s3/s3.service';
 import { CreateListingDto } from './dto/create-listing.dto';
 import { UpdateListingDto } from './dto/update-listing.dto';
 import { SearchListingsDto } from './dto/search-listings.dto';
-import { ListingStatus } from '../prisma/client';
+import { ListingStatus } from '@prisma/client';
 
 @Injectable()
 export class ListingsService {

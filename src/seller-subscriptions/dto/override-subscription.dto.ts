@@ -1,6 +1,6 @@
 import { IsEnum, IsString, MaxLength } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
-import { SubscriptionStatus } from 'src/prisma/client';
+import { SubscriptionStatus } from '@prisma/client';
 
 export class OverrideSubscriptionDto {
   @ApiProperty({
