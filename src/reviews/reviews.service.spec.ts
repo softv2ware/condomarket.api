@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ReviewsService } from './reviews.service';
 import { PrismaService } from '~/prisma';
+import { NotificationsService } from '~/notifications/notifications.service';
 import {
   NotFoundException,
   ForbiddenException,
@@ -29,6 +30,10 @@ describe('ReviewsService', () => {
     },
   };
 
+  const mockNotificationsService = {
+    create: jest.fn(),
+  };
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -36,6 +41,10 @@ describe('ReviewsService', () => {
         {
           provide: PrismaService,
           useValue: mockPrismaService,
+        },
+        {
+          provide: NotificationsService,
+          useValue: mockNotificationsService,
         },
       ],
     }).compile();

@@ -4,8 +4,10 @@ import {
   ForbiddenException,
   BadRequestException,
   ConflictException,
+  Logger,
 } from '@nestjs/common';
 import { PrismaService } from '~/prisma';
+import { NotificationsService } from '~/notifications/notifications.service';
 import { CreateReviewDto } from './dto/create-review.dto';
 import { EditReviewDto } from './dto/edit-review.dto';
 import { RespondToReviewDto } from './dto/respond-to-review.dto';
@@ -16,11 +18,17 @@ import {
   OrderStatus,
   BookingStatus,
   Prisma,
+  NotificationType,
 } from '@prisma/client';
 
 @Injectable()
 export class ReviewsService {
-  constructor(private readonly prisma: PrismaService) {}
+  private readonly logger = new Logger(ReviewsService.name);
+
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly notificationsService: NotificationsService,
+  ) {}
 
   /**
    * Create a review for an order or booking
@@ -150,6 +158,24 @@ export class ReviewsService {
         },
       },
     });
+
+    // Send notification to reviewee (seller) about new review
+    try {
+      await this.notificationsService.create({
+        userId: revieweeId,
+        type: NotificationType.REVIEW_RECEIVED,
+        title: 'New Review Received',
+        message: `You received a ${review.rating}-star review for ${review.listing.title}`,
+        data: {
+          reviewId: review.id,
+          listingId: listingId,
+          rating: review.rating.toString(),
+          reviewType: type,
+        },
+      });
+    } catch (error) {
+      this.logger.error(`Failed to send review received notification: ${error.message}`);
+    }
 
     return review;
   }
@@ -444,7 +470,7 @@ export class ReviewsService {
       throw new ConflictException('You have already responded to this review');
     }
 
-    return this.prisma.review.update({
+    const updatedReview = await this.prisma.review.update({
       where: { id: reviewId },
       data: {
         response: dto.response,
@@ -467,8 +493,29 @@ export class ReviewsService {
             },
           },
         },
+        listing: {
+          select: { id: true, title: true },
+        },
       },
     });
+
+    // Send notification to reviewer about seller's response
+    try {
+      await this.notificationsService.create({
+        userId: review.reviewerId,
+        type: NotificationType.REVIEW_RESPONSE,
+        title: 'Seller Responded to Your Review',
+        message: `The seller responded to your review for ${updatedReview.listing.title}`,
+        data: {
+          reviewId: reviewId,
+          listingId: review.listingId,
+        },
+      });
+    } catch (error) {
+      this.logger.error(`Failed to send review response notification: ${error.message}`);
+    }
+
+    return updatedReview;
   }
 
   /**

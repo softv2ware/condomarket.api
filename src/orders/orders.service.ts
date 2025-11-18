@@ -3,8 +3,11 @@ import {
   NotFoundException,
   BadRequestException,
   ForbiddenException,
+  Logger,
 } from '@nestjs/common';
 import { PrismaService } from '~/prisma';
+import { ChatService } from '~/chat/chat.service';
+import { NotificationsService } from '~/notifications/notifications.service';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderStatusDto } from './dto/update-order-status.dto';
 import {
@@ -12,11 +15,18 @@ import {
   ListingType,
   ListingStatus,
   Prisma,
+  NotificationType,
 } from '@prisma/client';
 
 @Injectable()
 export class OrdersService {
-  constructor(private prisma: PrismaService) {}
+  private readonly logger = new Logger(OrdersService.name);
+
+  constructor(
+    private prisma: PrismaService,
+    private chatService: ChatService,
+    private notificationsService: NotificationsService,
+  ) {}
 
   async create(createOrderDto: CreateOrderDto, buyerId: string) {
     // 1. Validate listing exists and is available
@@ -50,6 +60,7 @@ export class OrdersService {
       where: { id: buyerId },
       include: {
         residences: true,
+        profile: true,
       },
     });
 
@@ -138,6 +149,23 @@ export class OrdersService {
         },
       },
     });
+
+    // Send notification to seller about new order
+    try {
+      await this.notificationsService.create({
+        userId: listing.sellerId,
+        type: NotificationType.ORDER_PLACED,
+        title: 'New Order Received',
+        message: `${buyer.profile?.firstName || 'A buyer'} placed an order for ${listing.title}`,
+        data: {
+          orderId: order.id,
+          listingId: listing.id,
+          buyerId: buyerId,
+        },
+      });
+    } catch (error) {
+      this.logger.error(`Failed to send order placed notification: ${error.message}`);
+    }
 
     return order;
   }
@@ -270,7 +298,7 @@ export class OrdersService {
       updateData.cancellationReason = updateOrderStatusDto.reason;
     }
 
-    return this.prisma.order.update({
+    const updatedOrder = await this.prisma.order.update({
       where: { id },
       data: updateData,
       include: {
@@ -294,6 +322,82 @@ export class OrdersService {
         },
       },
     });
+
+    // Send notifications based on status change
+    await this.sendOrderStatusNotification(updatedOrder, updateOrderStatusDto.status);
+
+    return updatedOrder;
+  }
+
+  /**
+   * Send notification when order status changes
+   */
+  private async sendOrderStatusNotification(
+    order: any,
+    newStatus: OrderStatus,
+  ): Promise<void> {
+    try {
+      let notificationType: NotificationType;
+      let title: string;
+      let message: string;
+      let recipientId: string;
+
+      switch (newStatus) {
+        case OrderStatus.CONFIRMED:
+          recipientId = order.buyerId;
+          notificationType = NotificationType.ORDER_CONFIRMED;
+          title = 'Order Confirmed';
+          message = `Your order for ${order.listing.title} has been confirmed by the seller`;
+          break;
+
+        case OrderStatus.READY_FOR_PICKUP:
+          recipientId = order.buyerId;
+          notificationType = NotificationType.ORDER_READY;
+          title = 'Order Ready for Pickup';
+          message = `Your order for ${order.listing.title} is ready for pickup`;
+          break;
+
+        case OrderStatus.OUT_FOR_DELIVERY:
+          recipientId = order.buyerId;
+          notificationType = NotificationType.ORDER_DELIVERED;
+          title = 'Order Out for Delivery';
+          message = `Your order for ${order.listing.title} is out for delivery`;
+          break;
+
+        case OrderStatus.COMPLETED:
+          recipientId = order.sellerId;
+          notificationType = NotificationType.ORDER_COMPLETED;
+          title = 'Order Completed';
+          message = `Order for ${order.listing.title} has been marked as completed`;
+          break;
+
+        case OrderStatus.CANCELLED:
+          // Notify the other party
+          recipientId = order.buyerId === order.sellerId ? order.buyerId : 
+                        (order.statusHistory[0]?.changedBy === order.buyerId ? order.sellerId : order.buyerId);
+          notificationType = NotificationType.ORDER_CANCELLED;
+          title = 'Order Cancelled';
+          message = `Order for ${order.listing.title} has been cancelled`;
+          break;
+
+        default:
+          return; // No notification for other statuses
+      }
+
+      await this.notificationsService.create({
+        userId: recipientId,
+        type: notificationType,
+        title,
+        message,
+        data: {
+          orderId: order.id,
+          listingId: order.listingId,
+          status: newStatus,
+        },
+      });
+    } catch (error) {
+      this.logger.error(`Failed to send order status notification: ${error.message}`);
+    }
   }
 
   private validateStatusTransition(
@@ -368,13 +472,27 @@ export class OrdersService {
   }
 
   async confirm(id: string, sellerId: string) {
-    return this.updateStatus(
+    const order = await this.updateStatus(
       id,
       {
         status: OrderStatus.CONFIRMED,
       },
       sellerId,
     );
+
+    // Auto-create chat thread for order communication
+    try {
+      await this.chatService.createThread({
+        orderId: id,
+        participantIds: [order.buyerId, order.sellerId],
+      });
+      this.logger.log(`Chat thread created for order ${id}`);
+    } catch (error) {
+      this.logger.error(`Failed to create chat thread for order ${id}: ${error.message}`);
+      // Don't fail the order confirmation if chat creation fails
+    }
+
+    return order;
   }
 
   async markReadyForPickup(id: string, sellerId: string) {

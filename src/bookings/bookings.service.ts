@@ -4,8 +4,11 @@ import {
   BadRequestException,
   ForbiddenException,
   ConflictException,
+  Logger,
 } from '@nestjs/common';
 import { PrismaService } from '~/prisma';
+import { ChatService } from '~/chat/chat.service';
+import { NotificationsService } from '~/notifications/notifications.service';
 import { CreateBookingDto } from './dto/create-booking.dto';
 import { UpdateBookingStatusDto } from './dto/update-booking-status.dto';
 import {
@@ -13,11 +16,18 @@ import {
   ListingType,
   ListingStatus,
   Prisma,
+  NotificationType,
 } from '@prisma/client';
 
 @Injectable()
 export class BookingsService {
-  constructor(private prisma: PrismaService) {}
+  private readonly logger = new Logger(BookingsService.name);
+
+  constructor(
+    private prisma: PrismaService,
+    private chatService: ChatService,
+    private notificationsService: NotificationsService,
+  ) {}
 
   async create(createBookingDto: CreateBookingDto, buyerId: string) {
     // 1. Validate listing exists and is a service
@@ -51,6 +61,7 @@ export class BookingsService {
       where: { id: buyerId },
       include: {
         residences: true,
+        profile: true,
       },
     });
 
@@ -150,6 +161,24 @@ export class BookingsService {
         },
       },
     });
+
+    // Send notification to seller about new booking request
+    try {
+      await this.notificationsService.create({
+        userId: listing.sellerId,
+        type: NotificationType.BOOKING_REQUESTED,
+        title: 'New Booking Request',
+        message: `${buyer.profile?.firstName || 'A buyer'} requested to book ${listing.title}`,
+        data: {
+          bookingId: booking.id,
+          listingId: listing.id,
+          buyerId: buyerId,
+          startTime: startTime.toISOString(),
+        },
+      });
+    } catch (error) {
+      this.logger.error(`Failed to send booking requested notification: ${error.message}`);
+    }
 
     return booking;
   }
@@ -319,7 +348,7 @@ export class BookingsService {
       updateData.cancellationReason = updateBookingStatusDto.reason;
     }
 
-    return this.prisma.booking.update({
+    const updatedBooking = await this.prisma.booking.update({
       where: { id },
       data: updateData,
       include: {
@@ -343,6 +372,75 @@ export class BookingsService {
         },
       },
     });
+
+    // Send notifications based on status change
+    await this.sendBookingStatusNotification(updatedBooking, updateBookingStatusDto.status);
+
+    return updatedBooking;
+  }
+
+  /**
+   * Send notification when booking status changes
+   */
+  private async sendBookingStatusNotification(
+    booking: any,
+    newStatus: BookingStatus,
+  ): Promise<void> {
+    try {
+      let notificationType: NotificationType;
+      let title: string;
+      let message: string;
+      let recipientId: string;
+
+      switch (newStatus) {
+        case BookingStatus.CONFIRMED:
+          recipientId = booking.buyerId;
+          notificationType = NotificationType.BOOKING_CONFIRMED;
+          title = 'Booking Confirmed';
+          message = `Your booking for ${booking.listing.title} has been confirmed`;
+          break;
+
+        case BookingStatus.IN_PROGRESS:
+          recipientId = booking.buyerId;
+          notificationType = NotificationType.BOOKING_STARTED;
+          title = 'Service Started';
+          message = `The service ${booking.listing.title} has started`;
+          break;
+
+        case BookingStatus.COMPLETED:
+          recipientId = booking.sellerId;
+          notificationType = NotificationType.BOOKING_COMPLETED;
+          title = 'Booking Completed';
+          message = `Booking for ${booking.listing.title} has been marked as completed`;
+          break;
+
+        case BookingStatus.CANCELLED:
+          // Notify the other party
+          recipientId = booking.buyerId === booking.sellerId ? booking.buyerId : 
+                        (booking.statusHistory[0]?.changedBy === booking.buyerId ? booking.sellerId : booking.buyerId);
+          notificationType = NotificationType.BOOKING_CANCELLED;
+          title = 'Booking Cancelled';
+          message = `Booking for ${booking.listing.title} has been cancelled`;
+          break;
+
+        default:
+          return; // No notification for other statuses
+      }
+
+      await this.notificationsService.create({
+        userId: recipientId,
+        type: notificationType,
+        title,
+        message,
+        data: {
+          bookingId: booking.id,
+          listingId: booking.listingId,
+          status: newStatus,
+        },
+      });
+    } catch (error) {
+      this.logger.error(`Failed to send booking status notification: ${error.message}`);
+    }
   }
 
   private validateStatusTransition(
@@ -408,13 +506,27 @@ export class BookingsService {
   }
 
   async confirm(id: string, sellerId: string) {
-    return this.updateStatus(
+    const booking = await this.updateStatus(
       id,
       {
         status: BookingStatus.CONFIRMED,
       },
       sellerId,
     );
+
+    // Auto-create chat thread for booking communication
+    try {
+      await this.chatService.createThread({
+        bookingId: id,
+        participantIds: [booking.buyerId, booking.sellerId],
+      });
+      this.logger.log(`Chat thread created for booking ${id}`);
+    } catch (error) {
+      this.logger.error(`Failed to create chat thread for booking ${id}: ${error.message}`);
+      // Don't fail the booking confirmation if chat creation fails
+    }
+
+    return booking;
   }
 
   async startService(id: string, sellerId: string) {
