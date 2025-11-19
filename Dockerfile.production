@@ -68,12 +68,11 @@ WORKDIR /app
 RUN addgroup -g 1001 -S nodejs && \
     adduser -S nestjs -u 1001
 
-# Copy production dependencies
+# Copy production dependencies with generated Prisma Client
 COPY --from=production-dependencies --chown=nestjs:nodejs /app/node_modules ./node_modules
 
-# Copy generated Prisma Client from dependencies stage (has dev deps needed for generation)
-COPY --from=dependencies --chown=nestjs:nodejs /app/node_modules/.prisma ./node_modules/.prisma
-COPY --from=dependencies --chown=nestjs:nodejs /app/node_modules/@prisma/client ./node_modules/@prisma/client
+# Copy the entire pnpm virtual store with generated Prisma Client from dependencies stage
+COPY --from=dependencies --chown=nestjs:nodejs /app/node_modules/.pnpm ./node_modules/.pnpm
 
 # Copy Prisma files
 COPY --from=dependencies --chown=nestjs:nodejs /app/prisma ./prisma
