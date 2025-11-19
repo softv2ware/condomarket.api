@@ -38,21 +38,21 @@ graph LR
 
 ```mermaid
 mindmap
-  root((Desafíos de<br/>Vivir en<br/>Edificios))
+  root((Desafios Vivir Edificios))
     Confianza
-      Extraños en línea
+      Extranos en linea
       Transacciones riesgosas
       Sin referencias
     Conveniencia
       Viajes largos
-      Costos de envío
-      Coordinación compleja
+      Costos de envio
+      Coordinacion compleja
     Comunidad
       Vecinos desconocidos
-      Falta de interacción
+      Falta de interaccion
       Talentos ocultos
     Desperdicio
-      Artículos sin usar
+      Articulos sin usar
       Potencial desperdiciado
       Basura innecesaria
 ```
@@ -268,35 +268,35 @@ sequenceDiagram
 
 ```mermaid
 graph TD
-    CM[🏢 CondoMarket]
+    CM[CondoMarket]
     
-    CM --> F1[🔐 Comunidad<br/>Verificada]
-    CM --> F2[💬 Chat<br/>Integrado]
-    CM --> F3[📅 Programación<br/>de Servicios]
-    CM --> F4[⭐ Sistema de<br/>Reputación]
-    CM --> F5[🔔 Notificaciones<br/>Inteligentes]
-    CM --> F6[💎 Características<br/>Premium]
+    CM --> F1[Comunidad Verificada]
+    CM --> F2[Chat Integrado]
+    CM --> F3[Programacion Servicios]
+    CM --> F4[Sistema Reputacion]
+    CM --> F5[Notificaciones Inteligentes]
+    CM --> F6[Caracteristicas Premium]
     
-    F1 --> F1A[✅ Verificación residencial]
-    F1 --> F1B[🛡️ Ambiente seguro]
+    F1 --> F1A[Verificacion residencial]
+    F1 --> F1B[Ambiente seguro]
     
-    F2 --> F2A[🔒 Privacidad protegida]
-    F2 --> F2B[💬 Mensajería directa]
+    F2 --> F2A[Privacidad protegida]
+    F2 --> F2B[Mensajeria directa]
     
-    F3 --> F3A[⏰ Recordatorios]
-    F3 --> F3B[✅ Confirmaciones]
+    F3 --> F3A[Recordatorios]
+    F3 --> F3B[Confirmaciones]
     
-    F4 --> F4A[⭐ Calificaciones]
-    F4 --> F4B[🏆 Mejor visibilidad]
+    F4 --> F4A[Calificaciones]
+    F4 --> F4B[Mejor visibilidad]
     
-    F5 --> F5A[🆕 Nuevos anuncios]
-    F5 --> F5B[📨 Mensajes]
-    F5 --> F5C[📦 Estado de pedidos]
+    F5 --> F5A[Nuevos anuncios]
+    F5 --> F5B[Mensajes]
+    F5 --> F5C[Estado pedidos]
     
-    F6 --> F6A[📈 Más anuncios]
-    F6 --> F6B[🎯 Prioridad en búsqueda]
-    F6 --> F6C[📊 Analytics avanzados]
-    F6 --> F6D[⭐ Anuncios destacados]
+    F6 --> F6A[Mas anuncios]
+    F6 --> F6B[Prioridad busqueda]
+    F6 --> F6C[Analytics avanzados]
+    F6 --> F6D[Anuncios destacados]
     
     style CM fill:#FF6B6B,stroke:#C92A2A,stroke-width:4px,color:#fff
     style F1 fill:#4ECDC4,stroke:#1A535C,stroke-width:2px
@@ -306,6 +306,10 @@ graph TD
     style F5 fill:#4ECDC4,stroke:#1A535C,stroke-width:2px
     style F6 fill:#FFE66D,stroke:#F4A261,stroke-width:2px
 ```
+
+**🏢 CondoMarket Features:**
+- 🔐 Comunidad Verificada • 💬 Chat Integrado • 📅 Programación de Servicios
+- ⭐ Sistema de Reputación • 🔔 Notificaciones Inteligentes • 💎 Características Premium
 
 </div>
 
@@ -419,18 +423,18 @@ pie title Impacto de CondoMarket
 
 ```mermaid
 graph TB
-    R[👤 Residente]
-    R --> B1[📍 Conveniencia]
-    R --> B2[🛡️ Seguridad]
-    R --> B3[💰 Ahorro]
-    R --> B4[🤝 Comunidad]
-    R --> B5[♻️ Sostenibilidad]
+    R[Residente]
+    R --> B1[Conveniencia]
+    R --> B2[Seguridad]
+    R --> B3[Ahorro]
+    R --> B4[Comunidad]
+    R --> B5[Sostenibilidad]
     
-    B1 --> B1A[Todo en tu<br/>edificio]
-    B2 --> B2A[Vecinos<br/>verificados]
-    B3 --> B3A[Sin costos<br/>de envío]
-    B4 --> B4A[Conoce<br/>vecinos]
-    B5 --> B5A[Reutiliza<br/>recursos]
+    B1 --> B1A[Todo en edificio]
+    B2 --> B2A[Vecinos verificados]
+    B3 --> B3A[Sin costos envio]
+    B4 --> B4A[Conoce vecinos]
+    B5 --> B5A[Reutiliza recursos]
     
     style R fill:#FF6B6B,stroke:#C92A2A,stroke-width:3px,color:#fff
     style B1 fill:#51CF66,stroke:#2F9E44,stroke-width:2px
@@ -454,16 +458,16 @@ graph TB
 
 ```mermaid
 graph TB
-    E[🏢 Edificio]
-    E --> V1[⬆️ Valor<br/>Aumentado]
-    E --> V2[🤝 Construcción<br/>Comunidad]
-    E --> V3[😊 Satisfacción<br/>Residente]
-    E --> V4[💵 Oportunidad<br/>Ingresos]
+    E[Edificio]
+    E --> V1[Valor Aumentado]
+    E --> V2[Construccion Comunidad]
+    E --> V3[Satisfaccion Residente]
+    E --> V4[Oportunidad Ingresos]
     
-    V1 --> V1A[Amenidad<br/>moderna]
-    V2 --> V2A[Interacciones<br/>frecuentes]
-    V3 --> V3A[Conveniencia<br/>diaria]
-    V4 --> V4A[Features<br/>exclusivas]
+    V1 --> V1A[Amenidad moderna]
+    V2 --> V2A[Interacciones frecuentes]
+    V3 --> V3A[Conveniencia diaria]
+    V4 --> V4A[Features exclusivas]
     
     style E fill:#4ECDC4,stroke:#1A535C,stroke-width:3px,color:#000
     style V1 fill:#339AF0,stroke:#1864AB,stroke-width:2px
@@ -485,19 +489,19 @@ graph TB
 
 ```mermaid
 graph TB
-    M[🌍 Planeta]
-    M --> E1[♻️ Menos<br/>Desperdicio]
-    M --> E2[🚚 Envíos<br/>Reducidos]
-    M --> E3[💵 Economía<br/>Local]
+    M[Planeta]
+    M --> E1[Menos Desperdicio]
+    M --> E2[Envios Reducidos]
+    M --> E3[Economia Local]
     
-    E1 --> E1A[Reutilización<br/>local]
-    E1 --> E1B[Menos<br/>basura]
+    E1 --> E1A[Reutilizacion local]
+    E1 --> E1B[Menos basura]
     
-    E2 --> E2A[Sin camiones<br/>delivery]
-    E2 --> E2B[Menor huella<br/>carbono]
+    E2 --> E2A[Sin camiones delivery]
+    E2 --> E2B[Menor huella carbono]
     
-    E3 --> E3A[Dinero en<br/>comunidad]
-    E3 --> E3B[Economía<br/>circular]
+    E3 --> E3A[Dinero en comunidad]
+    E3 --> E3B[Economia circular]
     
     style M fill:#51CF66,stroke:#2F9E44,stroke-width:3px,color:#fff
     style E1 fill:#FFE66D,stroke:#F4A261,stroke-width:2px
@@ -678,37 +682,39 @@ graph LR
 
 ```mermaid
 graph TB
-    subgraph Confianza["🤝 CONFIANZA A TRAVÉS DE LA PROXIMIDAD"]
-        T1[🏢 Mismo Edificio]
-        T2[👥 Responsabilidad Natural]
-        T3[⭐ Reputación Importante]
+    subgraph Confianza[CONFIANZA PROXIMIDAD]
+        T1[Mismo Edificio]
+        T2[Responsabilidad Natural]
+        T3[Reputacion Importante]
         T1 --> T2
         T2 --> T3
     end
     
-    subgraph Diseño["🏗️ DISEÑADO PARA EDIFICIOS"]
-        D1[🔧 Features Específicos]
-        D2[✅ Verificación Residentes]
-        D3[🔒 Controles Privacidad]
-        D4[🛡️ Moderación Comunitaria]
+    subgraph Diseno[DISENADO EDIFICIOS]
+        D1[Features Especificos]
+        D2[Verificacion Residentes]
+        D3[Controles Privacidad]
+        D4[Moderacion Comunitaria]
     end
     
-    subgraph Seguridad["🛡️ SIMPLE Y SEGURO"]
-        S1[📱 Interfaz Intuitiva]
-        S2[💬 Mensajería Segura]
-        S3[💰 Pagos Protegidos]
-        S4[🔐 Privacidad First]
+    subgraph Seguridad[SIMPLE Y SEGURO]
+        S1[Interfaz Intuitiva]
+        S2[Mensajeria Segura]
+        S3[Pagos Protegidos]
+        S4[Privacidad First]
     end
     
-    Confianza --> Exito[✨ ÉXITO DE<br/>CONDOMARKET]
-    Diseño --> Exito
+    Confianza --> Exito[EXITO CONDOMARKET]
+    Diseno --> Exito
     Seguridad --> Exito
     
     style Confianza fill:#4ECDC4,stroke:#1A535C,stroke-width:2px
-    style Diseño fill:#FFE66D,stroke:#F4A261,stroke-width:2px
+    style Diseno fill:#FFE66D,stroke:#F4A261,stroke-width:2px
     style Seguridad fill:#51CF66,stroke:#2F9E44,stroke-width:2px
     style Exito fill:#FF6B6B,stroke:#C92A2A,stroke-width:4px,color:#fff
 ```
+
+**🤝 Confianza** + **🏗️ Diseño** + **🛡️ Seguridad** = **✨ Éxito de CondoMarket**
 
 </div>
 
@@ -856,16 +862,18 @@ graph TB
 ### 🏊 Recursos Compartidos
 ```mermaid
 graph LR
-    U[👤 Usuario] -->|Reserva| R1[🏊 Piscina]
-    U -->|Reserva| R2[🎾 Cancha]
-    U -->|Reserva| R3[🏋️ Gym]
-    U -->|Reserva| R4[🎪 Salón]
+    U[Usuario] -->|Reserva| R1[Piscina]
+    U -->|Reserva| R2[Cancha]
+    U -->|Reserva| R3[Gym]
+    U -->|Reserva| R4[Salon]
     
-    R1 & R2 & R3 & R4 -->|Gestión| C[📊 Sistema<br/>Central]
+    R1 & R2 & R3 & R4 -->|Gestion| C[Sistema Central]
     
     style U fill:#FF6B6B,stroke:#C92A2A,stroke-width:2px,color:#fff
     style C fill:#4ECDC4,stroke:#1A535C,stroke-width:2px
 ```
+
+**👤 Usuario** puede reservar: 🏊 Piscina • 🎾 Cancha • 🏋️ Gym • 🎪 Salón
 
 **Gestiona amenidades del edificio**
 - 📅 Reservas en línea
@@ -942,19 +950,21 @@ sequenceDiagram
 
 ```mermaid
 graph LR
-    V1[👤 Vecino 1<br/>$20] --> G[🛒 Compra Grupal<br/>Detergente]
-    V2[👤 Vecino 2<br/>$20] --> G
-    V3[👤 Vecino 3<br/>$20] --> G
-    V4[👤 Vecino 4<br/>$20] --> G
-    V5[👤 Vecino 5<br/>$20] --> G
+    V1[Vecino 1 $20] --> G[Compra Grupal Detergente]
+    V2[Vecino 2 $20] --> G
+    V3[Vecino 3 $20] --> G
+    V4[Vecino 4 $20] --> G
+    V5[Vecino 5 $20] --> G
     
-    G -->|Total $100| D[📦 Descuento 30%]
-    D -->|Ahorro| A[💰 $30 ahorrados<br/>= $6 por persona]
+    G -->|Total $100| D[Descuento 30 porciento]
+    D -->|Ahorro| A[30 dolares ahorrados 6 por persona]
     
     style G fill:#4ECDC4,stroke:#1A535C,stroke-width:3px
     style D fill:#FFE66D,stroke:#F4A261,stroke-width:2px
     style A fill:#51CF66,stroke:#2F9E44,stroke-width:3px,color:#fff
 ```
+
+**👥 5 Vecinos** × **$20** = **$100 Total** → **📦 30% Descuento** = **💰 $30 Ahorrados** (**$6 por persona**)
 
 **Poder de compra colectivo**
 - 💪 Compras al por mayor
@@ -974,16 +984,16 @@ graph LR
 
 ```mermaid
 mindmap
-  root((🏢 CondoMarket<br/>Hub Digital))
+  root((CondoMarket Hub Digital))
     Marketplace
       Productos
       Servicios
-      Reputación
+      Reputacion
     Comunidad
       Eventos
       Chat grupal
       Conexiones
-    Gestión
+    Gestion
       Reservas
       Pagos
       Reportes
@@ -992,8 +1002,8 @@ mindmap
       Recomendaciones
       Compras grupales
     Sostenibilidad
-      Reutilización
-      Economía local
+      Reutilizacion
+      Economia local
       Menos desperdicio
 ```
 
@@ -1071,15 +1081,15 @@ graph TD
 
 ```mermaid
 graph LR
-    A[🏢 Edificio<br/>Tradicional] -->|CondoMarket| B[🤝 Comunidad<br/>Conectada]
+    A[Edificio Tradicional] -->|CondoMarket| B[Comunidad Conectada]
     
-    A1[😐 Vecinos desconocidos] -.-> A
-    A2[🚪 Puertas cerradas] -.-> A
-    A3[🔇 Silencio] -.-> A
+    A1[Vecinos desconocidos] -.-> A
+    A2[Puertas cerradas] -.-> A
+    A3[Silencio] -.-> A
     
-    B -.-> B1[😊 Vecinos amigos]
-    B -.-> B2[🤝 Ayuda mutua]
-    B -.-> B3[🎉 Comunidad activa]
+    B -.-> B1[Vecinos amigos]
+    B -.-> B2[Ayuda mutua]
+    B -.-> B3[Comunidad activa]
     
     style A fill:#E9ECEF,stroke:#ADB5BD,stroke-width:2px
     style B fill:#51CF66,stroke:#2F9E44,stroke-width:4px,color:#fff
@@ -1090,6 +1100,10 @@ graph LR
     style B2 fill:#E7F5FF,stroke:#339AF0,stroke-width:1px
     style B3 fill:#E7F5FF,stroke:#339AF0,stroke-width:1px
 ```
+
+**ANTES:** 🏢 Edificio Tradicional → 😐 Vecinos desconocidos • 🚪 Puertas cerradas • 🔇 Silencio
+
+**DESPUÉS:** 🤝 Comunidad Conectada → 😊 Vecinos amigos • 🤝 Ayuda mutua • 🎉 Comunidad activa
 
 ---
 
@@ -1199,14 +1213,14 @@ Comienza gratis hoy mismo y ve cómo crece tu comunidad
 
 ```mermaid
 graph LR
-    A[🏢] --> B[🤝]
-    B --> C[💚]
+    A[Edificio] --> B[Comunidad]
+    B --> C[Mercado]
     
     style A fill:#4ECDC4,stroke:#1A535C,stroke-width:2px
     style B fill:#FF6B6B,stroke:#C92A2A,stroke-width:2px,color:#fff
     style C fill:#51CF66,stroke:#2F9E44,stroke-width:2px,color:#fff
 ```
 
-**Tu Edificio** → **Tu Comunidad** → **Tu Mercado**
+**🏢 Tu Edificio** → **🤝 Tu Comunidad** → **💚 Tu Mercado**
 
 </div>
