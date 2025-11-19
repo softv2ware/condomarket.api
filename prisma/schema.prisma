@@ -84,6 +84,14 @@ model User {
   notifications         Notification[]
   notificationPrefs     NotificationPreference[]
   deviceTokens          DeviceToken[]
+  
+  // Stage 7: Moderation & Safety
+  reportsCreated        Report[]                 @relation("ReportsCreated")
+  reportsReviewed       Report[]                 @relation("ReportsReviewed")
+  moderationActions     ModerationAction[]       @relation("ModerationActionsPerformed")
+  reputation            UserReputation?
+  blocksCreated         BlockedUser[]            @relation("BlocksCreated")
+  blocksReceived        BlockedUser[]            @relation("BlocksReceived")
 
   @@map("users")
 }
@@ -130,6 +138,11 @@ model Building {
   listings            Listing[]
   orders              Order[]              @relation("OrderBuilding")
   bookings            Booking[]            @relation("BookingBuilding")
+  
+  // Stage 7: Moderation & Safety
+  reports             Report[]
+  moderationActions   ModerationAction[]
+  settings            BuildingSettings?
 
   @@index([status])
   @@index([adminId])
@@ -889,4 +902,193 @@ model DeviceToken {
   @@index([userId])
   @@index([token])
   @@map("device_tokens")
+}
+
+// ============================================
+// Stage 7: Moderation, Reporting & Safety
+// ============================================
+
+enum ReportType {
+  LISTING
+  USER
+  REVIEW
+  MESSAGE
+  ORDER
+  BOOKING
+}
+
+enum ReportReason {
+  INAPPROPRIATE
+  SCAM
+  HARASSMENT
+  SPAM
+  FAKE
+  VIOLATION
+  OTHER
+}
+
+enum ReportStatus {
+  PENDING
+  UNDER_REVIEW
+  RESOLVED
+  ESCALATED
+  DISMISSED
+}
+
+enum ModerationType {
+  WARNING
+  RESTRICTION
+  SUSPENSION
+  BAN
+  CONTENT_REMOVAL
+}
+
+enum ModerationStatus {
+  ACTIVE
+  EXPIRED
+  REVOKED
+}
+
+model Report {
+  id           String       @id @default(uuid())
+  reporterId   String
+  reporter     User         @relation("ReportsCreated", fields: [reporterId], references: [id], onDelete: Cascade)
+  
+  reportType   ReportType
+  entityType   String       // 'Listing', 'User', 'Review', 'Message', 'Order', 'Booking'
+  entityId     String       // ID of the reported entity
+  
+  reason       ReportReason
+  description  String?      @db.Text
+  
+  status       ReportStatus @default(PENDING)
+  reviewedBy   String?
+  reviewer     User?        @relation("ReportsReviewed", fields: [reviewedBy], references: [id], onDelete: SetNull)
+  reviewedAt   DateTime?
+  resolution   String?      @db.Text
+  
+  buildingId   String?      // For building-scoped reports
+  building     Building?    @relation(fields: [buildingId], references: [id], onDelete: SetNull)
+  
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  @@index([reporterId])
+  @@index([entityType, entityId])
+  @@index([status])
+  @@index([buildingId])
+  @@index([createdAt])
+  @@map("reports")
+}
+
+model ModerationAction {
+  id           String           @id @default(uuid())
+  
+  targetType   String           // 'User', 'Listing', 'Review', 'Message'
+  targetId     String           // ID of the moderated entity
+  
+  actionType   ModerationType
+  status       ModerationStatus @default(ACTIVE)
+  
+  performedBy  String
+  moderator    User             @relation("ModerationActionsPerformed", fields: [performedBy], references: [id], onDelete: Cascade)
+  
+  reason       String           @db.Text
+  metadata     Json?            // Additional context (e.g., report IDs, previous warnings)
+  
+  expiresAt    DateTime?        // For temporary suspensions
+  revokedAt    DateTime?
+  revokedBy    String?
+  
+  buildingId   String?          // For building-scoped actions
+  building     Building?        @relation(fields: [buildingId], references: [id], onDelete: SetNull)
+  
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+
+  @@index([targetType, targetId])
+  @@index([performedBy])
+  @@index([status])
+  @@index([expiresAt])
+  @@index([buildingId])
+  @@map("moderation_actions")
+}
+
+model UserReputation {
+  id              String   @id @default(uuid())
+  userId          String   @unique
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Seller metrics
+  sellerRating    Float?   @default(0)     // Average rating as seller
+  totalSales      Int      @default(0)     // Total completed orders/bookings as seller
+  salesVolume     Float    @default(0)     // Total revenue generated
+  
+  // Buyer metrics
+  buyerRating     Float?   @default(0)     // Average rating as buyer
+  totalPurchases  Int      @default(0)     // Total completed orders/bookings as buyer
+  
+  // General metrics
+  completionRate  Float    @default(0)     // % of completed transactions (0-100)
+  responseTime    Int?                     // Average response time in minutes
+  responseRate    Float    @default(0)     // % of messages responded to (0-100)
+  
+  // Reliability score (0-100)
+  reliabilityScore Float   @default(50)    // Composite score
+  
+  // Badges/achievements
+  trustedSeller   Boolean  @default(false)
+  fastResponder   Boolean  @default(false)
+  topRated        Boolean  @default(false)
+  
+  lastCalculatedAt DateTime @default(now())
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@index([userId])
+  @@index([reliabilityScore])
+  @@map("user_reputations")
+}
+
+model BlockedUser {
+  id        String   @id @default(uuid())
+  blockerId String
+  blocker   User     @relation("BlocksCreated", fields: [blockerId], references: [id], onDelete: Cascade)
+  
+  blockedId String
+  blocked   User     @relation("BlocksReceived", fields: [blockedId], references: [id], onDelete: Cascade)
+  
+  reason    String?  @db.Text
+  
+  createdAt DateTime @default(now())
+
+  @@unique([blockerId, blockedId])
+  @@index([blockerId])
+  @@index([blockedId])
+  @@map("blocked_users")
+}
+
+model BuildingSettings {
+  id                   String   @id @default(uuid())
+  buildingId           String   @unique
+  building             Building @relation(fields: [buildingId], references: [id], onDelete: Cascade)
+  
+  // Listing moderation
+  requireListingApproval Boolean  @default(false)
+  allowedCategories      String[] @default([])      // Empty = all allowed
+  maxListingsPerSeller   Int      @default(10)
+  
+  // Auto-moderation
+  autoModeration         Boolean  @default(true)
+  autoHideThreshold      Int      @default(3)       // Auto-hide after N reports
+  
+  // Community guidelines
+  communityGuidelines    String?  @db.Text
+  customRules            Json?                      // Building-specific rules
+  
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
+
+  @@index([buildingId])
+  @@map("building_settings")
 }
