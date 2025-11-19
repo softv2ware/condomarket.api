@@ -52,9 +52,6 @@ COPY prisma.config.ts ./
 # Install only production dependencies
 RUN pnpm install --prod --frozen-lockfile
 
-# Generate Prisma Client
-RUN pnpm prisma:generate
-
 # ==========================================
 # Production stage
 # ==========================================
@@ -73,9 +70,13 @@ RUN addgroup -g 1001 -S nodejs && \
 # Copy production dependencies
 COPY --from=production-dependencies --chown=nestjs:nodejs /app/node_modules ./node_modules
 
+# Copy generated Prisma Client from dependencies stage (has dev deps needed for generation)
+COPY --from=dependencies --chown=nestjs:nodejs /app/node_modules/.prisma ./node_modules/.prisma
+COPY --from=dependencies --chown=nestjs:nodejs /app/node_modules/@prisma/client ./node_modules/@prisma/client
+
 # Copy Prisma files
-COPY --from=production-dependencies --chown=nestjs:nodejs /app/prisma ./prisma
-COPY --from=production-dependencies --chown=nestjs:nodejs /app/prisma.config.ts ./
+COPY --from=dependencies --chown=nestjs:nodejs /app/prisma ./prisma
+COPY --from=dependencies --chown=nestjs:nodejs /app/prisma.config.ts ./
 
 # Copy built application
 COPY --from=build --chown=nestjs:nodejs /app/dist ./dist
