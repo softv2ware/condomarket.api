@@ -134,7 +134,7 @@ export class AnalyticsService {
     ] = await Promise.all([
       this.prisma.residentBuilding.count({ where: { buildingId } }),
       this.prisma.residentBuilding.count({
-        where: { buildingId, verificationStatus: 'VERIFIED' },
+        where: { buildingId, verificationStatus: 'APPROVED' },
       }),
       this.prisma.listing.count({ where: { buildingId } }),
       this.prisma.listing.count({
@@ -209,47 +209,50 @@ export class AnalyticsService {
   }
 
   async getBuildingTopSellers(buildingId: string, limit: number = 10) {
-    const sellers = await this.prisma.user.findMany({
+    // Get users who have sold items in this building
+    const topSellers = await this.prisma.order.groupBy({
+      by: ['sellerId'],
       where: {
-        role: 'SELLER',
-        residentBuildings: {
-          some: {
-            buildingId,
-            verificationStatus: 'VERIFIED',
-          },
+        buildingId,
+        status: 'COMPLETED',
+      },
+      _count: {
+        sellerId: true,
+      },
+      orderBy: {
+        _count: {
+          sellerId: 'desc',
         },
       },
       take: limit,
+    });
+
+    // Get full seller details
+    const sellerIds = topSellers.map((s) => s.sellerId);
+    const sellers = await this.prisma.user.findMany({
+      where: {
+        id: { in: sellerIds },
+      },
       include: {
         profile: true,
-        _count: {
-          select: {
-            listingsAsSeller: true,
-            ordersAsSeller: true,
-            bookingsAsSeller: true,
-          },
-        },
         reputation: true,
-      },
-      orderBy: {
-        ordersAsSeller: {
-          _count: 'desc',
-        },
       },
     });
 
-    return sellers.map((seller) => ({
-      id: seller.id,
-      email: seller.email,
-      name: seller.profile
-        ? `${seller.profile.firstName} ${seller.profile.lastName}`
-        : null,
-      listingsCount: seller._count.listingsAsSeller,
-      ordersCount: seller._count.ordersAsSeller,
-      bookingsCount: seller._count.bookingsAsSeller,
-      sellerRating: seller.reputation?.sellerRating || null,
-      totalOrders: seller.reputation?.totalOrders || 0,
-    }));
+    // Combine data
+    return topSellers.map((topSeller) => {
+      const seller = sellers.find((s) => s.id === topSeller.sellerId);
+      return {
+        id: topSeller.sellerId,
+        email: seller?.email || '',
+        name: seller?.profile
+          ? `${seller.profile.firstName} ${seller.profile.lastName}`
+          : null,
+        ordersCount: topSeller._count.sellerId,
+        sellerRating: seller?.reputation?.sellerRating || null,
+        totalSales: seller?.reputation?.totalSales || 0,
+      };
+    });
   }
 
   async getBuildingCategoryDistribution(buildingId: string) {
@@ -379,8 +382,8 @@ export class AnalyticsService {
       orders: orders.length,
       bookings: bookings.length,
       totalRevenue:
-        orders.reduce((sum, o) => sum + o.totalPrice.toNumber(), 0) +
-        bookings.reduce((sum, b) => sum + b.totalPrice.toNumber(), 0),
+        orders.reduce((sum, o) => sum + Number(o.totalPrice), 0) +
+        bookings.reduce((sum, b) => sum + Number(b.totalPrice), 0),
     };
   }
 
@@ -400,8 +403,8 @@ export class AnalyticsService {
     ]);
 
     return (
-      (orders._sum.totalPrice?.toNumber() || 0) +
-      (bookings._sum.totalPrice?.toNumber() || 0)
+      Number(orders._sum.totalPrice || 0) +
+      Number(bookings._sum.totalPrice || 0)
     );
   }
 
@@ -418,8 +421,8 @@ export class AnalyticsService {
     ]);
 
     return (
-      (orders._sum.totalPrice?.toNumber() || 0) +
-      (bookings._sum.totalPrice?.toNumber() || 0)
+      Number(orders._sum.totalPrice || 0) +
+      Number(bookings._sum.totalPrice || 0)
     );
   }
 }

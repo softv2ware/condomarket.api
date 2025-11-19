@@ -67,7 +67,7 @@ async function bootstrap() {
   // Swagger configuration
   const config = new DocumentBuilder()
     .setTitle('CondoMarket API')
-    .setDescription('The CondoMarket API documentation')
+    .setDescription('The CondoMarket API documentation - Production Ready')
     .setVersion('1.0')
     .addTag('auth', 'Authentication endpoints')
     .addTag('buildings', 'Building and unit management')
@@ -75,7 +75,8 @@ async function bootstrap() {
     .addTag('users', 'User management')
     .addTag('subscription-plans', 'Subscription plans management')
     .addTag('seller-subscriptions', 'Seller subscription management')
-    .addTag('health', 'Health check endpoints')
+    .addTag('analytics', 'Analytics and reporting dashboards')
+    .addTag('health', 'Health check and monitoring endpoints')
     .addBearerAuth()
     .build();
 

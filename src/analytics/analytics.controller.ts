@@ -94,7 +94,7 @@ export class AnalyticsController {
 
   // Seller Endpoints
   @Get('seller/overview')
-  @Roles(UserRole.SELLER, UserRole.BUILDING_ADMIN, UserRole.PLATFORM_ADMIN)
+  @Roles(UserRole.RESIDENT, UserRole.BUILDING_ADMIN, UserRole.PLATFORM_ADMIN)
   @ApiOperation({ summary: 'Get seller analytics overview' })
   @ApiResponse({ status: 200, description: 'Returns seller overview' })
   async getSellerOverview(@CurrentUser('id') userId: string) {
@@ -102,7 +102,7 @@ export class AnalyticsController {
   }
 
   @Get('seller/listings')
-  @Roles(UserRole.SELLER, UserRole.BUILDING_ADMIN, UserRole.PLATFORM_ADMIN)
+  @Roles(UserRole.RESIDENT, UserRole.BUILDING_ADMIN, UserRole.PLATFORM_ADMIN)
   @ApiOperation({ summary: 'Get seller listing performance' })
   @ApiResponse({ status: 200, description: 'Returns listing performance data' })
   async getSellerListingPerformance(@CurrentUser('id') userId: string) {
@@ -110,7 +110,7 @@ export class AnalyticsController {
   }
 
   @Get('seller/revenue')
-  @Roles(UserRole.SELLER, UserRole.BUILDING_ADMIN, UserRole.PLATFORM_ADMIN)
+  @Roles(UserRole.RESIDENT, UserRole.BUILDING_ADMIN, UserRole.PLATFORM_ADMIN)
   @ApiOperation({ summary: 'Get seller revenue by period' })
   @ApiResponse({ status: 200, description: 'Returns revenue data' })
   async getSellerRevenueByPeriod(

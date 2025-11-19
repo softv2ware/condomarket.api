@@ -1,0 +1,97 @@
+# Multi-stage Dockerfile for Production
+FROM node:20-alpine AS base
+
+# Install pnpm globally
+RUN npm install -g pnpm@8
+
+# ==========================================
+# Dependencies stage
+# ==========================================
+FROM base AS dependencies
+
+WORKDIR /app
+
+# Copy package files
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY prisma ./prisma/
+COPY prisma.config.ts ./
+
+# Install all dependencies (including dev)
+RUN pnpm install --frozen-lockfile
+
+# Generate Prisma Client
+RUN pnpm prisma:generate
+
+# ==========================================
+# Build stage
+# ==========================================
+FROM base AS build
+
+WORKDIR /app
+
+# Copy dependencies
+COPY --from=dependencies /app/node_modules ./node_modules
+
+# Copy source code
+COPY . .
+
+# Build application
+RUN pnpm build
+
+# ==========================================
+# Production dependencies stage
+# ==========================================
+FROM base AS production-dependencies
+
+WORKDIR /app
+
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY prisma ./prisma/
+COPY prisma.config.ts ./
+
+# Install only production dependencies
+RUN pnpm install --prod --frozen-lockfile
+
+# Generate Prisma Client
+RUN pnpm prisma:generate
+
+# ==========================================
+# Production stage
+# ==========================================
+FROM base AS production
+
+# Set to production environment
+ENV NODE_ENV=production
+
+# Create app directory
+WORKDIR /app
+
+# Create non-root user for security
+RUN addgroup -g 1001 -S nodejs && \
+    adduser -S nestjs -u 1001
+
+# Copy production dependencies
+COPY --from=production-dependencies --chown=nestjs:nodejs /app/node_modules ./node_modules
+
+# Copy Prisma files
+COPY --from=production-dependencies --chown=nestjs:nodejs /app/prisma ./prisma
+COPY --from=production-dependencies --chown=nestjs:nodejs /app/prisma.config.ts ./
+
+# Copy built application
+COPY --from=build --chown=nestjs:nodejs /app/dist ./dist
+
+# Create logs directory
+RUN mkdir -p logs && chown -R nestjs:nodejs logs
+
+# Switch to non-root user
+USER nestjs
+
+# Expose port
+EXPOSE 3000
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=3s --start-period=40s --retries=3 \
+  CMD node -e "require('http').get('http://localhost:3000/health/liveness', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"
+
+# Start application
+CMD ["node", "dist/src/main.js"]
