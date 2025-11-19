@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { MessageType } from '@prisma/client';
+import { MessageType, Prisma } from '@prisma/client';
 
 export class MessageEntity {
   @ApiProperty()
@@ -18,7 +18,7 @@ export class MessageEntity {
   type: MessageType;
 
   @ApiProperty({ required: false })
-  metadata?: any;
+  metadata?: Prisma.JsonValue;
 
   @ApiProperty({ type: [String] })
   readBy: string[];

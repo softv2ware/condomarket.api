@@ -4,7 +4,7 @@ import { CreateReportDto } from './dto/create-report.dto';
 import { GetReportsDto } from './dto/get-reports.dto';
 import { ReviewReportDto } from './dto/review-report.dto';
 import { ReportEntity } from './entities/report.entity';
-import { ReportStatus } from '@prisma/client';
+import { ReportStatus, Prisma } from '@prisma/client';
 
 @Injectable()
 export class ReportsService {
@@ -58,7 +58,7 @@ export class ReportsService {
     const { reportType, status, entityType, page = 1, limit = 20 } = dto;
     const skip = (page - 1) * limit;
 
-    const where: any = {
+    const where: Prisma.ReportWhereInput = {
       reporterId: userId,
     };
 
@@ -155,7 +155,7 @@ export class ReportsService {
     const { reportType, status, entityType, page = 1, limit = 20 } = dto;
     const skip = (page - 1) * limit;
 
-    const where: any = {};
+    const where: Prisma.ReportWhereInput = {};
 
     if (reportType) where.reportType = reportType;
     if (status) where.status = status;
@@ -213,7 +213,7 @@ export class ReportsService {
    * Get pending reports (Admin only)
    */
   async getPendingReports(buildingId?: string) {
-    const where: any = {
+    const where: Prisma.ReportWhereInput = {
       status: ReportStatus.PENDING,
     };
 

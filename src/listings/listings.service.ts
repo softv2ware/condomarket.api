@@ -11,7 +11,7 @@ import { CacheService } from '../common/cache/cache.service';
 import { CreateListingDto } from './dto/create-listing.dto';
 import { UpdateListingDto } from './dto/update-listing.dto';
 import { SearchListingsDto } from './dto/search-listings.dto';
-import { ListingStatus } from '@prisma/client';
+import { ListingStatus, Prisma } from '@prisma/client';
 
 @Injectable()
 export class ListingsService {
@@ -118,7 +118,7 @@ export class ListingsService {
     return this.cacheService.wrap(
       cacheKey,
       async () => {
-        const where: any = {
+        const where: Prisma.ListingWhereInput = {
           status,
           ...(type && { type }),
           ...(categoryId && { categoryId }),
@@ -248,7 +248,7 @@ export class ListingsService {
 
     // Build WHERE clause for filters
     const filters: string[] = [`l.status = $1`];
-    const params: any[] = [status];
+    const params: unknown[] = [status];
     let paramIndex = 2;
 
     if (type) {
@@ -375,7 +375,7 @@ export class ListingsService {
     } catch (error) {
       // Fallback to basic search if full-text search fails
       console.error('Full-text search error:', error);
-      const where: any = {
+      const where: Prisma.ListingWhereInput = {
         status,
         ...(type && { type }),
         ...(categoryId && { categoryId }),

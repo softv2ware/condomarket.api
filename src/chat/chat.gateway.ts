@@ -9,6 +9,7 @@ import {
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { Logger, UseGuards } from '@nestjs/common';
+import { Message } from '@prisma/client';
 import { ChatService } from './chat.service';
 import { WsJwtGuard } from './guards/ws-jwt.guard';
 import { WsUser } from './decorators/ws-user.decorator';
@@ -229,7 +230,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   /**
    * Emit a message edited event to thread participants
    */
-  emitMessageEdited(threadId: string, message: any) {
+  emitMessageEdited(threadId: string, message: Message): void {
     this.server.to(`thread:${threadId}`).emit('message_edited', {
       message,
       threadId,

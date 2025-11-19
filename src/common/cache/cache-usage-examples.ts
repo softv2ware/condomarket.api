@@ -1,8 +1,10 @@
 // Example: How to use Redis caching in your services
 
 import { Injectable } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 import { CacheService } from './cache.service';
 import { PrismaService } from '../prisma/prisma.service';
+import { UpdateListingDto } from '~/listings/dto/update-listing.dto';
 
 @Injectable()
 export class ListingsExampleService {
@@ -65,7 +67,7 @@ export class ListingsExampleService {
   /**
    * Example 3: Invalidate cache on update
    */
-  async updateListing(listingId: string, data: any) {
+  async updateListing(listingId: string, data: UpdateListingDto) {
     // Update database
     const updated = await this.prisma.listing.update({
       where: { id: listingId },
@@ -130,7 +132,7 @@ export class ListingsExampleService {
   /**
    * Example 5: Search results caching with filters
    */
-  async searchListings(query: string, filters: any) {
+  async searchListings(query: string, filters: Record<string, unknown>) {
     const cacheKey = this.cache.searchKey(query, filters);
 
     return this.cache.wrap(
@@ -238,17 +240,17 @@ export class ListingsExampleService {
   }
 
   // Helper method
-  private buildFilters(filters: any) {
-    const where: any = {};
+  private buildFilters(filters: Record<string, unknown>): Prisma.ListingWhereInput {
+    const where: Prisma.ListingWhereInput = {};
     
     if (filters.category) {
-      where.categoryId = filters.category;
+      where.categoryId = filters.category as string;
     }
     
     if (filters.minPrice || filters.maxPrice) {
       where.price = {};
-      if (filters.minPrice) where.price.gte = filters.minPrice;
-      if (filters.maxPrice) where.price.lte = filters.maxPrice;
+      if (filters.minPrice) where.price.gte = filters.minPrice as number;
+      if (filters.maxPrice) where.price.lte = filters.maxPrice as number;
     }
     
     return where;

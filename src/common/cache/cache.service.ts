@@ -74,9 +74,9 @@ export class CacheService implements OnModuleInit {
       }
 
       // Access the underlying Redis store
-      const store: any = (this.cacheManager as any).store;
+      const store = (this.cacheManager as { store?: { client?: unknown } }).store;
       if (store && store.client) {
-        const redis = store.client;
+        const redis = store.client as { scanStream: (options: { match: string; count: number }) => NodeJS.EventEmitter; del: (...keys: string[]) => Promise<number> };
         const keys: string[] = [];
         const stream = redis.scanStream({
           match: `${pattern}*`,
@@ -113,7 +113,7 @@ export class CacheService implements OnModuleInit {
    */
   async reset(): Promise<void> {
     try {
-      const store: any = (this.cacheManager as any).store;
+      const store = (this.cacheManager as { store?: { reset?: () => Promise<void>; client?: { flushdb: () => Promise<void> } } }).store;
       if (store && store.reset) {
         await store.reset();
         this.logger.debug('Cache RESET: all keys cleared');
@@ -145,7 +145,7 @@ export class CacheService implements OnModuleInit {
   /**
    * Set multiple keys at once
    */
-  async mset(entries: Array<{ key: string; value: any; ttl?: number }>): Promise<void> {
+  async mset(entries: Array<{ key: string; value: unknown; ttl?: number }>): Promise<void> {
     try {
       await Promise.all(
         entries.map(({ key, value, ttl }) => this.set(key, value, ttl))
@@ -178,7 +178,7 @@ export class CacheService implements OnModuleInit {
         return null;
       }
 
-      const store: any = (this.cacheManager as any).store;
+      const store = (this.cacheManager as { store?: { client?: { ttl: (key: string) => Promise<number> } } }).store;
       if (store && store.client) {
         const ttl = await store.client.ttl(key);
         return ttl > 0 ? ttl : null;
@@ -231,7 +231,7 @@ export class CacheService implements OnModuleInit {
   /**
    * Generate cache key for search results
    */
-  searchKey(query: string, filters: Record<string, any>): string {
+  searchKey(query: string, filters: Record<string, unknown>): string {
     const filterString = JSON.stringify(filters);
     return `search:${query}:${filterString}`;
   }

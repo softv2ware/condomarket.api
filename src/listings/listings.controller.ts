@@ -15,6 +15,7 @@ import {
   MaxFileSizeValidator,
   FileTypeValidator,
 } from '@nestjs/common';
+import { Request } from 'express';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiResponse, ApiConsumes } from '@nestjs/swagger';
 import { ListingsService } from './listings.service';
@@ -22,15 +23,18 @@ import { CreateListingDto } from './dto/create-listing.dto';
 import { UpdateListingDto } from './dto/update-listing.dto';
 import { SearchListingsDto } from './dto/search-listings.dto';
 import { RejectListingDto } from './dto/reject-listing.dto';
+import { UpdateAvailabilityDto } from './dto/listing-availability.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
-import { UserRole } from '@prisma/client';
+import { UserRole, User } from '@prisma/client';
+import { AuthRequest } from '~/auth/types/auth.types';
+
 
 @ApiTags('Listings')
 @Controller('listings')
 export class ListingsController {
-  constructor(private readonly listingsService: ListingsService) {}
+  constructor(private readonly listingsService: ListingsService) { }
 
   @Post()
   @UseGuards(JwtAuthGuard)
@@ -39,8 +43,8 @@ export class ListingsController {
   @ApiResponse({ status: 201, description: 'Listing created successfully' })
   @ApiResponse({ status: 400, description: 'Listing limit reached or invalid data' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  create(@Req() req, @Body() createDto: CreateListingDto) {
-    return this.listingsService.create(req.user.userId, createDto);
+  create(@Req() req: AuthRequest, @Body() createDto: CreateListingDto) {
+    return this.listingsService.create(req.user.id, createDto);
   }
 
   @Get()
@@ -55,8 +59,8 @@ export class ListingsController {
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Get my listings' })
   @ApiResponse({ status: 200, description: 'My listings retrieved successfully' })
-  findMyListings(@Req() req, @Query('buildingId') buildingId?: string) {
-    return this.listingsService.findMyListings(req.user.userId, buildingId);
+  findMyListings(@Req() req: AuthRequest, @Query('buildingId') buildingId?: string) {
+    return this.listingsService.findMyListings(req.user.id, buildingId);
   }
 
   @Get('featured')
@@ -83,10 +87,10 @@ export class ListingsController {
   @ApiResponse({ status: 404, description: 'Listing not found' })
   update(
     @Param('id') id: string,
-    @Req() req,
+    @Req() req: AuthRequest,
     @Body() updateDto: UpdateListingDto,
   ) {
-    return this.listingsService.update(id, req.user.userId, updateDto);
+    return this.listingsService.update(id, req.user.id, updateDto);
   }
 
   @Delete(':id')
@@ -96,8 +100,8 @@ export class ListingsController {
   @ApiResponse({ status: 200, description: 'Listing deleted successfully' })
   @ApiResponse({ status: 403, description: 'Not authorized to delete this listing' })
   @ApiResponse({ status: 404, description: 'Listing not found' })
-  remove(@Param('id') id: string, @Req() req) {
-    return this.listingsService.remove(id, req.user.userId);
+  remove(@Param('id') id: string, @Req() req: AuthRequest) {
+    return this.listingsService.remove(id, req.user.id);
   }
 
   @Post(':id/publish')
@@ -107,8 +111,8 @@ export class ListingsController {
   @ApiResponse({ status: 200, description: 'Listing published successfully' })
   @ApiResponse({ status: 400, description: 'Only draft listings can be published' })
   @ApiResponse({ status: 403, description: 'Not authorized' })
-  publish(@Param('id') id: string, @Req() req) {
-    return this.listingsService.publish(id, req.user.userId);
+  publish(@Param('id') id: string, @Req() req: AuthRequest) {
+    return this.listingsService.publish(id, req.user.id);
   }
 
   @Patch(':id/pause')
@@ -117,8 +121,8 @@ export class ListingsController {
   @ApiOperation({ summary: 'Pause an active listing' })
   @ApiResponse({ status: 200, description: 'Listing paused successfully' })
   @ApiResponse({ status: 400, description: 'Only active listings can be paused' })
-  pause(@Param('id') id: string, @Req() req) {
-    return this.listingsService.pause(id, req.user.userId);
+  pause(@Param('id') id: string, @Req() req: AuthRequest) {
+    return this.listingsService.pause(id, req.user.id);
   }
 
   @Patch(':id/activate')
@@ -127,8 +131,8 @@ export class ListingsController {
   @ApiOperation({ summary: 'Reactivate a paused listing' })
   @ApiResponse({ status: 200, description: 'Listing activated successfully' })
   @ApiResponse({ status: 400, description: 'Only paused listings can be activated' })
-  activate(@Param('id') id: string, @Req() req) {
-    return this.listingsService.activate(id, req.user.userId);
+  activate(@Param('id') id: string, @Req() req: AuthRequest) {
+    return this.listingsService.activate(id, req.user.id);
   }
 
   // Admin/Moderation endpoints
@@ -174,8 +178,8 @@ export class ListingsController {
   @ApiOperation({ summary: 'Toggle save/unsave listing (add to favorites)' })
   @ApiResponse({ status: 200, description: 'Listing saved/unsaved successfully' })
   @ApiResponse({ status: 404, description: 'Listing not found' })
-  toggleSaveListing(@Param('id') id: string, @Req() req) {
-    return this.listingsService.toggleSaveListing(req.user.userId, id);
+  toggleSaveListing(@Param('id') id: string, @Req() req: AuthRequest) {
+    return this.listingsService.toggleSaveListing(req.user.id, id);
   }
 
   @Get('saved/all')
@@ -183,8 +187,8 @@ export class ListingsController {
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Get my saved listings' })
   @ApiResponse({ status: 200, description: 'Saved listings retrieved successfully' })
-  getSavedListings(@Req() req, @Query('buildingId') buildingId?: string) {
-    return this.listingsService.getSavedListings(req.user.userId, buildingId);
+  getSavedListings(@Req() req: AuthRequest, @Query('buildingId') buildingId?: string) {
+    return this.listingsService.getSavedListings(req.user.id, buildingId);
   }
 
   // Availability management (for services)
@@ -206,12 +210,12 @@ export class ListingsController {
   @ApiResponse({ status: 404, description: 'Listing not found' })
   updateAvailability(
     @Param('id') id: string,
-    @Req() req,
-    @Body() updateDto: any, // Using UpdateAvailabilityDto
+    @Req() req: AuthRequest,
+    @Body() updateDto: UpdateAvailabilityDto,
   ) {
     return this.listingsService.updateAvailability(
       id,
-      req.user.userId,
+      req.user.id,
       updateDto.availability,
     );
   }
@@ -229,7 +233,7 @@ export class ListingsController {
   @ApiResponse({ status: 404, description: 'Listing not found' })
   uploadPhotos(
     @Param('id') id: string,
-    @Req() req,
+    @Req() req: AuthRequest,
     @UploadedFiles(
       new ParseFilePipe({
         validators: [
@@ -244,7 +248,7 @@ export class ListingsController {
   ) {
     return this.listingsService.uploadPhotos(
       id,
-      req.user.userId,
+      req.user.id,
       files,
       isMain === 'true',
     );
@@ -257,8 +261,8 @@ export class ListingsController {
   @ApiResponse({ status: 200, description: 'Photo deleted successfully' })
   @ApiResponse({ status: 403, description: 'Not authorized' })
   @ApiResponse({ status: 404, description: 'Photo not found' })
-  deletePhoto(@Param('photoId') photoId: string, @Req() req) {
-    return this.listingsService.deletePhoto(photoId, req.user.userId);
+  deletePhoto(@Param('photoId') photoId: string, @Req() req: AuthRequest) {
+    return this.listingsService.deletePhoto(photoId, req.user.id);
   }
 
   @Patch('photos/:photoId/set-main')
@@ -268,8 +272,8 @@ export class ListingsController {
   @ApiResponse({ status: 200, description: 'Main photo updated successfully' })
   @ApiResponse({ status: 403, description: 'Not authorized' })
   @ApiResponse({ status: 404, description: 'Photo not found' })
-  setMainPhoto(@Param('photoId') photoId: string, @Req() req) {
-    return this.listingsService.setMainPhoto(photoId, req.user.userId);
+  setMainPhoto(@Param('photoId') photoId: string, @Req() req: AuthRequest) {
+    return this.listingsService.setMainPhoto(photoId, req.user.id);
   }
 
   @Patch(':id/photos/reorder')
@@ -281,9 +285,9 @@ export class ListingsController {
   @ApiResponse({ status: 404, description: 'Listing not found' })
   reorderPhotos(
     @Param('id') id: string,
-    @Req() req,
+    @Req() req: AuthRequest,
     @Body() body: { photoOrders: Array<{ photoId: string; order: number }> },
   ) {
-    return this.listingsService.reorderPhotos(id, req.user.userId, body.photoOrders);
+    return this.listingsService.reorderPhotos(id, req.user.id, body.photoOrders);
   }
 }

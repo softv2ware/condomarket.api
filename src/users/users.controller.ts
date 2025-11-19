@@ -9,6 +9,7 @@ import {
   UseGuards,
   Req,
 } from '@nestjs/common';
+import { Request } from 'express';
 import {
   ApiTags,
   ApiOperation,
@@ -22,7 +23,8 @@ import { UpdateProfileDto } from './dto/update-profile.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
-import { UserRole } from '@prisma/client';
+import { UserRole, User } from '@prisma/client';
+import { AuthRequest } from '~/auth/types/auth.types';
 
 @ApiTags('Users')
 @Controller('users')
@@ -43,7 +45,7 @@ export class UsersController {
   @Get('me')
   @ApiOperation({ summary: 'Get current user profile' })
   @ApiResponse({ status: 200, description: 'Return current user.' })
-  getCurrentUser(@Req() req: any) {
+  getCurrentUser(@Req() req: AuthRequest) {
     return this.usersService.findOne(req.user.id);
   }
 
@@ -51,21 +53,21 @@ export class UsersController {
   @ApiOperation({ summary: 'Get current user profile details' })
   @ApiResponse({ status: 200, description: 'Return user profile.' })
   @ApiResponse({ status: 404, description: 'Profile not found.' })
-  getMyProfile(@Req() req: any) {
+  getMyProfile(@Req() req: AuthRequest) {
     return this.usersService.getProfile(req.user.id);
   }
 
   @Patch('me/profile')
   @ApiOperation({ summary: 'Update current user profile' })
   @ApiResponse({ status: 200, description: 'Profile successfully updated.' })
-  updateMyProfile(@Req() req: any, @Body() updateProfileDto: UpdateProfileDto) {
+  updateMyProfile(@Req() req: AuthRequest, @Body() updateProfileDto: UpdateProfileDto) {
     return this.usersService.updateProfile(req.user.id, updateProfileDto);
   }
 
   @Get('me/buildings')
   @ApiOperation({ summary: 'Get all buildings where current user is a resident' })
   @ApiResponse({ status: 200, description: 'Return user buildings.' })
-  getMyBuildings(@Req() req: any) {
+  getMyBuildings(@Req() req: AuthRequest) {
     return this.usersService.getUserBuildings(req.user.id);
   }
 

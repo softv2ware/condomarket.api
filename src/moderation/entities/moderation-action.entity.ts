@@ -1,4 +1,4 @@
-import { ModerationAction, ModerationType, ModerationStatus } from '@prisma/client';
+import { ModerationAction, ModerationType, ModerationStatus, Prisma } from '@prisma/client';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class ModerationActionEntity implements Partial<ModerationAction> {
@@ -24,7 +24,7 @@ export class ModerationActionEntity implements Partial<ModerationAction> {
   reason: string;
 
   @ApiProperty({ required: false })
-  metadata?: any;
+  metadata?: Prisma.JsonValue;
 
   @ApiProperty({ required: false })
   expiresAt?: Date;

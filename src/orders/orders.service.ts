@@ -16,6 +16,7 @@ import {
   ListingStatus,
   Prisma,
   NotificationType,
+  Order,
 } from '@prisma/client';
 
 @Injectable()
@@ -333,7 +334,10 @@ export class OrdersService {
    * Send notification when order status changes
    */
   private async sendOrderStatusNotification(
-    order: any,
+    order: Order & {
+      listing: { title: string };
+      statusHistory: Array<{ changedBy: string }>;
+    },
     newStatus: OrderStatus,
   ): Promise<void> {
     try {

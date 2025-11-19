@@ -4,7 +4,7 @@ import { CreateModerationActionDto } from './dto/create-moderation-action.dto';
 import { GetModerationActionsDto } from './dto/get-moderation-actions.dto';
 import { RevokeModerationDto } from './dto/revoke-moderation.dto';
 import { ModerationActionEntity } from './entities/moderation-action.entity';
-import { ModerationType, ModerationStatus, UserStatus } from '@prisma/client';
+import { ModerationType, ModerationStatus, UserStatus, Prisma, ModerationAction } from '@prisma/client';
 
 @Injectable()
 export class ModerationService {
@@ -158,7 +158,7 @@ export class ModerationService {
     const { targetType, targetId, actionType, status, buildingId, page = 1, limit = 20 } = dto;
     const skip = (page - 1) * limit;
 
-    const where: any = {};
+    const where: Prisma.ModerationActionWhereInput = {};
 
     if (targetType) where.targetType = targetType;
     if (targetId) where.targetId = targetId;
@@ -384,7 +384,7 @@ export class ModerationService {
   /**
    * Apply the moderation action to the target
    */
-  private async applyModerationAction(action: any): Promise<void> {
+  private async applyModerationAction(action: ModerationAction): Promise<void> {
     try {
       switch (action.actionType) {
         case ModerationType.WARNING:
@@ -426,7 +426,7 @@ export class ModerationService {
   /**
    * Revert a moderation action
    */
-  private async revertModerationAction(action: any): Promise<void> {
+  private async revertModerationAction(action: ModerationAction): Promise<void> {
     try {
       switch (action.actionType) {
         case ModerationType.SUSPENSION:

@@ -17,6 +17,7 @@ import {
   ListingStatus,
   Prisma,
   NotificationType,
+  Booking,
 } from '@prisma/client';
 
 @Injectable()
@@ -383,7 +384,10 @@ export class BookingsService {
    * Send notification when booking status changes
    */
   private async sendBookingStatusNotification(
-    booking: any,
+    booking: Booking & {
+      listing: { title: string };
+      statusHistory: Array<{ changedBy: string }>;
+    },
     newStatus: BookingStatus,
   ): Promise<void> {
     try {

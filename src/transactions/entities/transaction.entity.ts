@@ -3,6 +3,7 @@ import {
   Transaction as PrismaTransaction,
   TransactionStatus,
   TransactionPaymentMethod,
+  Prisma,
 } from '@prisma/client';
 
 export class Transaction implements Partial<PrismaTransaction> {
@@ -31,7 +32,7 @@ export class Transaction implements Partial<PrismaTransaction> {
   paidAt?: Date;
 
   @ApiProperty({ required: false })
-  metadata?: any;
+  metadata?: Prisma.JsonValue;
 
   @ApiProperty({ required: false })
   notes?: string;
