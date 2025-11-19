@@ -1,12 +1,24 @@
-import { Injectable, Inject, Logger } from '@nestjs/common';
+import { Injectable, Inject, Logger, OnModuleInit } from '@nestjs/common';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
-export class CacheService {
+export class CacheService implements OnModuleInit {
   private readonly logger = new Logger(CacheService.name);
+  private readonly isRedisEnabled: boolean;
 
-  constructor(@Inject(CACHE_MANAGER) private cacheManager: Cache) {}
+  constructor(
+    @Inject(CACHE_MANAGER) private cacheManager: Cache,
+    private configService: ConfigService,
+  ) {
+    this.isRedisEnabled = this.configService.get('cache.redis.enabled', false);
+  }
+
+  async onModuleInit() {
+    const cacheType = this.isRedisEnabled ? 'Redis' : 'In-Memory';
+    this.logger.log(`Cache initialized with ${cacheType} store`);
+  }
 
   /**
    * Get a value from cache
@@ -52,16 +64,47 @@ export class CacheService {
 
   /**
    * Delete multiple keys by pattern (prefix)
+   * Works with Redis. For in-memory cache, this is a no-op.
    */
-  async delByPattern(pattern: string): Promise<void> {
+  async delByPattern(pattern: string): Promise<number> {
     try {
-      // For memory cache, we need to implement pattern deletion manually
-      // In production with Redis, this would use Redis SCAN + DEL
-      this.logger.debug(`Cache DEL pattern: ${pattern}`);
-      // Note: cache-manager doesn't support pattern deletion out of the box
-      // This is a placeholder for future Redis implementation
+      if (!this.isRedisEnabled) {
+        this.logger.debug(`Pattern deletion not supported in memory cache: ${pattern}`);
+        return 0;
+      }
+
+      // Access the underlying Redis store
+      const store: any = (this.cacheManager as any).store;
+      if (store && store.client) {
+        const redis = store.client;
+        const keys: string[] = [];
+        const stream = redis.scanStream({
+          match: `${pattern}*`,
+          count: 100,
+        });
+
+        return new Promise((resolve, reject) => {
+          let deletedCount = 0;
+          stream.on('data', async (resultKeys: string[]) => {
+            if (resultKeys.length > 0) {
+              keys.push(...resultKeys);
+              const result = await redis.del(...resultKeys);
+              deletedCount += result;
+            }
+          });
+          stream.on('end', () => {
+            this.logger.debug(`Cache DEL pattern: ${pattern} - deleted ${deletedCount} keys`);
+            resolve(deletedCount);
+          });
+          stream.on('error', reject);
+        });
+      }
+
+      this.logger.warn('Redis client not available for pattern deletion');
+      return 0;
     } catch (error) {
       this.logger.error(`Cache DEL pattern error for ${pattern}:`, error);
+      return 0;
     }
   }
 
@@ -70,11 +113,80 @@ export class CacheService {
    */
   async reset(): Promise<void> {
     try {
-      // Note: reset() may not be available in all cache-manager versions
-      // This is a placeholder for manual cache clearing if needed
-      this.logger.debug('Cache RESET requested');
+      const store: any = (this.cacheManager as any).store;
+      if (store && store.reset) {
+        await store.reset();
+        this.logger.debug('Cache RESET: all keys cleared');
+      } else if (store && store.client) {
+        // For Redis, use FLUSHDB
+        await store.client.flushdb();
+        this.logger.debug('Cache RESET: Redis FLUSHDB executed');
+      } else {
+        this.logger.warn('Cache RESET not supported by current store');
+      }
     } catch (error) {
       this.logger.error('Cache RESET error:', error);
+    }
+  }
+
+  /**
+   * Get multiple keys at once (efficient for Redis with MGET)
+   */
+  async mget<T>(...keys: string[]): Promise<(T | undefined)[]> {
+    try {
+      const promises = keys.map(key => this.get<T>(key));
+      return await Promise.all(promises);
+    } catch (error) {
+      this.logger.error(`Cache MGET error:`, error);
+      return keys.map(() => undefined);
+    }
+  }
+
+  /**
+   * Set multiple keys at once
+   */
+  async mset(entries: Array<{ key: string; value: any; ttl?: number }>): Promise<void> {
+    try {
+      await Promise.all(
+        entries.map(({ key, value, ttl }) => this.set(key, value, ttl))
+      );
+      this.logger.debug(`Cache MSET: ${entries.length} keys set`);
+    } catch (error) {
+      this.logger.error('Cache MSET error:', error);
+    }
+  }
+
+  /**
+   * Check if a key exists
+   */
+  async exists(key: string): Promise<boolean> {
+    try {
+      const value = await this.cacheManager.get(key);
+      return value !== undefined;
+    } catch (error) {
+      this.logger.error(`Cache EXISTS error for key ${key}:`, error);
+      return false;
+    }
+  }
+
+  /**
+   * Get remaining TTL for a key (Redis only)
+   */
+  async ttl(key: string): Promise<number | null> {
+    try {
+      if (!this.isRedisEnabled) {
+        return null;
+      }
+
+      const store: any = (this.cacheManager as any).store;
+      if (store && store.client) {
+        const ttl = await store.client.ttl(key);
+        return ttl > 0 ? ttl : null;
+      }
+      return null;
+    } catch (error) {
+      this.logger.error(`Cache TTL error for key ${key}:`, error);
+      return null;
     }
   }
 

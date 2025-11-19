@@ -9,6 +9,8 @@ import {
   DiskHealthIndicator,
 } from '@nestjs/terminus';
 import { PrismaService } from '../prisma/prisma.service';
+import { RedisHealthIndicator } from './redis.health';
+import { ConfigService } from '@nestjs/config';
 
 @ApiTags('health')
 @Controller('health')
@@ -20,6 +22,8 @@ export class HealthController {
     private prisma: PrismaService,
     private memory: MemoryHealthIndicator,
     private disk: DiskHealthIndicator,
+    private redisHealth: RedisHealthIndicator,
+    private configService: ConfigService,
   ) {}
 
   @Get()
@@ -28,12 +32,20 @@ export class HealthController {
   @ApiResponse({ status: 200, description: 'Service is healthy' })
   @ApiResponse({ status: 503, description: 'Service is unhealthy' })
   check() {
-    return this.health.check([
+    const checks = [
       () => this.prismaHealth.pingCheck('database', this.prisma),
       () => this.memory.checkHeap('memory_heap', 300 * 1024 * 1024), // 300MB
       () => this.memory.checkRSS('memory_rss', 300 * 1024 * 1024), // 300MB
       () => this.disk.checkStorage('disk', { path: '/', thresholdPercent: 0.9 }),
-    ]);
+    ];
+
+    // Add Redis check if enabled
+    const isRedisEnabled = this.configService.get('cache.redis.enabled', false);
+    if (isRedisEnabled) {
+      checks.push(() => this.redisHealth.isHealthy('redis'));
+    }
+
+    return this.health.check(checks);
   }
 
   @Get('liveness')

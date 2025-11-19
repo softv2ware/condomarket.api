@@ -22,13 +22,18 @@ A production-ready, enterprise-grade marketplace API for buildings and apartment
 ### Production-Ready Features ✨
 - **Structured Logging**: Winston-based logging with correlation IDs for request tracking
 - **Comprehensive Monitoring**: Health checks, metrics, and performance monitoring
-- **Caching Infrastructure**: Redis/in-memory caching with configurable TTL
+- **Production-Grade Caching**: Redis-powered distributed caching with ioredis (see [REDIS_CACHING.md](./REDIS_CACHING.md))
+  - Pattern-based cache invalidation
+  - Bulk operations (MGET/MSET)
+  - TTL management and inspection
+  - Redis Sentinel & Cluster support
+  - Automatic fallback to in-memory cache
 - **API Versioning**: URI-based versioning (`/v1/...`)
 - **Analytics Dashboards**: Platform, Building, and Seller analytics endpoints
 - **Pagination**: Standardized pagination for all list endpoints
 - **Graceful Shutdown**: Proper cleanup on SIGTERM/SIGINT
 - **CI/CD Pipeline**: Automated testing, building, and deployment
-- **Docker Support**: Production-optimized multi-stage Dockerfile
+- **Docker Support**: Production-optimized multi-stage Dockerfile with Redis
 - **Security**: Helmet, rate limiting, CORS, input validation
 
 ## 📋 Prerequisites
