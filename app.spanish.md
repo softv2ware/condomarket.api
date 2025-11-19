@@ -515,19 +515,16 @@ graph TB
 
 <div align="center">
 
-```mermaid
-timeline
-    title Un Día en CondoMarket
-    section Mañana
-        08:00 : Emma ofrece<br/>diseño de logos : 💼 Nuevo servicio
-        09:30 : María recibe<br/>llamada de emergencia : 🔧 Plomería urgente
-    section Mediodía
-        12:00 : Sarah publica<br/>sus muebles : 🪑 Mudanza próxima
-        13:30 : Club de lectura<br/>se descubre : 📚 Nueva comunidad
-    section Tarde
-        16:00 : Familia Rodríguez<br/>dona ropa : 👶 Sostenibilidad
-        18:00 : Transacciones<br/>completadas : ✅ Todos felices
-```
+### 📅 Un Día Típico en CondoMarket
+
+| ⏰ Hora | 📍 Actividad | 💡 Resultado |
+|---------|-------------|--------------|
+| **08:00** | 💼 Emma ofrece diseño de logos | Nuevo servicio disponible |
+| **09:30** | 🔧 María recibe emergencia de plomería | Problema resuelto en 1 hora |
+| **12:00** | 🪑 Sarah publica sus muebles | Mudanza facilitada |
+| **13:30** | 📚 Club de lectura se descubre | Nueva comunidad formada |
+| **16:00** | 👶 Familia Rodríguez dona ropa | Sostenibilidad en acción |
+| **18:00** | ✅ Todas las transacciones completadas | Vecinos felices |
 
 </div>
 
@@ -591,17 +588,19 @@ sequenceDiagram
 
 ```mermaid
 graph LR
-    A[👤 Ana<br/>Vende libros] -->|Descubre| B[📚 CondoMarket]
-    C[👤 Carlos<br/>Vende libros] -->|Descubre| B
-    D[👤 Diana<br/>Vende libros] -->|Descubre| B
-    B -->|Conexión| E[💡 Idea]
-    E -->|Forman| F[📖 Club de Lectura<br/>Mensual]
-    F -->|Resultado| G[🤝 Comunidad<br/>Activa]
+    A[Ana Vende libros] -->|Descubre| B[CondoMarket]
+    C[Carlos Vende libros] -->|Descubre| B
+    D[Diana Vende libros] -->|Descubre| B
+    B -->|Conexión| E[Idea]
+    E -->|Forman| F[Club de Lectura Mensual]
+    F -->|Resultado| G[Comunidad Activa]
     
     style B fill:#4ECDC4,stroke:#1A535C,stroke-width:2px
     style F fill:#51CF66,stroke:#2F9E44,stroke-width:3px,color:#fff
     style G fill:#FF6B6B,stroke:#C92A2A,stroke-width:2px,color:#fff
 ```
+
+**👤 Ana, Carlos, Diana** → **📚 Descubren intereses comunes** → **📖 Club de Lectura** → **🤝 Comunidad Activa**
 
 **Resultado:** 🌟 De extraños a amigos, comunidad más fuerte
 
@@ -612,21 +611,23 @@ graph LR
 
 ```mermaid
 graph TB
-    E[👩‍💻 Emma<br/>Diseñadora Gráfica]
-    E -->|Ofrece| S1[💼 Diseño de Logos]
-    S1 -->|Cliente 1| C1[👤 Vecino Piso 3]
-    S1 -->|Cliente 2| C2[👤 Vecina Piso 7]
-    S1 -->|Cliente 3| C3[👤 Vecino Piso 12]
+    E[Emma Diseñadora]
+    E -->|Ofrece| S1[Diseño de Logos]
+    S1 -->|Cliente 1| C1[Vecino Piso 3]
+    S1 -->|Cliente 2| C2[Vecina Piso 7]
+    S1 -->|Cliente 3| C3[Vecino Piso 12]
     
-    C1 -->|Recomienda| C4[👥 +3 Clientes]
-    C2 -->|Recomienda| C5[👥 +2 Clientes]
-    C3 -->|Recomienda| C6[👥 +4 Clientes]
+    C1 -->|Recomienda| C4[+3 Clientes]
+    C2 -->|Recomienda| C5[+2 Clientes]
+    C3 -->|Recomienda| C6[+4 Clientes]
     
-    C4 & C5 & C6 -->|Total| R[💰 Ingresos Extra<br/>Sin salir de casa]
+    C4 & C5 & C6 -->|Total| R[Ingresos Extra]
     
     style E fill:#FF6B6B,stroke:#C92A2A,stroke-width:3px,color:#fff
     style R fill:#51CF66,stroke:#2F9E44,stroke-width:3px,color:#fff
 ```
+
+**👩‍💻 Emma** → **💼 Ofrece servicios** → **👥 3 clientes iniciales** → **📈 9 clientes por referidos** → **💰 Ingresos sin salir de casa**
 
 **Resultado:** 💎 Base de clientes sólida, negocio local próspero
 
@@ -641,17 +642,19 @@ graph TB
 
 ```mermaid
 graph LR
-    A[👨‍👩‍👧‍👦 Familia Rodríguez<br/>Ropa talla 4-6] -->|Dona| B[📦 CondoMarket]
-    B -->|Recibe| C[👨‍👩‍👶 Familia García<br/>Bebé creciendo]
-    C -->|Más tarde dona| D[📦 CondoMarket]
-    D -->|Recibe| E[👨‍👩‍👧 Familia López<br/>Primer hijo]
-    E -->|Ciclo continúa| F[♻️ Economía Circular]
+    A[Familia Rodriguez] -->|Dona| B[CondoMarket]
+    B -->|Recibe| C[Familia Garcia]
+    C -->|Dona| D[CondoMarket]
+    D -->|Recibe| E[Familia Lopez]
+    E -->|Ciclo continua| F[Economia Circular]
     
     style A fill:#4ECDC4,stroke:#1A535C,stroke-width:2px
     style C fill:#4ECDC4,stroke:#1A535C,stroke-width:2px
     style E fill:#4ECDC4,stroke:#1A535C,stroke-width:2px
     style F fill:#51CF66,stroke:#2F9E44,stroke-width:3px,color:#fff
 ```
+
+**👨‍👩‍👧‍👦 Familia Rodríguez** (Ropa 4-6) → **📦 CondoMarket** → **👨‍👩‍👶 Familia García** → **📦 CondoMarket** → **👨‍👩‍👧 Familia López** → **♻️ Economía Circular**
 
 **Impacto Acumulado:**
 - 🌍 **50+ artículos** reutilizados
@@ -715,13 +718,13 @@ graph TB
 
 ```
    🏢 Edificio
-   ┌───────┐
-   │ 12° 👤│ ← Conocidos
-   │ 11° 👤│ ← Vecinos
-   │ 10° 👤│ ← Tu piso
-   │  9° 👤│ ← Vecinos
-   │  8° 👤│ ← Conocidos
-   └───────┘
+   ┌────────────┐
+   │ Piso 12 👤 │ ← Conocidos
+   │ Piso 11 👤 │ ← Vecinos
+   │ Piso 10 👤 │ ← Tu piso
+   │ Piso  9 👤 │ ← Vecinos
+   │ Piso  8 👤 │ ← Conocidos
+   └────────────┘
 ```
 
 **Nadie quiere arruinar su reputación con vecinos que ve todos los días**
@@ -736,16 +739,15 @@ graph TB
 ### 🏗️ Diseñado para Edificios
 
 ```
-   CondoMarket
-       │
-   ┌───┴───┐
-   │       │
-   🏢      🏢
-Edificio Edificio
-  A         B
-   │         │
-  👥       👥
-Vecinos  Vecinos
+     CondoMarket
+          │
+    ┌─────┴─────┐
+    │           │
+   🏢          🏢
+Edificio A  Edificio B
+    │           │
+   👥          👥
+ Vecinos     Vecinos
 ```
 
 **Cada edificio es su propio marketplace privado**
@@ -761,16 +763,16 @@ Vecinos  Vecinos
 ### 🛡️ Simple y Seguro
 
 ```
-      Usuario
-         │
-    ┌────┼────┐
-    │    │    │
-  📱  💬  💰
-Móvil Chat Pagos
-  │    │    │
-  └────┼────┘
-       │
-    🔐 Seguro
+       Usuario
+          │
+    ┌─────┼─────┐
+    │     │     │
+   📱   💬    💰
+  Móvil Chat Pagos
+    │     │     │
+    └─────┼─────┘
+          │
+       🔐 Seguro
 ```
 
 **Tecnología que protege, no complica**
@@ -828,17 +830,15 @@ graph TB
 <td width="50%" valign="top">
 
 ### 🎉 Eventos Comunitarios
-```mermaid
-gantt
-    title Calendario del Edificio
-    dateFormat YYYY-MM-DD
-    section Enero
-    Yoga Matutino       :done, 2025-01-05, 1d
-    BBQ Comunidad       :done, 2025-01-15, 1d
-    section Febrero
-    Cine en Azotea     :active, 2025-02-10, 1d
-    Torneo de Ajedrez  :2025-02-20, 1d
-```
+
+**Calendario de Actividades:**
+
+| 📅 Fecha | 🎯 Evento | 👥 Estado |
+|----------|-----------|-----------|
+| 05 Ene | 🧘 Yoga Matutino | ✅ Completado |
+| 15 Ene | 🍖 BBQ Comunidad | ✅ Completado |
+| 10 Feb | 🎬 Cine en Azotea | 🔴 En Progreso |
+| 20 Feb | ♟️ Torneo de Ajedrez | 📅 Próximo |
 
 **Organiza y asiste a actividades del edificio**
 - 📅 Calendario compartido
