@@ -49,11 +49,20 @@ graph TB
     Mobile --> Gateway
     Web --> Gateway
     Gateway --> Auth
-    Gateway --> Core Modules
-    Gateway --> Feature Modules
+    Gateway --> Users
+    Gateway --> Buildings
+    Gateway --> Listings
+    Gateway --> Orders
+    Gateway --> Bookings
+    Gateway --> Chat
     Auth --> Firebase
-    Core Modules --> PostgreSQL
-    Feature Modules --> PostgreSQL
+    Auth --> PostgreSQL
+    Users --> PostgreSQL
+    Buildings --> PostgreSQL
+    Listings --> PostgreSQL
+    Orders --> PostgreSQL
+    Bookings --> PostgreSQL
+    Chat --> PostgreSQL
     Gateway --> Redis
 ```
 
