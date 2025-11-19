@@ -21,7 +21,7 @@ import { RegisterDeviceDto } from './dto/register-device.dto';
 import { NotificationEntity } from './entities/notification.entity';
 import { NotificationPreferenceEntity } from './entities/notification-preference.entity';
 
-@ApiTags('notifications')
+@ApiTags('Notifications')
 @Controller('notifications')
 @UseGuards(JwtAuthGuard)
 @ApiBearerAuth()

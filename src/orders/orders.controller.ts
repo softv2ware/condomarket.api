@@ -22,7 +22,7 @@ import {
 } from '@nestjs/swagger';
 import { Order } from './entities/order.entity';
 
-@ApiTags('orders')
+@ApiTags('Orders')
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
 @Controller('orders')

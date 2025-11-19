@@ -21,7 +21,7 @@ import {
 } from '@nestjs/swagger';
 import { Transaction } from './entities/transaction.entity';
 
-@ApiTags('transactions')
+@ApiTags('Transactions')
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
 @Controller('transactions')

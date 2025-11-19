@@ -12,7 +12,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { RedisHealthIndicator } from './redis.health';
 import { ConfigService } from '@nestjs/config';
 
-@ApiTags('health')
+@ApiTags('Health')
 @Controller('health')
 export class HealthController {
   constructor(

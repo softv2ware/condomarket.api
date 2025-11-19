@@ -24,7 +24,7 @@ import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 
-@ApiTags('verification')
+@ApiTags('Verification')
 @Controller('verification')
 @UseGuards(JwtAuthGuard, RolesGuard)
 @ApiBearerAuth()

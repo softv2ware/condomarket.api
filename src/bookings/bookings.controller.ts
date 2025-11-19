@@ -23,7 +23,7 @@ import {
 } from '@nestjs/swagger';
 import { Booking } from './entities/booking.entity';
 
-@ApiTags('bookings')
+@ApiTags('Bookings')
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
 @Controller('bookings')

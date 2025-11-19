@@ -21,7 +21,7 @@ import { Roles } from '../auth/decorators/roles.decorator';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { UserRole, SubscriptionStatus } from '@prisma/client';
 
-@ApiTags('seller-subscriptions')
+@ApiTags('Seller-Subscriptions')
 @Controller('seller-subscriptions')
 @UseGuards(JwtAuthGuard)
 @ApiBearerAuth()

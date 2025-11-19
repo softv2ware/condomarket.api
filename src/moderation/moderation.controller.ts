@@ -21,7 +21,7 @@ import { RolesGuard } from '~/auth/guards/roles.guard';
 import { Roles } from '~/auth/decorators/roles.decorator';
 import { CurrentUser } from '~/auth/decorators/current-user.decorator';
 
-@ApiTags('moderation')
+@ApiTags('Moderation')
 @Controller('moderation')
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Roles('PLATFORM_ADMIN', 'BUILDING_ADMIN')
