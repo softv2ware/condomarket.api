@@ -1,46 +1,56 @@
 import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { PrismaService } from '~/prisma';
+import { CacheService } from '../common/cache/cache.service';
 import { UpdateBuildingSettingsDto } from './dto/update-building-settings.dto';
 import { BuildingSettingsEntity } from './entities/building-settings.entity';
 import { ReportStatus } from '@prisma/client';
 
 @Injectable()
 export class BuildingSettingsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private readonly cacheService: CacheService,
+  ) {}
 
   /**
    * Get building settings (creates default if not exists)
    */
   async getSettings(buildingId: string): Promise<BuildingSettingsEntity> {
-    // Check if building exists
-    const building = await this.prisma.building.findUnique({
-      where: { id: buildingId },
-    });
+    return this.cacheService.wrap(
+      `building-settings:${buildingId}`,
+      async () => {
+        // Check if building exists
+        const building = await this.prisma.building.findUnique({
+          where: { id: buildingId },
+        });
 
-    if (!building) {
-      throw new NotFoundException('Building not found');
-    }
+        if (!building) {
+          throw new NotFoundException('Building not found');
+        }
 
-    // Get or create settings
-    let settings = await this.prisma.buildingSettings.findUnique({
-      where: { buildingId },
-    });
+        // Get or create settings
+        let settings = await this.prisma.buildingSettings.findUnique({
+          where: { buildingId },
+        });
 
-    if (!settings) {
-      // Create default settings
-      settings = await this.prisma.buildingSettings.create({
-        data: {
-          buildingId,
-          requireListingApproval: false,
-          allowedCategories: [],
-          maxListingsPerSeller: 10,
-          autoModeration: true,
-          autoHideThreshold: 3,
-        },
-      });
-    }
+        if (!settings) {
+          // Create default settings
+          settings = await this.prisma.buildingSettings.create({
+            data: {
+              buildingId,
+              requireListingApproval: false,
+              allowedCategories: [],
+              maxListingsPerSeller: 10,
+              autoModeration: true,
+              autoHideThreshold: 3,
+            },
+          });
+        }
 
-    return new BuildingSettingsEntity(settings);
+        return new BuildingSettingsEntity(settings);
+      },
+      1800, // 30 minutes TTL - settings rarely change
+    );
   }
 
   /**
@@ -105,6 +115,9 @@ export class BuildingSettingsService {
         data: dto,
       });
     }
+
+    // Invalidate cache after update
+    await this.cacheService.del(`building-settings:${buildingId}`);
 
     return new BuildingSettingsEntity(settings);
   }
