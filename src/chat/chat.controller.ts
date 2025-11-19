@@ -10,7 +10,12 @@ import {
   UseGuards,
   HttpStatus,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiBearerAuth, ApiResponse } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiBearerAuth,
+  ApiResponse,
+} from '@nestjs/swagger';
 import { ChatService } from './chat.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
@@ -30,7 +35,11 @@ export class ChatController {
 
   @Get()
   @ApiOperation({ summary: 'Get all chat threads for current user' })
-  @ApiResponse({ status: HttpStatus.OK, description: 'Chat threads retrieved', type: [ChatThreadEntity] })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Chat threads retrieved',
+    type: [ChatThreadEntity],
+  })
   async getThreads(
     @CurrentUser('id') userId: string,
     @Query() query: GetThreadsDto,
@@ -47,9 +56,19 @@ export class ChatController {
 
   @Get(':threadId')
   @ApiOperation({ summary: 'Get a chat thread with messages' })
-  @ApiResponse({ status: HttpStatus.OK, description: 'Chat thread retrieved', type: ChatThreadEntity })
-  @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Thread not found' })
-  @ApiResponse({ status: HttpStatus.FORBIDDEN, description: 'Not a participant' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Chat thread retrieved',
+    type: ChatThreadEntity,
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Thread not found',
+  })
+  @ApiResponse({
+    status: HttpStatus.FORBIDDEN,
+    description: 'Not a participant',
+  })
   async getThreadById(
     @Param('threadId') threadId: string,
     @CurrentUser('id') userId: string,
@@ -60,9 +79,19 @@ export class ChatController {
 
   @Post(':threadId/messages')
   @ApiOperation({ summary: 'Send a message in a chat thread' })
-  @ApiResponse({ status: HttpStatus.CREATED, description: 'Message sent', type: MessageEntity })
-  @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Thread not found' })
-  @ApiResponse({ status: HttpStatus.FORBIDDEN, description: 'Not a participant' })
+  @ApiResponse({
+    status: HttpStatus.CREATED,
+    description: 'Message sent',
+    type: MessageEntity,
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Thread not found',
+  })
+  @ApiResponse({
+    status: HttpStatus.FORBIDDEN,
+    description: 'Not a participant',
+  })
   async sendMessage(
     @Param('threadId') threadId: string,
     @CurrentUser('id') userId: string,
@@ -73,10 +102,23 @@ export class ChatController {
 
   @Patch(':threadId/messages/:messageId')
   @ApiOperation({ summary: 'Edit a message (within 15 minutes)' })
-  @ApiResponse({ status: HttpStatus.OK, description: 'Message edited', type: MessageEntity })
-  @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Message not found' })
-  @ApiResponse({ status: HttpStatus.FORBIDDEN, description: 'Not the message sender' })
-  @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: 'Edit window expired or message deleted' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Message edited',
+    type: MessageEntity,
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Message not found',
+  })
+  @ApiResponse({
+    status: HttpStatus.FORBIDDEN,
+    description: 'Not the message sender',
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: 'Edit window expired or message deleted',
+  })
   async editMessage(
     @Param('messageId') messageId: string,
     @CurrentUser('id') userId: string,
@@ -88,8 +130,14 @@ export class ChatController {
   @Delete(':threadId/messages/:messageId')
   @ApiOperation({ summary: 'Soft delete a message' })
   @ApiResponse({ status: HttpStatus.OK, description: 'Message deleted' })
-  @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Message not found' })
-  @ApiResponse({ status: HttpStatus.FORBIDDEN, description: 'Not the message sender' })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Message not found',
+  })
+  @ApiResponse({
+    status: HttpStatus.FORBIDDEN,
+    description: 'Not the message sender',
+  })
   async deleteMessage(
     @Param('messageId') messageId: string,
     @CurrentUser('id') userId: string,
@@ -100,8 +148,14 @@ export class ChatController {
   @Patch(':threadId/read')
   @ApiOperation({ summary: 'Mark all messages in thread as read' })
   @ApiResponse({ status: HttpStatus.OK, description: 'Thread marked as read' })
-  @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Thread not found' })
-  @ApiResponse({ status: HttpStatus.FORBIDDEN, description: 'Not a participant' })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Thread not found',
+  })
+  @ApiResponse({
+    status: HttpStatus.FORBIDDEN,
+    description: 'Not a participant',
+  })
   async markAsRead(
     @Param('threadId') threadId: string,
     @CurrentUser('id') userId: string,

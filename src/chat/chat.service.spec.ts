@@ -1,7 +1,11 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ChatService } from './chat.service';
 import { PrismaService } from '~/prisma';
-import { NotFoundException, ForbiddenException, BadRequestException } from '@nestjs/common';
+import {
+  NotFoundException,
+  ForbiddenException,
+  BadRequestException,
+} from '@nestjs/common';
 import { MessageType } from '@prisma/client';
 
 describe('ChatService', () => {
@@ -59,8 +63,14 @@ describe('ChatService', () => {
           updatedAt: new Date(),
           order: {
             listing: { title: 'Test Product', photos: [] },
-            buyer: { id: 'user-1', profile: { firstName: 'John', lastName: 'Doe' } },
-            seller: { id: 'user-2', profile: { firstName: 'Jane', lastName: 'Smith' } },
+            buyer: {
+              id: 'user-1',
+              profile: { firstName: 'John', lastName: 'Doe' },
+            },
+            seller: {
+              id: 'user-2',
+              profile: { firstName: 'Jane', lastName: 'Smith' },
+            },
           },
           booking: null,
           messages: [{ id: 'msg-1', content: 'Hello', sentAt: new Date() }],
@@ -107,8 +117,22 @@ describe('ChatService', () => {
         bookingId: null,
         order: {
           listing: { title: 'Test', photos: [] },
-          buyer: { id: 'user-1', profile: { firstName: 'John', lastName: 'Doe', profilePictureUrl: null } },
-          seller: { id: 'user-2', profile: { firstName: 'Jane', lastName: 'Smith', profilePictureUrl: null } },
+          buyer: {
+            id: 'user-1',
+            profile: {
+              firstName: 'John',
+              lastName: 'Doe',
+              profilePictureUrl: null,
+            },
+          },
+          seller: {
+            id: 'user-2',
+            profile: {
+              firstName: 'Jane',
+              lastName: 'Smith',
+              profilePictureUrl: null,
+            },
+          },
         },
         booking: null,
       };
@@ -118,14 +142,24 @@ describe('ChatService', () => {
           id: 'msg-1',
           content: 'Hello',
           sentAt: new Date('2024-01-01'),
-          sender: { id: 'user-2', profile: { firstName: 'Jane', lastName: 'Smith', profilePictureUrl: null } },
+          sender: {
+            id: 'user-2',
+            profile: {
+              firstName: 'Jane',
+              lastName: 'Smith',
+              profilePictureUrl: null,
+            },
+          },
         },
       ];
 
       mockPrismaService.chatThread.findUnique.mockResolvedValue(mockThread);
       mockPrismaService.message.findMany.mockResolvedValue(mockMessages);
 
-      const result = await service.getThreadById(threadId, userId, { page: 1, limit: 50 });
+      const result = await service.getThreadById(threadId, userId, {
+        page: 1,
+        limit: 50,
+      });
 
       expect(result.id).toBe(threadId);
       expect(result.messages).toHaveLength(1);
@@ -170,7 +204,11 @@ describe('ChatService', () => {
       mockPrismaService.message.findUnique.mockResolvedValue(beforeMessage);
       mockPrismaService.message.findMany.mockResolvedValue([]);
 
-      await service.getThreadById(threadId, userId, { page: 1, limit: 50, before: beforeMessageId });
+      await service.getThreadById(threadId, userId, {
+        page: 1,
+        limit: 50,
+        before: beforeMessageId,
+      });
 
       expect(mockPrismaService.message.findUnique).toHaveBeenCalledWith({
         where: { id: beforeMessageId },
@@ -203,7 +241,11 @@ describe('ChatService', () => {
         sentAt: new Date(),
         sender: {
           id: userId,
-          profile: { firstName: 'John', lastName: 'Doe', profilePictureUrl: null },
+          profile: {
+            firstName: 'John',
+            lastName: 'Doe',
+            profilePictureUrl: null,
+          },
         },
       };
 
@@ -281,7 +323,9 @@ describe('ChatService', () => {
       mockPrismaService.message.findUnique.mockResolvedValue(mockMessage);
       mockPrismaService.message.update.mockResolvedValue(updatedMessage);
 
-      const result = await service.editMessage(messageId, userId, { content: 'Updated' });
+      const result = await service.editMessage(messageId, userId, {
+        content: 'Updated',
+      });
 
       expect(result.content).toBe('Updated');
       expect(mockPrismaService.message.update).toHaveBeenCalledWith(
@@ -398,7 +442,9 @@ describe('ChatService', () => {
 
       mockPrismaService.message.findUnique.mockResolvedValue(mockMessage);
 
-      await expect(service.deleteMessage(messageId, userId)).rejects.toThrow(ForbiddenException);
+      await expect(service.deleteMessage(messageId, userId)).rejects.toThrow(
+        ForbiddenException,
+      );
     });
 
     it('should throw BadRequestException when message already deleted', async () => {
@@ -411,7 +457,9 @@ describe('ChatService', () => {
 
       mockPrismaService.message.findUnique.mockResolvedValue(mockMessage);
 
-      await expect(service.deleteMessage(messageId, userId)).rejects.toThrow(BadRequestException);
+      await expect(service.deleteMessage(messageId, userId)).rejects.toThrow(
+        BadRequestException,
+      );
     });
   });
 
@@ -449,7 +497,9 @@ describe('ChatService', () => {
 
       mockPrismaService.chatThread.findUnique.mockResolvedValue(mockThread);
 
-      await expect(service.markAsRead(threadId, userId)).rejects.toThrow(ForbiddenException);
+      await expect(service.markAsRead(threadId, userId)).rejects.toThrow(
+        ForbiddenException,
+      );
     });
   });
 

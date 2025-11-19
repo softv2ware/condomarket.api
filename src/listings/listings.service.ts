@@ -34,7 +34,8 @@ export class ListingsService {
 
     if (!limitCheck.canCreate) {
       throw new BadRequestException(
-        limitCheck.reason || 'You have reached your listing limit. Please upgrade your subscription.',
+        limitCheck.reason ||
+          'You have reached your listing limit. Please upgrade your subscription.',
       );
     }
 
@@ -57,10 +58,11 @@ export class ListingsService {
     }
 
     // Get user's subscription tier for ranking
-    const subscription = await this.subscriptionsService.getActiveSubscriptionForBuilding(
-      userId,
-      createDto.buildingId,
-    );
+    const subscription =
+      await this.subscriptionsService.getActiveSubscriptionForBuilding(
+        userId,
+        createDto.buildingId,
+      );
 
     // Generate slug from title
     const slug = this.generateSlug(createDto.title);
@@ -281,7 +283,8 @@ export class ListingsService {
       paramIndex++;
     }
 
-    const whereClause = filters.length > 0 ? `WHERE ${filters.join(' AND ')}` : '';
+    const whereClause =
+      filters.length > 0 ? `WHERE ${filters.join(' AND ')}` : '';
 
     // Full-text search query
     const searchQuery = `
@@ -319,11 +322,11 @@ export class ListingsService {
 
     try {
       const [searchResults, countResult] = await Promise.all([
-        this.prisma.$queryRawUnsafe(searchQuery, ...params),
-        this.prisma.$queryRawUnsafe(countQuery, ...countParams),
+        this.prisma.$queryRawUnsafe<Array<{ id: string }>>(searchQuery, ...params),
+        this.prisma.$queryRawUnsafe<Array<{ total: bigint }>>(countQuery, ...countParams),
       ]);
 
-      const listingIds = (searchResults as any[]).map((r) => r.id);
+      const listingIds = searchResults.map((r) => r.id);
 
       // Fetch full listing data with relations
       const listings = await this.prisma.listing.findMany({
@@ -360,7 +363,7 @@ export class ListingsService {
         .map((id) => listingMap.get(id))
         .filter((l) => l !== undefined);
 
-      const total = parseInt((countResult as any[])[0]?.total || '0');
+      const total = countResult[0] ? Number(countResult[0].total) : 0;
 
       return {
         data: sortedListings,
@@ -470,8 +473,8 @@ export class ListingsService {
    * Get featured/highlighted listings (PREMIUM tier)
    */
   async findFeatured(buildingId?: string) {
-    const cacheKey = buildingId 
-      ? `listings:featured:building=${buildingId}` 
+    const cacheKey = buildingId
+      ? `listings:featured:building=${buildingId}`
       : 'listings:featured:all';
 
     return this.cacheService.wrap(
@@ -695,9 +698,10 @@ export class ListingsService {
       where: { id: listing.buildingId },
     });
 
-    const newStatus = building?.status === 'ACTIVE'
-      ? ListingStatus.ACTIVE
-      : ListingStatus.PENDING_APPROVAL;
+    const newStatus =
+      building?.status === 'ACTIVE'
+        ? ListingStatus.ACTIVE
+        : ListingStatus.PENDING_APPROVAL;
 
     const published = await this.prisma.listing.update({
       where: { id },
@@ -835,7 +839,7 @@ export class ListingsService {
   /**
    * Reject a listing (Building Admin)
    */
-  async rejectListing(id: string, reason: string) {
+  async rejectListing(id: string) {
     const listing = await this.prisma.listing.findUnique({
       where: { id },
     });
@@ -1010,7 +1014,11 @@ export class ListingsService {
   async updateAvailability(
     listingId: string,
     userId: string,
-    availability: Array<{ dayOfWeek: number; startTime: string; endTime: string }>,
+    availability: Array<{
+      dayOfWeek: number;
+      startTime: string;
+      endTime: string;
+    }>,
   ) {
     const listing = await this.prisma.listing.findUnique({
       where: { id: listingId },
@@ -1072,7 +1080,9 @@ export class ListingsService {
 
     // Verify ownership
     if (listing.sellerId !== userId) {
-      throw new ForbiddenException('You can only upload photos to your own listings');
+      throw new ForbiddenException(
+        'You can only upload photos to your own listings',
+      );
     }
 
     // Check max photos limit (10)
@@ -1084,7 +1094,12 @@ export class ListingsService {
     }
 
     // Validate file types and sizes
-    const allowedMimeTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+    const allowedMimeTypes = [
+      'image/jpeg',
+      'image/jpg',
+      'image/png',
+      'image/webp',
+    ];
     const maxFileSize = 5 * 1024 * 1024; // 5MB
 
     for (const file of files) {
@@ -1101,7 +1116,10 @@ export class ListingsService {
     }
 
     // Upload files to S3
-    const uploadedUrls = await this.s3Service.uploadFiles(files, `listings/${listingId}`);
+    const uploadedUrls = await this.s3Service.uploadFiles(
+      files,
+      `listings/${listingId}`,
+    );
 
     // If this is marked as main, unset existing main photo
     if (isMain && listing.photos.length > 0) {
@@ -1112,9 +1130,10 @@ export class ListingsService {
     }
 
     // Create photo records
-    const nextOrder = listing.photos.length > 0
-      ? Math.max(...listing.photos.map((p) => p.order)) + 1
-      : 0;
+    const nextOrder =
+      listing.photos.length > 0
+        ? Math.max(...listing.photos.map((p) => p.order)) + 1
+        : 0;
 
     const photoRecords = uploadedUrls.map((url, index) => ({
       listingId,
@@ -1148,7 +1167,9 @@ export class ListingsService {
 
     // Verify ownership
     if (photo.listing.sellerId !== userId) {
-      throw new ForbiddenException('You can only delete photos from your own listings');
+      throw new ForbiddenException(
+        'You can only delete photos from your own listings',
+      );
     }
 
     // Delete from S3
@@ -1177,7 +1198,9 @@ export class ListingsService {
 
     // Verify ownership
     if (photo.listing.sellerId !== userId) {
-      throw new ForbiddenException('You can only modify photos from your own listings');
+      throw new ForbiddenException(
+        'You can only modify photos from your own listings',
+      );
     }
 
     // Unset existing main photo
@@ -1211,7 +1234,9 @@ export class ListingsService {
 
     // Verify ownership
     if (listing.sellerId !== userId) {
-      throw new ForbiddenException('You can only reorder photos from your own listings');
+      throw new ForbiddenException(
+        'You can only reorder photos from your own listings',
+      );
     }
 
     // Update photo orders
@@ -1234,12 +1259,16 @@ export class ListingsService {
    * Generate URL-friendly slug from title
    */
   private generateSlug(title: string): string {
-    return title
-      .toLowerCase()
-      .trim()
-      .replace(/[^\w\s-]/g, '')
-      .replace(/[\s_-]+/g, '-')
-      .replace(/^-+|-+$/g, '')
-      .substring(0, 100) + '-' + Date.now();
+    return (
+      title
+        .toLowerCase()
+        .trim()
+        .replace(/[^\w\s-]/g, '')
+        .replace(/[\s_-]+/g, '-')
+        .replace(/^-+|-+$/g, '')
+        .substring(0, 100) +
+      '-' +
+      Date.now()
+    );
   }
 }

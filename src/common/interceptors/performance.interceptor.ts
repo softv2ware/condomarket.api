@@ -21,7 +21,7 @@ export class PerformanceInterceptor implements NestInterceptor {
     return next.handle().pipe(
       tap(() => {
         const duration = Date.now() - startTime;
-        
+
         if (duration > this.slowThreshold) {
           this.logger.warn({
             message: 'Slow request detected',

@@ -78,7 +78,9 @@ describe('ReputationService', () => {
       };
 
       mockPrismaService.user.findUnique.mockResolvedValue({ id: userId });
-      mockPrismaService.userReputation.findUnique.mockResolvedValue(mockReputation);
+      mockPrismaService.userReputation.findUnique.mockResolvedValue(
+        mockReputation,
+      );
 
       const result = await service.getReputation(userId);
 
@@ -209,7 +211,9 @@ describe('ReputationService', () => {
         },
       ];
 
-      mockPrismaService.userReputation.findMany.mockResolvedValue(mockReputations);
+      mockPrismaService.userReputation.findMany.mockResolvedValue(
+        mockReputations,
+      );
 
       const result = await service.getTopRatedUsers(10);
 
@@ -242,7 +246,9 @@ describe('ReputationService', () => {
         },
       ];
 
-      mockPrismaService.userReputation.findMany.mockResolvedValue(mockReputations);
+      mockPrismaService.userReputation.findMany.mockResolvedValue(
+        mockReputations,
+      );
 
       const result = await service.getTrustedSellers(10);
 

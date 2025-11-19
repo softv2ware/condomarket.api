@@ -47,7 +47,15 @@ import { EmailModule } from './common/email/email.module';
     ConfigModule.forRoot({
       isGlobal: true,
       validate,
-      load: [appConfig, databaseConfig, jwtConfig, redisConfig, firebaseConfig, cacheConfig, emailConfig],
+      load: [
+        appConfig,
+        databaseConfig,
+        jwtConfig,
+        redisConfig,
+        firebaseConfig,
+        cacheConfig,
+        emailConfig,
+      ],
       envFilePath: ['.env.local', '.env'],
     }),
     ThrottlerModule.forRootAsync({

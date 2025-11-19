@@ -60,12 +60,17 @@ export class UsersController {
   @Patch('me/profile')
   @ApiOperation({ summary: 'Update current user profile' })
   @ApiResponse({ status: 200, description: 'Profile successfully updated.' })
-  updateMyProfile(@Req() req: AuthRequest, @Body() updateProfileDto: UpdateProfileDto) {
+  updateMyProfile(
+    @Req() req: AuthRequest,
+    @Body() updateProfileDto: UpdateProfileDto,
+  ) {
     return this.usersService.updateProfile(req.user.id, updateProfileDto);
   }
 
   @Get('me/buildings')
-  @ApiOperation({ summary: 'Get all buildings where current user is a resident' })
+  @ApiOperation({
+    summary: 'Get all buildings where current user is a resident',
+  })
   @ApiResponse({ status: 200, description: 'Return user buildings.' })
   getMyBuildings(@Req() req: AuthRequest) {
     return this.usersService.getUserBuildings(req.user.id);
@@ -85,7 +90,10 @@ export class UsersController {
   @Roles(UserRole.PLATFORM_ADMIN)
   @ApiOperation({ summary: 'Update a user (Platform Admin only)' })
   @ApiParam({ name: 'id', description: 'User ID' })
-  @ApiResponse({ status: 200, description: 'The user has been successfully updated.' })
+  @ApiResponse({
+    status: 200,
+    description: 'The user has been successfully updated.',
+  })
   @ApiResponse({ status: 404, description: 'User not found.' })
   update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
     return this.usersService.update(id, updateUserDto);
@@ -96,7 +104,10 @@ export class UsersController {
   @Roles(UserRole.PLATFORM_ADMIN)
   @ApiOperation({ summary: 'Delete a user (Platform Admin only)' })
   @ApiParam({ name: 'id', description: 'User ID' })
-  @ApiResponse({ status: 200, description: 'The user has been successfully deleted.' })
+  @ApiResponse({
+    status: 200,
+    description: 'The user has been successfully deleted.',
+  })
   @ApiResponse({ status: 404, description: 'User not found.' })
   remove(@Param('id') id: string) {
     return this.usersService.remove(id);

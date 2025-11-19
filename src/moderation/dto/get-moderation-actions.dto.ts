@@ -13,12 +13,18 @@ export class GetModerationActionsDto {
   @IsOptional()
   targetId?: string;
 
-  @ApiPropertyOptional({ enum: ModerationType, description: 'Filter by action type' })
+  @ApiPropertyOptional({
+    enum: ModerationType,
+    description: 'Filter by action type',
+  })
   @IsEnum(ModerationType)
   @IsOptional()
   actionType?: ModerationType;
 
-  @ApiPropertyOptional({ enum: ModerationStatus, description: 'Filter by status' })
+  @ApiPropertyOptional({
+    enum: ModerationStatus,
+    description: 'Filter by status',
+  })
   @IsEnum(ModerationStatus)
   @IsOptional()
   status?: ModerationStatus;

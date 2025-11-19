@@ -1,4 +1,10 @@
-import { IsString, IsEnum, IsArray, IsOptional, IsObject } from 'class-validator';
+import {
+  IsString,
+  IsEnum,
+  IsArray,
+  IsOptional,
+  IsObject,
+} from 'class-validator';
 import { NotificationType, NotificationChannel } from '@prisma/client';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
@@ -19,13 +25,19 @@ export class CreateNotificationDto {
   @IsString()
   message: string;
 
-  @ApiPropertyOptional({ enum: NotificationChannel, isArray: true, description: 'Channels to send through' })
+  @ApiPropertyOptional({
+    enum: NotificationChannel,
+    isArray: true,
+    description: 'Channels to send through',
+  })
   @IsArray()
   @IsEnum(NotificationChannel, { each: true })
   @IsOptional()
   channels?: NotificationChannel[];
 
-  @ApiPropertyOptional({ description: 'Additional data payload (can include related entity IDs)' })
+  @ApiPropertyOptional({
+    description: 'Additional data payload (can include related entity IDs)',
+  })
   @IsObject()
   @IsOptional()
   data?: Record<string, any>;

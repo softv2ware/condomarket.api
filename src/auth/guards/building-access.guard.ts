@@ -5,7 +5,18 @@ import {
   ForbiddenException,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
+import { Request } from 'express';
+import { User } from '@prisma/client';
 import { PrismaService } from '~/prisma';
+
+interface AuthenticatedRequest extends Request {
+  user: Pick<User, 'id' | 'role' | 'email'>;
+  buildingContext?: {
+    buildingId: string;
+    isAdmin: boolean;
+    isResident: boolean;
+  };
+}
 
 @Injectable()
 export class BuildingAccessGuard implements CanActivate {
@@ -15,7 +26,7 @@ export class BuildingAccessGuard implements CanActivate {
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const request = context.switchToHttp().getRequest();
+    const request = context.switchToHttp().getRequest<AuthenticatedRequest>();
     const user = request.user;
 
     if (!user) {
@@ -53,9 +64,7 @@ export class BuildingAccessGuard implements CanActivate {
     });
 
     if (!residency) {
-      throw new ForbiddenException(
-        'You do not have access to this building',
-      );
+      throw new ForbiddenException('You do not have access to this building');
     }
 
     // Attach building context to request for later use

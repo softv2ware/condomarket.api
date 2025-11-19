@@ -4,14 +4,25 @@ import {
   ExecutionContext,
   ForbiddenException,
 } from '@nestjs/common';
+import { Request } from 'express';
+import { User } from '@prisma/client';
 import { PrismaService } from '~/prisma';
+
+interface AuthenticatedRequest extends Request {
+  user: Pick<User, 'id' | 'role' | 'email'>;
+  buildingContext?: {
+    buildingId: string;
+    isAdmin: boolean;
+    isResident: boolean;
+  };
+}
 
 @Injectable()
 export class BuildingAdminGuard implements CanActivate {
   constructor(private prisma: PrismaService) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const request = context.switchToHttp().getRequest();
+    const request = context.switchToHttp().getRequest<AuthenticatedRequest>();
     const user = request.user;
 
     if (!user) {
@@ -47,9 +58,7 @@ export class BuildingAdminGuard implements CanActivate {
     }
 
     if (building.adminId !== user.id) {
-      throw new ForbiddenException(
-        'You are not the admin of this building',
-      );
+      throw new ForbiddenException('You are not the admin of this building');
     }
 
     // Attach building admin context to request

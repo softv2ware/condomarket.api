@@ -1,4 +1,9 @@
-import { Injectable, NotFoundException, ForbiddenException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ForbiddenException,
+  BadRequestException,
+} from '@nestjs/common';
 import { PrismaService } from '~/prisma';
 import { CreateReportDto } from './dto/create-report.dto';
 import { GetReportsDto } from './dto/get-reports.dto';
@@ -13,7 +18,10 @@ export class ReportsService {
   /**
    * Create a new report
    */
-  async create(reporterId: string, dto: CreateReportDto): Promise<ReportEntity> {
+  async create(
+    reporterId: string,
+    dto: CreateReportDto,
+  ): Promise<ReportEntity> {
     // Check if entity exists based on type
     await this.validateEntity(dto.entityType, dto.entityId);
 
@@ -30,7 +38,9 @@ export class ReportsService {
     });
 
     if (existingReport) {
-      throw new BadRequestException('You have already reported this content recently');
+      throw new BadRequestException(
+        'You have already reported this content recently',
+      );
     }
 
     const report = await this.prisma.report.create({
@@ -46,7 +56,11 @@ export class ReportsService {
     });
 
     // Check if auto-hide threshold reached
-    await this.checkAutoHideThreshold(dto.entityType, dto.entityId, dto.buildingId);
+    await this.checkAutoHideThreshold(
+      dto.entityType,
+      dto.entityId,
+      dto.buildingId,
+    );
 
     return new ReportEntity(report);
   }
@@ -91,7 +105,7 @@ export class ReportsService {
     ]);
 
     return {
-      reports: reports.map(r => new ReportEntity(r)),
+      reports: reports.map((r) => new ReportEntity(r)),
       meta: {
         total,
         page,
@@ -104,7 +118,11 @@ export class ReportsService {
   /**
    * Get report by ID
    */
-  async getReport(id: string, userId: string, userRole: string): Promise<ReportEntity> {
+  async getReport(
+    id: string,
+    userId: string,
+    userRole: string,
+  ): Promise<ReportEntity> {
     const report = await this.prisma.report.findUnique({
       where: { id },
       include: {
@@ -140,9 +158,12 @@ export class ReportsService {
     }
 
     // Only reporter or admins can view
-    const isAdmin = userRole === 'PLATFORM_ADMIN' || userRole === 'BUILDING_ADMIN';
+    const isAdmin =
+      userRole === 'PLATFORM_ADMIN' || userRole === 'BUILDING_ADMIN';
     if (report.reporterId !== userId && !isAdmin) {
-      throw new ForbiddenException('You do not have permission to view this report');
+      throw new ForbiddenException(
+        'You do not have permission to view this report',
+      );
     }
 
     return new ReportEntity(report);
@@ -199,7 +220,7 @@ export class ReportsService {
     ]);
 
     return {
-      reports: reports.map(r => new ReportEntity(r)),
+      reports: reports.map((r) => new ReportEntity(r)),
       meta: {
         total,
         page,
@@ -240,13 +261,17 @@ export class ReportsService {
       },
     });
 
-    return reports.map(r => new ReportEntity(r));
+    return reports.map((r) => new ReportEntity(r));
   }
 
   /**
    * Review a report (Admin only)
    */
-  async reviewReport(id: string, reviewerId: string, dto: ReviewReportDto): Promise<ReportEntity> {
+  async reviewReport(
+    id: string,
+    reviewerId: string,
+    dto: ReviewReportDto,
+  ): Promise<ReportEntity> {
     const report = await this.prisma.report.findUnique({ where: { id } });
 
     if (!report) {
@@ -273,7 +298,11 @@ export class ReportsService {
   /**
    * Resolve a report (Admin only)
    */
-  async resolveReport(id: string, reviewerId: string, dto: ReviewReportDto): Promise<ReportEntity> {
+  async resolveReport(
+    id: string,
+    reviewerId: string,
+    dto: ReviewReportDto,
+  ): Promise<ReportEntity> {
     const report = await this.prisma.report.findUnique({ where: { id } });
 
     if (!report) {
@@ -316,7 +345,11 @@ export class ReportsService {
   /**
    * Dismiss a report (Admin only)
    */
-  async dismissReport(id: string, reviewerId: string, reason: string): Promise<ReportEntity> {
+  async dismissReport(
+    id: string,
+    reviewerId: string,
+    reason: string,
+  ): Promise<ReportEntity> {
     const report = await this.prisma.report.findUnique({ where: { id } });
 
     if (!report) {
@@ -339,27 +372,42 @@ export class ReportsService {
   /**
    * Validate that the reported entity exists
    */
-  private async validateEntity(entityType: string, entityId: string): Promise<void> {
+  private async validateEntity(
+    entityType: string,
+    entityId: string,
+  ): Promise<void> {
     let exists = false;
 
     switch (entityType.toLowerCase()) {
       case 'listing':
-        exists = !!(await this.prisma.listing.findUnique({ where: { id: entityId } }));
+        exists = !!(await this.prisma.listing.findUnique({
+          where: { id: entityId },
+        }));
         break;
       case 'user':
-        exists = !!(await this.prisma.user.findUnique({ where: { id: entityId } }));
+        exists = !!(await this.prisma.user.findUnique({
+          where: { id: entityId },
+        }));
         break;
       case 'review':
-        exists = !!(await this.prisma.review.findUnique({ where: { id: entityId } }));
+        exists = !!(await this.prisma.review.findUnique({
+          where: { id: entityId },
+        }));
         break;
       case 'message':
-        exists = !!(await this.prisma.message.findUnique({ where: { id: entityId } }));
+        exists = !!(await this.prisma.message.findUnique({
+          where: { id: entityId },
+        }));
         break;
       case 'order':
-        exists = !!(await this.prisma.order.findUnique({ where: { id: entityId } }));
+        exists = !!(await this.prisma.order.findUnique({
+          where: { id: entityId },
+        }));
         break;
       case 'booking':
-        exists = !!(await this.prisma.booking.findUnique({ where: { id: entityId } }));
+        exists = !!(await this.prisma.booking.findUnique({
+          where: { id: entityId },
+        }));
         break;
       default:
         throw new BadRequestException(`Invalid entity type: ${entityType}`);
@@ -411,7 +459,10 @@ export class ReportsService {
   /**
    * Auto-hide content that has reached report threshold
    */
-  private async autoHideContent(entityType: string, entityId: string): Promise<void> {
+  private async autoHideContent(
+    entityType: string,
+    entityId: string,
+  ): Promise<void> {
     try {
       switch (entityType.toLowerCase()) {
         case 'listing':

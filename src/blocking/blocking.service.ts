@@ -1,4 +1,8 @@
-import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  BadRequestException,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from '~/prisma';
 import { BlockUserDto } from './dto/block-user.dto';
 import { BlockedUserEntity } from './entities/blocked-user.entity';
@@ -10,7 +14,10 @@ export class BlockingService {
   /**
    * Block a user
    */
-  async blockUser(blockerId: string, dto: BlockUserDto): Promise<BlockedUserEntity> {
+  async blockUser(
+    blockerId: string,
+    dto: BlockUserDto,
+  ): Promise<BlockedUserEntity> {
     // Prevent self-blocking
     if (blockerId === dto.blockedId) {
       throw new BadRequestException('Cannot block yourself');
@@ -54,7 +61,10 @@ export class BlockingService {
   /**
    * Unblock a user
    */
-  async unblockUser(blockerId: string, blockedId: string): Promise<{ success: boolean }> {
+  async unblockUser(
+    blockerId: string,
+    blockedId: string,
+  ): Promise<{ success: boolean }> {
     const block = await this.prisma.blockedUser.findUnique({
       where: {
         blockerId_blockedId: {
@@ -124,7 +134,10 @@ export class BlockingService {
   /**
    * Check if any blocking relationship exists between two users
    */
-  async areUsersBlocked(userId1: string, userId2: string): Promise<{
+  async areUsersBlocked(
+    userId1: string,
+    userId2: string,
+  ): Promise<{
     isBlocked: boolean;
     blockedBy: string | null;
   }> {

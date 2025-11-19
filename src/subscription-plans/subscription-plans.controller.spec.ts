@@ -44,7 +44,9 @@ describe('SubscriptionPlansController', () => {
       ],
     }).compile();
 
-    controller = module.get<SubscriptionPlansController>(SubscriptionPlansController);
+    controller = module.get<SubscriptionPlansController>(
+      SubscriptionPlansController,
+    );
     service = module.get<SubscriptionPlansService>(SubscriptionPlansService);
 
     jest.clearAllMocks();
@@ -187,7 +189,9 @@ describe('SubscriptionPlansController', () => {
         new Error('Subscription plan not found'),
       );
 
-      await expect(controller.update(nonExistentId, updateDto)).rejects.toThrow();
+      await expect(
+        controller.update(nonExistentId, updateDto),
+      ).rejects.toThrow();
       expect(service.update).toHaveBeenCalledWith(nonExistentId, updateDto);
     });
   });

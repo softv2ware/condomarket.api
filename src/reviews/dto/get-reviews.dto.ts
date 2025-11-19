@@ -9,17 +9,26 @@ export class GetReviewsDto {
   @IsUUID()
   listingId?: string;
 
-  @ApiPropertyOptional({ description: 'Filter by user ID (as reviewer or reviewee)' })
+  @ApiPropertyOptional({
+    description: 'Filter by user ID (as reviewer or reviewee)',
+  })
   @IsOptional()
   @IsUUID()
   userId?: string;
 
-  @ApiPropertyOptional({ enum: ReviewType, description: 'Filter by review type' })
+  @ApiPropertyOptional({
+    enum: ReviewType,
+    description: 'Filter by review type',
+  })
   @IsOptional()
   @IsEnum(ReviewType)
   type?: ReviewType;
 
-  @ApiPropertyOptional({ description: 'Minimum rating filter', minimum: 1, maximum: 5 })
+  @ApiPropertyOptional({
+    description: 'Minimum rating filter',
+    minimum: 1,
+    maximum: 5,
+  })
   @IsOptional()
   @Type(() => Number)
   @IsInt()
@@ -33,7 +42,11 @@ export class GetReviewsDto {
   @Min(1)
   page?: number = 1;
 
-  @ApiPropertyOptional({ description: 'Items per page', default: 20, minimum: 1 })
+  @ApiPropertyOptional({
+    description: 'Items per page',
+    default: 20,
+    minimum: 1,
+  })
   @IsOptional()
   @Type(() => Number)
   @IsInt()

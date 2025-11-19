@@ -147,10 +147,16 @@ describe('UsersController', () => {
 
       mockUsersService.updateProfile.mockResolvedValue(updatedProfile);
 
-      const result = await controller.updateMyProfile(mockRequest, updateProfileDto);
+      const result = await controller.updateMyProfile(
+        mockRequest,
+        updateProfileDto,
+      );
 
       expect(result).toEqual(updatedProfile);
-      expect(service.updateProfile).toHaveBeenCalledWith('user-1', updateProfileDto);
+      expect(service.updateProfile).toHaveBeenCalledWith(
+        'user-1',
+        updateProfileDto,
+      );
       expect(service.updateProfile).toHaveBeenCalledTimes(1);
     });
 
@@ -169,10 +175,16 @@ describe('UsersController', () => {
 
       mockUsersService.updateProfile.mockResolvedValue(updatedProfile);
 
-      const result = await controller.updateMyProfile(mockRequest, updateProfileDto);
+      const result = await controller.updateMyProfile(
+        mockRequest,
+        updateProfileDto,
+      );
 
       expect(result).toEqual(updatedProfile);
-      expect(service.updateProfile).toHaveBeenCalledWith('user-1', updateProfileDto);
+      expect(service.updateProfile).toHaveBeenCalledWith(
+        'user-1',
+        updateProfileDto,
+      );
     });
   });
 
@@ -258,9 +270,9 @@ describe('UsersController', () => {
         new NotFoundException('User not found'),
       );
 
-      await expect(controller.update('non-existent', updateUserDto)).rejects.toThrow(
-        NotFoundException,
-      );
+      await expect(
+        controller.update('non-existent', updateUserDto),
+      ).rejects.toThrow(NotFoundException);
     });
   });
 

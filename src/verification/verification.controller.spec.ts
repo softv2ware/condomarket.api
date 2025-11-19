@@ -71,12 +71,17 @@ describe('VerificationController', () => {
         verificationMethod: 'INVITATION_CODE',
       };
 
-      mockVerificationService.verifyWithInvitationCode.mockResolvedValue(mockResponse);
+      mockVerificationService.verifyWithInvitationCode.mockResolvedValue(
+        mockResponse,
+      );
 
       const result = await controller.verifyWithCode(mockUser, dto);
 
       expect(result).toEqual(mockResponse);
-      expect(service.verifyWithInvitationCode).toHaveBeenCalledWith('user-1', dto);
+      expect(service.verifyWithInvitationCode).toHaveBeenCalledWith(
+        'user-1',
+        dto,
+      );
       expect(service.verifyWithInvitationCode).toHaveBeenCalledTimes(1);
     });
 
@@ -170,7 +175,9 @@ describe('VerificationController', () => {
         verificationData: { notes: dto.notes },
       };
 
-      mockVerificationService.requestVerification.mockResolvedValue(mockResponse);
+      mockVerificationService.requestVerification.mockResolvedValue(
+        mockResponse,
+      );
 
       const result = await controller.requestVerification(mockUser, dto);
 
@@ -197,7 +204,9 @@ describe('VerificationController', () => {
         verifiedAt: new Date(),
       };
 
-      mockVerificationService.reviewVerification.mockResolvedValue(mockResponse);
+      mockVerificationService.reviewVerification.mockResolvedValue(
+        mockResponse,
+      );
 
       const result = await controller.reviewVerification(
         verificationId,
@@ -230,7 +239,9 @@ describe('VerificationController', () => {
         verifiedAt: new Date(),
       };
 
-      mockVerificationService.reviewVerification.mockResolvedValue(mockResponse);
+      mockVerificationService.reviewVerification.mockResolvedValue(
+        mockResponse,
+      );
 
       const result = await controller.reviewVerification(
         verificationId,
@@ -264,7 +275,9 @@ describe('VerificationController', () => {
 
   describe('generateInvitationCode', () => {
     it('should generate invitation code for building admin', async () => {
-      const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
+      const expiresAt = new Date(
+        Date.now() + 30 * 24 * 60 * 60 * 1000,
+      ).toISOString();
       const dto: GenerateInvitationCodeDto = {
         buildingId: 'building-1',
         expiresAt,
@@ -279,12 +292,17 @@ describe('VerificationController', () => {
         isActive: true,
       };
 
-      mockVerificationService.generateInvitationCode.mockResolvedValue(mockResponse);
+      mockVerificationService.generateInvitationCode.mockResolvedValue(
+        mockResponse,
+      );
 
       const result = await controller.generateInvitationCode(mockAdmin, dto);
 
       expect(result).toEqual(mockResponse);
-      expect(service.generateInvitationCode).toHaveBeenCalledWith('admin-1', dto);
+      expect(service.generateInvitationCode).toHaveBeenCalledWith(
+        'admin-1',
+        dto,
+      );
       expect(service.generateInvitationCode).toHaveBeenCalledTimes(1);
     });
 
@@ -294,7 +312,9 @@ describe('VerificationController', () => {
       };
 
       mockVerificationService.generateInvitationCode.mockRejectedValue(
-        new ForbiddenException('Only building admins can generate invitation codes'),
+        new ForbiddenException(
+          'Only building admins can generate invitation codes',
+        ),
       );
 
       await expect(
@@ -356,5 +376,4 @@ describe('VerificationController', () => {
       expect(service.getPendingVerifications).toHaveBeenCalledWith(buildingId);
     });
   });
-
 });

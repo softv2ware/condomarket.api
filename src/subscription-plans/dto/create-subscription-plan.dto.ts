@@ -82,7 +82,8 @@ export class CreateSubscriptionPlanDto {
 
   @ApiPropertyOptional({
     example: 'building-uuid',
-    description: 'Building ID for building-specific plan (null = platform-wide)',
+    description:
+      'Building ID for building-specific plan (null = platform-wide)',
   })
   @IsOptional()
   @IsUUID()

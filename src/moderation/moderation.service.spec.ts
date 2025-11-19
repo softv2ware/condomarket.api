@@ -93,9 +93,9 @@ describe('ModerationService', () => {
 
       mockPrismaService.user.findUnique.mockResolvedValue(null);
 
-      await expect(service.createAction(moderatorId, createActionDto)).rejects.toThrow(
-        NotFoundException,
-      );
+      await expect(
+        service.createAction(moderatorId, createActionDto),
+      ).rejects.toThrow(NotFoundException);
     });
 
     it('should throw BadRequestException for duplicate active action', async () => {
@@ -107,11 +107,13 @@ describe('ModerationService', () => {
       };
 
       mockPrismaService.user.findUnique.mockResolvedValue(mockUser);
-      mockPrismaService.moderationAction.findFirst.mockResolvedValue(existingAction);
-
-      await expect(service.createAction(moderatorId, createActionDto)).rejects.toThrow(
-        BadRequestException,
+      mockPrismaService.moderationAction.findFirst.mockResolvedValue(
+        existingAction,
       );
+
+      await expect(
+        service.createAction(moderatorId, createActionDto),
+      ).rejects.toThrow(BadRequestException);
     });
   });
 
@@ -132,7 +134,12 @@ describe('ModerationService', () => {
       mockPrismaService.moderationAction.findFirst.mockResolvedValue(null);
       mockPrismaService.moderationAction.create.mockResolvedValue(mockAction);
 
-      const result = await service.warnUser(moderatorId, userId, 'Inappropriate behavior', 'building-123');
+      const result = await service.warnUser(
+        moderatorId,
+        userId,
+        'Inappropriate behavior',
+        'building-123',
+      );
 
       expect(result).toBeDefined();
       expect(result.actionType).toBe('WARNING');
@@ -155,7 +162,10 @@ describe('ModerationService', () => {
 
       mockPrismaService.user.findUnique.mockResolvedValue(mockUser);
       mockPrismaService.moderationAction.findFirst.mockResolvedValue(null);
-      mockPrismaService.user.update.mockResolvedValue({ ...mockUser, status: UserStatus.SUSPENDED });
+      mockPrismaService.user.update.mockResolvedValue({
+        ...mockUser,
+        status: UserStatus.SUSPENDED,
+      });
       mockPrismaService.moderationAction.create.mockResolvedValue(mockAction);
 
       const result = await service.suspendUser(
@@ -187,10 +197,17 @@ describe('ModerationService', () => {
 
       mockPrismaService.user.findUnique.mockResolvedValue(mockUser);
       mockPrismaService.moderationAction.findFirst.mockResolvedValue(null);
-      mockPrismaService.user.update.mockResolvedValue({ ...mockUser, status: UserStatus.BANNED });
+      mockPrismaService.user.update.mockResolvedValue({
+        ...mockUser,
+        status: UserStatus.BANNED,
+      });
       mockPrismaService.moderationAction.create.mockResolvedValue(mockAction);
 
-      const result = await service.banUser(moderatorId, userId, 'Severe violation');
+      const result = await service.banUser(
+        moderatorId,
+        userId,
+        'Severe violation',
+      );
 
       expect(result).toBeDefined();
       expect(result.actionType).toBe('BAN');
@@ -213,7 +230,10 @@ describe('ModerationService', () => {
 
       mockPrismaService.listing.findUnique.mockResolvedValue(mockListing);
       mockPrismaService.moderationAction.findFirst.mockResolvedValue(null);
-      mockPrismaService.listing.update.mockResolvedValue({ ...mockListing, status: ListingStatus.REJECTED });
+      mockPrismaService.listing.update.mockResolvedValue({
+        ...mockListing,
+        status: ListingStatus.REJECTED,
+      });
       mockPrismaService.moderationAction.create.mockResolvedValue(mockAction);
 
       const result = await service.removeContent(
@@ -242,15 +262,22 @@ describe('ModerationService', () => {
       };
       const mockUser = { id: 'user-123', status: UserStatus.SUSPENDED };
 
-      mockPrismaService.moderationAction.findUnique.mockResolvedValue(mockAction);
+      mockPrismaService.moderationAction.findUnique.mockResolvedValue(
+        mockAction,
+      );
       mockPrismaService.user.findUnique.mockResolvedValue(mockUser);
-      mockPrismaService.user.update.mockResolvedValue({ ...mockUser, status: UserStatus.VERIFIED });
+      mockPrismaService.user.update.mockResolvedValue({
+        ...mockUser,
+        status: UserStatus.VERIFIED,
+      });
       mockPrismaService.moderationAction.update.mockResolvedValue({
         ...mockAction,
         status: ModerationStatus.REVOKED,
       });
 
-      const result = await service.revokeAction(actionId, moderatorId, { reason: 'Appealed successfully' });
+      const result = await service.revokeAction(actionId, moderatorId, {
+        reason: 'Appealed successfully',
+      });
 
       expect(result).toBeDefined();
       expect(result.status).toBe(ModerationStatus.REVOKED);
@@ -306,15 +333,25 @@ describe('ModerationService', () => {
         },
       ];
 
-      mockPrismaService.moderationAction.findMany.mockResolvedValue(mockActions);
-      mockPrismaService.user.findUnique.mockResolvedValue({ id: 'user-123', status: UserStatus.SUSPENDED });
-      mockPrismaService.user.update.mockResolvedValue({ id: 'user-123', status: UserStatus.VERIFIED });
+      mockPrismaService.moderationAction.findMany.mockResolvedValue(
+        mockActions,
+      );
+      mockPrismaService.user.findUnique.mockResolvedValue({
+        id: 'user-123',
+        status: UserStatus.SUSPENDED,
+      });
+      mockPrismaService.user.update.mockResolvedValue({
+        id: 'user-123',
+        status: UserStatus.VERIFIED,
+      });
       mockPrismaService.moderationAction.update.mockResolvedValue({});
 
       const result = await service.processExpiredActions();
 
       expect(result).toBe(2);
-      expect(mockPrismaService.moderationAction.update).toHaveBeenCalledTimes(2);
+      expect(mockPrismaService.moderationAction.update).toHaveBeenCalledTimes(
+        2,
+      );
     });
   });
 });

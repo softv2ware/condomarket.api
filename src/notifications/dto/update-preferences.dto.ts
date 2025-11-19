@@ -3,7 +3,10 @@ import { NotificationType, NotificationChannel } from '@prisma/client';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class UpdatePreferencesDto {
-  @ApiProperty({ enum: NotificationType, description: 'Notification type to update' })
+  @ApiProperty({
+    enum: NotificationType,
+    description: 'Notification type to update',
+  })
   @IsEnum(NotificationType)
   type: NotificationType;
 
@@ -11,7 +14,9 @@ export class UpdatePreferencesDto {
   @IsEnum(NotificationChannel)
   channel: NotificationChannel;
 
-  @ApiProperty({ description: 'Enable or disable this notification type for this channel' })
+  @ApiProperty({
+    description: 'Enable or disable this notification type for this channel',
+  })
   @IsBoolean()
   enabled: boolean;
 }

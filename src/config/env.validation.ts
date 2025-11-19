@@ -1,4 +1,11 @@
-import { IsEnum, IsNumber, IsString, IsOptional, Min, Max } from 'class-validator';
+import {
+  IsEnum,
+  IsNumber,
+  IsString,
+  IsOptional,
+  Min,
+  Max,
+} from 'class-validator';
 
 export enum Environment {
   Development = 'development',

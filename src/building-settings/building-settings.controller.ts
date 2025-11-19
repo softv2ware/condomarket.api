@@ -1,11 +1,4 @@
-import {
-  Controller,
-  Get,
-  Patch,
-  Body,
-  Param,
-  UseGuards,
-} from '@nestjs/common';
+import { Controller, Get, Patch, Body, Param, UseGuards } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from '~/auth/guards/jwt-auth.guard';
 import { RolesGuard } from '~/auth/guards/roles.guard';
@@ -19,7 +12,9 @@ import { BuildingSettingsEntity } from './entities/building-settings.entity';
 @Controller('buildings/:buildingId/settings')
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class BuildingSettingsController {
-  constructor(private readonly buildingSettingsService: BuildingSettingsService) {}
+  constructor(
+    private readonly buildingSettingsService: BuildingSettingsService,
+  ) {}
 
   /**
    * Get building settings

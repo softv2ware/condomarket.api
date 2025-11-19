@@ -38,11 +38,15 @@ export class ReviewsService {
   async create(userId: string, dto: CreateReviewDto) {
     // Must provide either orderId or bookingId
     if (!dto.orderId && !dto.bookingId) {
-      throw new BadRequestException('Either orderId or bookingId must be provided');
+      throw new BadRequestException(
+        'Either orderId or bookingId must be provided',
+      );
     }
 
     if (dto.orderId && dto.bookingId) {
-      throw new BadRequestException('Cannot provide both orderId and bookingId');
+      throw new BadRequestException(
+        'Cannot provide both orderId and bookingId',
+      );
     }
 
     let order, booking, revieweeId, listingId, type: ReviewType;
@@ -65,7 +69,9 @@ export class ReviewsService {
 
       // Order must be completed
       if (order.status !== OrderStatus.COMPLETED) {
-        throw new BadRequestException('Reviews can only be created for completed orders');
+        throw new BadRequestException(
+          'Reviews can only be created for completed orders',
+        );
       }
 
       // Check if review already exists
@@ -103,7 +109,9 @@ export class ReviewsService {
 
       // Booking must be completed
       if (booking.status !== BookingStatus.COMPLETED) {
-        throw new BadRequestException('Reviews can only be created for completed bookings');
+        throw new BadRequestException(
+          'Reviews can only be created for completed bookings',
+        );
       }
 
       // Check if review already exists
@@ -143,7 +151,11 @@ export class ReviewsService {
           select: {
             id: true,
             profile: {
-              select: { firstName: true, lastName: true, profilePictureUrl: true },
+              select: {
+                firstName: true,
+                lastName: true,
+                profilePictureUrl: true,
+              },
             },
           },
         },
@@ -176,7 +188,9 @@ export class ReviewsService {
         },
       });
     } catch (error) {
-      this.logger.error(`Failed to send review received notification: ${error.message}`);
+      this.logger.error(
+        `Failed to send review received notification: ${error.message}`,
+      );
     }
 
     // Invalidate review caches
@@ -218,10 +232,7 @@ export class ReviewsService {
     }
 
     if (userId) {
-      where.OR = [
-        { reviewerId: userId },
-        { revieweeId: userId },
-      ];
+      where.OR = [{ reviewerId: userId }, { revieweeId: userId }];
     }
 
     if (type) {
@@ -240,7 +251,11 @@ export class ReviewsService {
             select: {
               id: true,
               profile: {
-                select: { firstName: true, lastName: true, profilePictureUrl: true },
+                select: {
+                  firstName: true,
+                  lastName: true,
+                  profilePictureUrl: true,
+                },
               },
             },
           },
@@ -285,7 +300,11 @@ export class ReviewsService {
           select: {
             id: true,
             profile: {
-              select: { firstName: true, lastName: true, profilePictureUrl: true },
+              select: {
+                firstName: true,
+                lastName: true,
+                profilePictureUrl: true,
+              },
             },
           },
         },
@@ -293,7 +312,11 @@ export class ReviewsService {
           select: {
             id: true,
             profile: {
-              select: { firstName: true, lastName: true, profilePictureUrl: true },
+              select: {
+                firstName: true,
+                lastName: true,
+                profilePictureUrl: true,
+              },
             },
           },
         },
@@ -319,7 +342,11 @@ export class ReviewsService {
   /**
    * Get reviews for a specific listing
    */
-  async getListingReviews(listingId: string, page: number = 1, limit: number = 20) {
+  async getListingReviews(
+    listingId: string,
+    page: number = 1,
+    limit: number = 20,
+  ) {
     const skip = (page - 1) * limit;
 
     const [reviews, total] = await Promise.all([
@@ -333,7 +360,11 @@ export class ReviewsService {
             select: {
               id: true,
               profile: {
-                select: { firstName: true, lastName: true, profilePictureUrl: true },
+                select: {
+                  firstName: true,
+                  lastName: true,
+                  profilePictureUrl: true,
+                },
               },
             },
           },
@@ -390,7 +421,11 @@ export class ReviewsService {
             select: {
               id: true,
               profile: {
-                select: { firstName: true, lastName: true, profilePictureUrl: true },
+                select: {
+                  firstName: true,
+                  lastName: true,
+                  profilePictureUrl: true,
+                },
               },
             },
           },
@@ -470,7 +505,11 @@ export class ReviewsService {
   /**
    * Respond to a review (seller only)
    */
-  async respondToReview(reviewId: string, userId: string, dto: RespondToReviewDto) {
+  async respondToReview(
+    reviewId: string,
+    userId: string,
+    dto: RespondToReviewDto,
+  ) {
     const review = await this.prisma.review.findUnique({
       where: { id: reviewId },
     });
@@ -481,11 +520,15 @@ export class ReviewsService {
 
     // Only the reviewee (seller) can respond
     if (review.revieweeId !== userId) {
-      throw new ForbiddenException('Only the seller can respond to this review');
+      throw new ForbiddenException(
+        'Only the seller can respond to this review',
+      );
     }
 
     if (review.status !== ReviewStatus.ACTIVE) {
-      throw new BadRequestException('Cannot respond to a flagged or removed review');
+      throw new BadRequestException(
+        'Cannot respond to a flagged or removed review',
+      );
     }
 
     if (review.response) {
@@ -503,7 +546,11 @@ export class ReviewsService {
           select: {
             id: true,
             profile: {
-              select: { firstName: true, lastName: true, profilePictureUrl: true },
+              select: {
+                firstName: true,
+                lastName: true,
+                profilePictureUrl: true,
+              },
             },
           },
         },
@@ -534,7 +581,9 @@ export class ReviewsService {
         },
       });
     } catch (error) {
-      this.logger.error(`Failed to send review response notification: ${error.message}`);
+      this.logger.error(
+        `Failed to send review response notification: ${error.message}`,
+      );
     }
 
     return updatedReview;
@@ -563,7 +612,9 @@ export class ReviewsService {
     // Check if within 24 hours
     const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
     if (review.createdAt < twentyFourHoursAgo) {
-      throw new BadRequestException('Reviews can only be edited within 24 hours');
+      throw new BadRequestException(
+        'Reviews can only be edited within 24 hours',
+      );
     }
 
     const updateData: Prisma.ReviewUpdateInput = {};
@@ -582,7 +633,11 @@ export class ReviewsService {
           select: {
             id: true,
             profile: {
-              select: { firstName: true, lastName: true, profilePictureUrl: true },
+              select: {
+                firstName: true,
+                lastName: true,
+                profilePictureUrl: true,
+              },
             },
           },
         },

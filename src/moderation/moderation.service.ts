@@ -1,10 +1,21 @@
-import { Injectable, NotFoundException, BadRequestException, ForbiddenException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+  ForbiddenException,
+} from '@nestjs/common';
 import { PrismaService } from '~/prisma';
 import { CreateModerationActionDto } from './dto/create-moderation-action.dto';
 import { GetModerationActionsDto } from './dto/get-moderation-actions.dto';
 import { RevokeModerationDto } from './dto/revoke-moderation.dto';
 import { ModerationActionEntity } from './entities/moderation-action.entity';
-import { ModerationType, ModerationStatus, UserStatus, Prisma, ModerationAction } from '@prisma/client';
+import {
+  ModerationType,
+  ModerationStatus,
+  UserStatus,
+  Prisma,
+  ModerationAction,
+} from '@prisma/client';
 
 @Injectable()
 export class ModerationService {
@@ -92,7 +103,9 @@ export class ModerationService {
       reason,
       expiresAt,
       buildingId,
-      metadata: { restrictions: restrictions || ['create_listings', 'send_messages'] },
+      metadata: {
+        restrictions: restrictions || ['create_listings', 'send_messages'],
+      },
     });
   }
 
@@ -155,7 +168,15 @@ export class ModerationService {
    * Get moderation actions with filters
    */
   async getActions(dto: GetModerationActionsDto) {
-    const { targetType, targetId, actionType, status, buildingId, page = 1, limit = 20 } = dto;
+    const {
+      targetType,
+      targetId,
+      actionType,
+      status,
+      buildingId,
+      page = 1,
+      limit = 20,
+    } = dto;
     const skip = (page - 1) * limit;
 
     const where: Prisma.ModerationActionWhereInput = {};
@@ -192,7 +213,7 @@ export class ModerationService {
     ]);
 
     return {
-      actions: actions.map(a => new ModerationActionEntity(a)),
+      actions: actions.map((a) => new ModerationActionEntity(a)),
       meta: {
         total,
         page,
@@ -229,7 +250,7 @@ export class ModerationService {
       },
     });
 
-    return actions.map(a => new ModerationActionEntity(a));
+    return actions.map((a) => new ModerationActionEntity(a));
   }
 
   /**
@@ -249,7 +270,9 @@ export class ModerationService {
     }
 
     if (action.status !== ModerationStatus.ACTIVE) {
-      throw new BadRequestException('Only active moderation actions can be revoked');
+      throw new BadRequestException(
+        'Only active moderation actions can be revoked',
+      );
     }
 
     // Update action status
@@ -281,7 +304,11 @@ export class ModerationService {
         targetType: 'User',
         targetId: userId,
         actionType: {
-          in: [ModerationType.RESTRICTION, ModerationType.SUSPENSION, ModerationType.BAN],
+          in: [
+            ModerationType.RESTRICTION,
+            ModerationType.SUSPENSION,
+            ModerationType.BAN,
+          ],
         },
         status: ModerationStatus.ACTIVE,
         OR: [
@@ -304,10 +331,7 @@ export class ModerationService {
         targetId: userId,
         actionType: ModerationType.RESTRICTION,
         status: ModerationStatus.ACTIVE,
-        OR: [
-          { expiresAt: null },
-          { expiresAt: { gt: new Date() } },
-        ],
+        OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],
       },
     });
 
@@ -346,7 +370,10 @@ export class ModerationService {
         await this.revertModerationAction(action);
         count++;
       } catch (error) {
-        console.error(`Failed to expire moderation action ${action.id}:`, error);
+        console.error(
+          `Failed to expire moderation action ${action.id}:`,
+          error,
+        );
       }
     }
 
@@ -356,21 +383,32 @@ export class ModerationService {
   /**
    * Validate that the target exists
    */
-  private async validateTarget(targetType: string, targetId: string): Promise<void> {
+  private async validateTarget(
+    targetType: string,
+    targetId: string,
+  ): Promise<void> {
     let exists = false;
 
     switch (targetType.toLowerCase()) {
       case 'user':
-        exists = !!(await this.prisma.user.findUnique({ where: { id: targetId } }));
+        exists = !!(await this.prisma.user.findUnique({
+          where: { id: targetId },
+        }));
         break;
       case 'listing':
-        exists = !!(await this.prisma.listing.findUnique({ where: { id: targetId } }));
+        exists = !!(await this.prisma.listing.findUnique({
+          where: { id: targetId },
+        }));
         break;
       case 'review':
-        exists = !!(await this.prisma.review.findUnique({ where: { id: targetId } }));
+        exists = !!(await this.prisma.review.findUnique({
+          where: { id: targetId },
+        }));
         break;
       case 'message':
-        exists = !!(await this.prisma.message.findUnique({ where: { id: targetId } }));
+        exists = !!(await this.prisma.message.findUnique({
+          where: { id: targetId },
+        }));
         break;
       default:
         throw new BadRequestException(`Invalid target type: ${targetType}`);
@@ -426,13 +464,17 @@ export class ModerationService {
   /**
    * Revert a moderation action
    */
-  private async revertModerationAction(action: ModerationAction): Promise<void> {
+  private async revertModerationAction(
+    action: ModerationAction,
+  ): Promise<void> {
     try {
       switch (action.actionType) {
         case ModerationType.SUSPENSION:
           if (action.targetType === 'User') {
             // Check if user has other active suspensions or bans
-            const hasOtherActions = await this.hasActiveRestrictions(action.targetId);
+            const hasOtherActions = await this.hasActiveRestrictions(
+              action.targetId,
+            );
             if (!hasOtherActions) {
               await this.prisma.user.update({
                 where: { id: action.targetId },
@@ -461,7 +503,10 @@ export class ModerationService {
   /**
    * Remove target content
    */
-  private async removeTargetContent(targetType: string, targetId: string): Promise<void> {
+  private async removeTargetContent(
+    targetType: string,
+    targetId: string,
+  ): Promise<void> {
     switch (targetType.toLowerCase()) {
       case 'listing':
         await this.prisma.listing.update({

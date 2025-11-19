@@ -18,10 +18,7 @@ export class SellerSubscriptionsService {
    * Subscribe a user to a plan
    * Enforces one subscription per user per building
    */
-  async subscribe(
-    userId: string,
-    createDto: CreateSellerSubscriptionDto,
-  ) {
+  async subscribe(userId: string, createDto: CreateSellerSubscriptionDto) {
     // Get the subscription plan
     const plan = await this.prisma.subscriptionPlan.findUnique({
       where: { id: createDto.subscriptionPlanId },
@@ -60,7 +57,9 @@ export class SellerSubscriptionsService {
       where: {
         userId,
         buildingId,
-        status: { in: [SubscriptionStatus.ACTIVE, SubscriptionStatus.GRACE_PERIOD] },
+        status: {
+          in: [SubscriptionStatus.ACTIVE, SubscriptionStatus.GRACE_PERIOD],
+        },
       },
     });
 
@@ -249,7 +248,8 @@ export class SellerSubscriptionsService {
 
     // Determine if this is an upgrade or downgrade
     const oldPlan = subscription.plan;
-    const action = newPlan.monthlyPrice > oldPlan.monthlyPrice ? 'upgraded' : 'downgraded';
+    const action =
+      newPlan.monthlyPrice > oldPlan.monthlyPrice ? 'upgraded' : 'downgraded';
 
     // Log the plan change
     await this.logSubscriptionEvent(
@@ -278,7 +278,9 @@ export class SellerSubscriptionsService {
       where: {
         userId,
         buildingId,
-        status: { in: [SubscriptionStatus.ACTIVE, SubscriptionStatus.GRACE_PERIOD] },
+        status: {
+          in: [SubscriptionStatus.ACTIVE, SubscriptionStatus.GRACE_PERIOD],
+        },
       },
       include: {
         plan: true,
@@ -392,7 +394,9 @@ export class SellerSubscriptionsService {
     }
 
     if (subscription.status !== SubscriptionStatus.ACTIVE) {
-      throw new BadRequestException('Only active subscriptions can enter grace period');
+      throw new BadRequestException(
+        'Only active subscriptions can enter grace period',
+      );
     }
 
     // Grace period is 7 days
@@ -473,7 +477,9 @@ export class SellerSubscriptionsService {
       by: ['status'],
       where: {
         ...where,
-        status: { in: [SubscriptionStatus.ACTIVE, SubscriptionStatus.GRACE_PERIOD] },
+        status: {
+          in: [SubscriptionStatus.ACTIVE, SubscriptionStatus.GRACE_PERIOD],
+        },
       },
       _count: true,
     });
@@ -482,7 +488,9 @@ export class SellerSubscriptionsService {
     const activeSubscriptions = await this.prisma.sellerSubscription.findMany({
       where: {
         ...where,
-        status: { in: [SubscriptionStatus.ACTIVE, SubscriptionStatus.GRACE_PERIOD] },
+        status: {
+          in: [SubscriptionStatus.ACTIVE, SubscriptionStatus.GRACE_PERIOD],
+        },
       },
       include: {
         plan: true,

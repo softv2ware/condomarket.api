@@ -8,7 +8,12 @@ import {
   Delete,
   UseGuards,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBearerAuth,
+} from '@nestjs/swagger';
 import { BuildingsService } from './buildings.service';
 import { CreateBuildingDto } from './dto/create-building.dto';
 import { UpdateBuildingDto } from './dto/update-building.dto';
@@ -16,7 +21,6 @@ import { CreateUnitDto } from './dto/create-unit.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
-import { CurrentUser } from '../auth/decorators/current-user.decorator';
 
 @ApiTags('Buildings')
 @Controller('buildings')
@@ -55,7 +59,10 @@ export class BuildingsController {
   @ApiOperation({ summary: 'Update building' })
   @ApiResponse({ status: 200, description: 'Building updated successfully' })
   @ApiResponse({ status: 404, description: 'Building not found' })
-  update(@Param('id') id: string, @Body() updateBuildingDto: UpdateBuildingDto) {
+  update(
+    @Param('id') id: string,
+    @Body() updateBuildingDto: UpdateBuildingDto,
+  ) {
     return this.buildingsService.update(id, updateBuildingDto);
   }
 
@@ -74,7 +81,10 @@ export class BuildingsController {
   @ApiOperation({ summary: 'Add unit to building' })
   @ApiResponse({ status: 201, description: 'Unit created successfully' })
   @ApiResponse({ status: 404, description: 'Building not found' })
-  createUnit(@Param('id') buildingId: string, @Body() createUnitDto: CreateUnitDto) {
+  createUnit(
+    @Param('id') buildingId: string,
+    @Body() createUnitDto: CreateUnitDto,
+  ) {
     return this.buildingsService.createUnit(buildingId, createUnitDto);
   }
 

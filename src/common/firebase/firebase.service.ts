@@ -12,9 +12,13 @@ export class FirebaseService implements OnModuleInit {
   onModuleInit() {
     try {
       const projectId = this.configService.get<string>('firebase.projectId');
-      const clientEmail = this.configService.get<string>('firebase.clientEmail');
+      const clientEmail = this.configService.get<string>(
+        'firebase.clientEmail',
+      );
       const privateKey = this.configService.get<string>('firebase.privateKey');
-      const databaseURL = this.configService.get<string>('firebase.databaseURL');
+      const databaseURL = this.configService.get<string>(
+        'firebase.databaseURL',
+      );
 
       // Only initialize if credentials are provided
       if (projectId && clientEmail && privateKey) {
@@ -49,7 +53,9 @@ export class FirebaseService implements OnModuleInit {
     data?: Record<string, string>,
   ): Promise<boolean> {
     if (!this.messaging) {
-      this.logger.warn('Firebase messaging not initialized. Skipping push notification.');
+      this.logger.warn(
+        'Firebase messaging not initialized. Skipping push notification.',
+      );
       return false;
     }
 
@@ -79,7 +85,9 @@ export class FirebaseService implements OnModuleInit {
       };
 
       await this.messaging.send(message);
-      this.logger.log(`Push notification sent successfully to token: ${token.substring(0, 20)}...`);
+      this.logger.log(
+        `Push notification sent successfully to token: ${token.substring(0, 20)}...`,
+      );
       return true;
     } catch (error) {
       this.logger.error(`Failed to send push notification: ${error.message}`);
@@ -97,7 +105,9 @@ export class FirebaseService implements OnModuleInit {
     data?: Record<string, string>,
   ): Promise<{ successCount: number; failureCount: number }> {
     if (!this.messaging) {
-      this.logger.warn('Firebase messaging not initialized. Skipping push notifications.');
+      this.logger.warn(
+        'Firebase messaging not initialized. Skipping push notifications.',
+      );
       return { successCount: 0, failureCount: tokens.length };
     }
 
@@ -131,7 +141,7 @@ export class FirebaseService implements OnModuleInit {
       };
 
       const response = await this.messaging.sendEachForMulticast(message);
-      
+
       this.logger.log(
         `Push notifications sent: ${response.successCount} succeeded, ${response.failureCount} failed`,
       );
@@ -167,7 +177,9 @@ export class FirebaseService implements OnModuleInit {
     data?: Record<string, string>,
   ): Promise<boolean> {
     if (!this.messaging) {
-      this.logger.warn('Firebase messaging not initialized. Skipping push notification.');
+      this.logger.warn(
+        'Firebase messaging not initialized. Skipping push notification.',
+      );
       return false;
     }
 
@@ -185,7 +197,9 @@ export class FirebaseService implements OnModuleInit {
       this.logger.log(`Push notification sent successfully to topic: ${topic}`);
       return true;
     } catch (error) {
-      this.logger.error(`Failed to send push notification to topic: ${error.message}`);
+      this.logger.error(
+        `Failed to send push notification to topic: ${error.message}`,
+      );
       return false;
     }
   }
@@ -193,16 +207,23 @@ export class FirebaseService implements OnModuleInit {
   /**
    * Subscribe a device token to a topic
    */
-  async subscribeToTopic(tokens: string | string[], topic: string): Promise<void> {
+  async subscribeToTopic(
+    tokens: string | string[],
+    topic: string,
+  ): Promise<void> {
     if (!this.messaging) {
-      this.logger.warn('Firebase messaging not initialized. Skipping topic subscription.');
+      this.logger.warn(
+        'Firebase messaging not initialized. Skipping topic subscription.',
+      );
       return;
     }
 
     try {
       const tokenArray = Array.isArray(tokens) ? tokens : [tokens];
       await this.messaging.subscribeToTopic(tokenArray, topic);
-      this.logger.log(`Subscribed ${tokenArray.length} token(s) to topic: ${topic}`);
+      this.logger.log(
+        `Subscribed ${tokenArray.length} token(s) to topic: ${topic}`,
+      );
     } catch (error) {
       this.logger.error(`Failed to subscribe to topic: ${error.message}`);
     }
@@ -211,16 +232,23 @@ export class FirebaseService implements OnModuleInit {
   /**
    * Unsubscribe a device token from a topic
    */
-  async unsubscribeFromTopic(tokens: string | string[], topic: string): Promise<void> {
+  async unsubscribeFromTopic(
+    tokens: string | string[],
+    topic: string,
+  ): Promise<void> {
     if (!this.messaging) {
-      this.logger.warn('Firebase messaging not initialized. Skipping topic unsubscription.');
+      this.logger.warn(
+        'Firebase messaging not initialized. Skipping topic unsubscription.',
+      );
       return;
     }
 
     try {
       const tokenArray = Array.isArray(tokens) ? tokens : [tokens];
       await this.messaging.unsubscribeFromTopic(tokenArray, topic);
-      this.logger.log(`Unsubscribed ${tokenArray.length} token(s) from topic: ${topic}`);
+      this.logger.log(
+        `Unsubscribed ${tokenArray.length} token(s) from topic: ${topic}`,
+      );
     } catch (error) {
       this.logger.error(`Failed to unsubscribe from topic: ${error.message}`);
     }

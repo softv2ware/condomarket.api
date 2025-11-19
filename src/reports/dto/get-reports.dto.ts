@@ -4,7 +4,10 @@ import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 
 export class GetReportsDto {
-  @ApiPropertyOptional({ enum: ReportType, description: 'Filter by report type' })
+  @ApiPropertyOptional({
+    enum: ReportType,
+    description: 'Filter by report type',
+  })
   @IsEnum(ReportType)
   @IsOptional()
   reportType?: ReportType;

@@ -1,4 +1,12 @@
-import { Controller, Get, Post, Param, Query, UseGuards, ParseIntPipe } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Param,
+  Query,
+  UseGuards,
+  ParseIntPipe,
+} from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from '~/auth/guards/jwt-auth.guard';
 import { RolesGuard } from '~/auth/guards/roles.guard';
@@ -16,7 +24,9 @@ export class ReputationController {
    * Get user reputation
    */
   @Get(':userId')
-  async getReputation(@Param('userId') userId: string): Promise<ReputationEntity> {
+  async getReputation(
+    @Param('userId') userId: string,
+  ): Promise<ReputationEntity> {
     return this.reputationService.getReputation(userId);
   }
 
@@ -25,7 +35,9 @@ export class ReputationController {
    */
   @Post(':userId/calculate')
   @Roles('PLATFORM_ADMIN', 'BUILDING_ADMIN')
-  async calculateReputation(@Param('userId') userId: string): Promise<ReputationEntity> {
+  async calculateReputation(
+    @Param('userId') userId: string,
+  ): Promise<ReputationEntity> {
     return this.reputationService.calculateReputation(userId);
   }
 

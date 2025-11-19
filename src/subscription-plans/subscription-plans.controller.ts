@@ -37,7 +37,10 @@ export class SubscriptionPlansController {
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Create subscription plan (Platform Admin only)' })
   @ApiResponse({ status: 201, description: 'Plan created successfully' })
-  @ApiResponse({ status: 409, description: 'Plan with this tier already exists' })
+  @ApiResponse({
+    status: 409,
+    description: 'Plan with this tier already exists',
+  })
   create(@Body() createSubscriptionPlanDto: CreateSubscriptionPlanDto) {
     return this.subscriptionPlansService.create(createSubscriptionPlanDto);
   }

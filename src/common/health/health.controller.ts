@@ -71,7 +71,7 @@ export class HealthController {
   async metrics() {
     const memoryUsage = process.memoryUsage();
     const uptime = process.uptime();
-    
+
     return {
       uptime: `${Math.floor(uptime)}s`,
       timestamp: new Date().toISOString(),

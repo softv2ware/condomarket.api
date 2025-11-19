@@ -10,7 +10,12 @@ import {
   HttpCode,
   HttpStatus,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBearerAuth,
+} from '@nestjs/swagger';
 import { ReportsService } from './reports.service';
 import { CreateReportDto } from './dto/create-report.dto';
 import { GetReportsDto } from './dto/get-reports.dto';
@@ -30,7 +35,11 @@ export class ReportsController {
 
   @Post()
   @ApiOperation({ summary: 'Create a new report' })
-  @ApiResponse({ status: 201, description: 'Report created successfully', type: ReportEntity })
+  @ApiResponse({
+    status: 201,
+    description: 'Report created successfully',
+    type: ReportEntity,
+  })
   @HttpCode(HttpStatus.CREATED)
   async create(
     @CurrentUser('id') userId: string,
@@ -41,7 +50,7 @@ export class ReportsController {
 
   @Get()
   @ApiOperation({ summary: 'Get my reports' })
-  @ApiResponse({ status: 200, description: 'Returns user\'s reports' })
+  @ApiResponse({ status: 200, description: "Returns user's reports" })
   async getMyReports(
     @CurrentUser('id') userId: string,
     @Query() query: GetReportsDto,
@@ -51,7 +60,11 @@ export class ReportsController {
 
   @Get(':id')
   @ApiOperation({ summary: 'Get report by ID' })
-  @ApiResponse({ status: 200, description: 'Returns report details', type: ReportEntity })
+  @ApiResponse({
+    status: 200,
+    description: 'Returns report details',
+    type: ReportEntity,
+  })
   async getReport(
     @Param('id') id: string,
     @CurrentUser('id') userId: string,
@@ -82,7 +95,11 @@ export class ReportsController {
   @UseGuards(RolesGuard)
   @Roles('PLATFORM_ADMIN', 'BUILDING_ADMIN')
   @ApiOperation({ summary: 'Review a report (Admin)' })
-  @ApiResponse({ status: 200, description: 'Report reviewed successfully', type: ReportEntity })
+  @ApiResponse({
+    status: 200,
+    description: 'Report reviewed successfully',
+    type: ReportEntity,
+  })
   async reviewReport(
     @Param('id') id: string,
     @CurrentUser('id') userId: string,
@@ -95,7 +112,11 @@ export class ReportsController {
   @UseGuards(RolesGuard)
   @Roles('PLATFORM_ADMIN', 'BUILDING_ADMIN')
   @ApiOperation({ summary: 'Resolve a report (Admin)' })
-  @ApiResponse({ status: 200, description: 'Report resolved successfully', type: ReportEntity })
+  @ApiResponse({
+    status: 200,
+    description: 'Report resolved successfully',
+    type: ReportEntity,
+  })
   async resolveReport(
     @Param('id') id: string,
     @CurrentUser('id') userId: string,
@@ -108,7 +129,11 @@ export class ReportsController {
   @UseGuards(RolesGuard)
   @Roles('BUILDING_ADMIN')
   @ApiOperation({ summary: 'Escalate report to Platform Admin' })
-  @ApiResponse({ status: 200, description: 'Report escalated successfully', type: ReportEntity })
+  @ApiResponse({
+    status: 200,
+    description: 'Report escalated successfully',
+    type: ReportEntity,
+  })
   async escalateReport(@Param('id') id: string): Promise<ReportEntity> {
     return this.reportsService.escalateReport(id);
   }
@@ -117,7 +142,11 @@ export class ReportsController {
   @UseGuards(RolesGuard)
   @Roles('PLATFORM_ADMIN', 'BUILDING_ADMIN')
   @ApiOperation({ summary: 'Dismiss a report (Admin)' })
-  @ApiResponse({ status: 200, description: 'Report dismissed successfully', type: ReportEntity })
+  @ApiResponse({
+    status: 200,
+    description: 'Report dismissed successfully',
+    type: ReportEntity,
+  })
   async dismissReport(
     @Param('id') id: string,
     @CurrentUser('id') userId: string,

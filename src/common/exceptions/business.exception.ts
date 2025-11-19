@@ -1,7 +1,10 @@
 import { HttpException, HttpStatus } from '@nestjs/common';
 
 export class BusinessException extends HttpException {
-  constructor(message: string, statusCode: HttpStatus = HttpStatus.BAD_REQUEST) {
+  constructor(
+    message: string,
+    statusCode: HttpStatus = HttpStatus.BAD_REQUEST,
+  ) {
     super(message, statusCode);
   }
 }
@@ -16,7 +19,9 @@ export class ResourceNotFoundException extends HttpException {
 }
 
 export class ForbiddenAccessException extends HttpException {
-  constructor(message: string = 'You do not have permission to access this resource') {
+  constructor(
+    message: string = 'You do not have permission to access this resource',
+  ) {
     super(message, HttpStatus.FORBIDDEN);
   }
 }

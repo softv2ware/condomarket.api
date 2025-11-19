@@ -1,8 +1,17 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ReportsService } from './reports.service';
 import { PrismaService } from '~/prisma';
-import { NotFoundException, BadRequestException, ForbiddenException } from '@nestjs/common';
-import { ReportStatus, ReportType, ListingStatus, ReviewStatus } from '@prisma/client';
+import {
+  NotFoundException,
+  BadRequestException,
+  ForbiddenException,
+} from '@nestjs/common';
+import {
+  ReportStatus,
+  ReportType,
+  ListingStatus,
+  ReviewStatus,
+} from '@prisma/client';
 
 describe('ReportsService', () => {
   let service: ReportsService;
@@ -82,7 +91,9 @@ describe('ReportsService', () => {
       mockPrismaService.report.findFirst.mockResolvedValue(null);
       mockPrismaService.listing.findUnique.mockResolvedValue(mockListing);
       mockPrismaService.report.count.mockResolvedValue(2);
-      mockPrismaService.buildingSettings.findUnique.mockResolvedValue({ autoHideThreshold: 3 });
+      mockPrismaService.buildingSettings.findUnique.mockResolvedValue({
+        autoHideThreshold: 3,
+      });
       mockPrismaService.report.create.mockResolvedValue(mockReport);
 
       const result = await service.create(userId, createReportDto);
@@ -131,8 +142,13 @@ describe('ReportsService', () => {
       mockPrismaService.report.findFirst.mockResolvedValue(null);
       mockPrismaService.listing.findUnique.mockResolvedValue(mockListing);
       mockPrismaService.report.count.mockResolvedValue(3);
-      mockPrismaService.buildingSettings.findUnique.mockResolvedValue({ autoHideThreshold: 3 });
-      mockPrismaService.listing.update.mockResolvedValue({ ...mockListing, status: ListingStatus.PAUSED });
+      mockPrismaService.buildingSettings.findUnique.mockResolvedValue({
+        autoHideThreshold: 3,
+      });
+      mockPrismaService.listing.update.mockResolvedValue({
+        ...mockListing,
+        status: ListingStatus.PAUSED,
+      });
       mockPrismaService.report.create.mockResolvedValue(mockReport);
 
       await service.create(userId, createReportDto);
@@ -195,7 +211,11 @@ describe('ReportsService', () => {
       mockPrismaService.report.findUnique.mockResolvedValue(mockReport);
       mockPrismaService.user.findUnique.mockResolvedValue(mockUser);
 
-      const result = await service.getReport('report-123', userId, 'PLATFORM_ADMIN');
+      const result = await service.getReport(
+        'report-123',
+        userId,
+        'PLATFORM_ADMIN',
+      );
 
       expect(result).toBeDefined();
     });
@@ -213,17 +233,17 @@ describe('ReportsService', () => {
       mockPrismaService.report.findUnique.mockResolvedValue(mockReport);
       mockPrismaService.user.findUnique.mockResolvedValue(mockUser);
 
-      await expect(service.getReport('report-123', userId, 'RESIDENT')).rejects.toThrow(
-        ForbiddenException,
-      );
+      await expect(
+        service.getReport('report-123', userId, 'RESIDENT'),
+      ).rejects.toThrow(ForbiddenException);
     });
 
     it('should throw NotFoundException for non-existent report', async () => {
       mockPrismaService.report.findUnique.mockResolvedValue(null);
 
-      await expect(service.getReport('report-123', 'user-123', 'RESIDENT')).rejects.toThrow(
-        NotFoundException,
-      );
+      await expect(
+        service.getReport('report-123', 'user-123', 'RESIDENT'),
+      ).rejects.toThrow(NotFoundException);
     });
   });
 
@@ -237,10 +257,15 @@ describe('ReportsService', () => {
         reviewerId,
       };
 
-      mockPrismaService.report.findUnique.mockResolvedValue({ id: reportId, status: ReportStatus.PENDING });
+      mockPrismaService.report.findUnique.mockResolvedValue({
+        id: reportId,
+        status: ReportStatus.PENDING,
+      });
       mockPrismaService.report.update.mockResolvedValue(mockReport);
 
-      const result = await service.reviewReport(reportId, reviewerId, { resolution: 'Under review' });
+      const result = await service.reviewReport(reportId, reviewerId, {
+        resolution: 'Under review',
+      });
 
       expect(result.status).toBe(ReportStatus.UNDER_REVIEW);
       expect(mockPrismaService.report.update).toHaveBeenCalled();
@@ -256,10 +281,15 @@ describe('ReportsService', () => {
         status: ReportStatus.RESOLVED,
       };
 
-      mockPrismaService.report.findUnique.mockResolvedValue({ id: reportId, status: ReportStatus.UNDER_REVIEW });
+      mockPrismaService.report.findUnique.mockResolvedValue({
+        id: reportId,
+        status: ReportStatus.UNDER_REVIEW,
+      });
       mockPrismaService.report.update.mockResolvedValue(mockReport);
 
-      const result = await service.resolveReport(reportId, reviewerId, { resolution: 'Resolved' });
+      const result = await service.resolveReport(reportId, reviewerId, {
+        resolution: 'Resolved',
+      });
 
       expect(result.status).toBe(ReportStatus.RESOLVED);
     });
@@ -273,7 +303,10 @@ describe('ReportsService', () => {
         status: ReportStatus.ESCALATED,
       };
 
-      mockPrismaService.report.findUnique.mockResolvedValue({ id: reportId, status: ReportStatus.UNDER_REVIEW });
+      mockPrismaService.report.findUnique.mockResolvedValue({
+        id: reportId,
+        status: ReportStatus.UNDER_REVIEW,
+      });
       mockPrismaService.report.update.mockResolvedValue(mockReport);
 
       const result = await service.escalateReport(reportId);
@@ -291,10 +324,17 @@ describe('ReportsService', () => {
         status: ReportStatus.DISMISSED,
       };
 
-      mockPrismaService.report.findUnique.mockResolvedValue({ id: reportId, status: ReportStatus.PENDING });
+      mockPrismaService.report.findUnique.mockResolvedValue({
+        id: reportId,
+        status: ReportStatus.PENDING,
+      });
       mockPrismaService.report.update.mockResolvedValue(mockReport);
 
-      const result = await service.dismissReport(reportId, reviewerId, 'False alarm');
+      const result = await service.dismissReport(
+        reportId,
+        reviewerId,
+        'False alarm',
+      );
 
       expect(result.status).toBe(ReportStatus.DISMISSED);
     });

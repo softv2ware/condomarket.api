@@ -10,7 +10,12 @@ import {
   HttpCode,
   HttpStatus,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBearerAuth,
+} from '@nestjs/swagger';
 import { ModerationService } from './moderation.service';
 import { CreateModerationActionDto } from './dto/create-moderation-action.dto';
 import { GetModerationActionsDto } from './dto/get-moderation-actions.dto';
@@ -31,7 +36,11 @@ export class ModerationController {
 
   @Post('actions')
   @ApiOperation({ summary: 'Create a moderation action (Admin)' })
-  @ApiResponse({ status: 201, description: 'Moderation action created', type: ModerationActionEntity })
+  @ApiResponse({
+    status: 201,
+    description: 'Moderation action created',
+    type: ModerationActionEntity,
+  })
   @HttpCode(HttpStatus.CREATED)
   async createAction(
     @CurrentUser('id') moderatorId: string,
@@ -42,7 +51,11 @@ export class ModerationController {
 
   @Post('warn')
   @ApiOperation({ summary: 'Warn a user (Admin)' })
-  @ApiResponse({ status: 201, description: 'Warning issued', type: ModerationActionEntity })
+  @ApiResponse({
+    status: 201,
+    description: 'Warning issued',
+    type: ModerationActionEntity,
+  })
   @HttpCode(HttpStatus.CREATED)
   async warnUser(
     @CurrentUser('id') moderatorId: string,
@@ -58,7 +71,11 @@ export class ModerationController {
 
   @Post('restrict')
   @ApiOperation({ summary: 'Restrict user actions (Admin)' })
-  @ApiResponse({ status: 201, description: 'User restricted', type: ModerationActionEntity })
+  @ApiResponse({
+    status: 201,
+    description: 'User restricted',
+    type: ModerationActionEntity,
+  })
   @HttpCode(HttpStatus.CREATED)
   async restrictUser(
     @CurrentUser('id') moderatorId: string,
@@ -83,11 +100,21 @@ export class ModerationController {
 
   @Post('suspend')
   @ApiOperation({ summary: 'Suspend a user (Admin)' })
-  @ApiResponse({ status: 201, description: 'User suspended', type: ModerationActionEntity })
+  @ApiResponse({
+    status: 201,
+    description: 'User suspended',
+    type: ModerationActionEntity,
+  })
   @HttpCode(HttpStatus.CREATED)
   async suspendUser(
     @CurrentUser('id') moderatorId: string,
-    @Body() body: { userId: string; reason: string; expiresAt: string; buildingId?: string },
+    @Body()
+    body: {
+      userId: string;
+      reason: string;
+      expiresAt: string;
+      buildingId?: string;
+    },
   ): Promise<ModerationActionEntity> {
     return this.moderationService.suspendUser(
       moderatorId,
@@ -101,18 +128,30 @@ export class ModerationController {
   @Post('ban')
   @Roles('PLATFORM_ADMIN') // Ban is Platform Admin only
   @ApiOperation({ summary: 'Ban a user permanently (Platform Admin)' })
-  @ApiResponse({ status: 201, description: 'User banned', type: ModerationActionEntity })
+  @ApiResponse({
+    status: 201,
+    description: 'User banned',
+    type: ModerationActionEntity,
+  })
   @HttpCode(HttpStatus.CREATED)
   async banUser(
     @CurrentUser('id') moderatorId: string,
     @Body() body: { userId: string; reason: string },
   ): Promise<ModerationActionEntity> {
-    return this.moderationService.banUser(moderatorId, body.userId, body.reason);
+    return this.moderationService.banUser(
+      moderatorId,
+      body.userId,
+      body.reason,
+    );
   }
 
   @Post('remove-content')
   @ApiOperation({ summary: 'Remove content (Admin)' })
-  @ApiResponse({ status: 201, description: 'Content removed', type: ModerationActionEntity })
+  @ApiResponse({
+    status: 201,
+    description: 'Content removed',
+    type: ModerationActionEntity,
+  })
   @HttpCode(HttpStatus.CREATED)
   async removeContent(
     @CurrentUser('id') moderatorId: string,
@@ -152,7 +191,11 @@ export class ModerationController {
 
   @Patch('actions/:id/revoke')
   @ApiOperation({ summary: 'Revoke a moderation action (Admin)' })
-  @ApiResponse({ status: 200, description: 'Moderation action revoked', type: ModerationActionEntity })
+  @ApiResponse({
+    status: 200,
+    description: 'Moderation action revoked',
+    type: ModerationActionEntity,
+  })
   async revokeAction(
     @Param('id') actionId: string,
     @CurrentUser('id') moderatorId: string,

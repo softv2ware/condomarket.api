@@ -1,4 +1,10 @@
-import { IsEnum, IsNotEmpty, IsOptional, IsString, IsUUID } from 'class-validator';
+import {
+  IsEnum,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  IsUUID,
+} from 'class-validator';
 import { ReportType, ReportReason } from '@prisma/client';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
@@ -8,7 +14,9 @@ export class CreateReportDto {
   @IsNotEmpty()
   reportType: ReportType;
 
-  @ApiProperty({ description: 'Type of entity being reported (e.g., Listing, User, Review)' })
+  @ApiProperty({
+    description: 'Type of entity being reported (e.g., Listing, User, Review)',
+  })
   @IsString()
   @IsNotEmpty()
   entityType: string;

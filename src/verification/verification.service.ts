@@ -17,7 +17,10 @@ export class VerificationService {
   constructor(private prisma: PrismaService) {}
 
   // Method 1: Verify with invitation code
-  async verifyWithInvitationCode(userId: string, dto: VerifyWithInvitationCodeDto) {
+  async verifyWithInvitationCode(
+    userId: string,
+    dto: VerifyWithInvitationCodeDto,
+  ) {
     const invitation = await this.prisma.invitationCode.findUnique({
       where: { code: dto.code },
       include: { building: true },
@@ -50,7 +53,9 @@ export class VerificationService {
     });
 
     if (existingResidence) {
-      throw new ConflictException('You are already registered for this building');
+      throw new ConflictException(
+        'You are already registered for this building',
+      );
     }
 
     // Create residence and mark invitation as used
@@ -113,7 +118,9 @@ export class VerificationService {
     });
 
     if (!user?.profile?.lastName) {
-      throw new BadRequestException('Please complete your profile with your last name first');
+      throw new BadRequestException(
+        'Please complete your profile with your last name first',
+      );
     }
 
     // Simple last name matching (case-insensitive)
@@ -132,7 +139,9 @@ export class VerificationService {
     });
 
     if (existingResidence) {
-      throw new ConflictException('You are already registered for this building');
+      throw new ConflictException(
+        'You are already registered for this building',
+      );
     }
 
     // Create residence with auto-approval
@@ -189,9 +198,13 @@ export class VerificationService {
 
     if (existingResidence) {
       if (existingResidence.verificationStatus === 'PENDING') {
-        throw new ConflictException('You already have a pending verification request for this building');
+        throw new ConflictException(
+          'You already have a pending verification request for this building',
+        );
       }
-      throw new ConflictException('You are already registered for this building');
+      throw new ConflictException(
+        'You are already registered for this building',
+      );
     }
 
     // Create pending verification request
@@ -273,7 +286,9 @@ export class VerificationService {
     }
 
     if (residence.verificationStatus !== 'PENDING') {
-      throw new BadRequestException('This verification request has already been reviewed');
+      throw new BadRequestException(
+        'This verification request has already been reviewed',
+      );
     }
 
     // Update residence
@@ -314,7 +329,10 @@ export class VerificationService {
   }
 
   // Building admin: Generate invitation codes
-  async generateInvitationCode(adminId: string, dto: GenerateInvitationCodeDto) {
+  async generateInvitationCode(
+    adminId: string,
+    dto: GenerateInvitationCodeDto,
+  ) {
     const { buildingId, expiresAt } = dto;
 
     // Verify building exists

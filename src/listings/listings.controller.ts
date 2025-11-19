@@ -17,7 +17,13 @@ import {
 } from '@nestjs/common';
 import { Request } from 'express';
 import { FilesInterceptor } from '@nestjs/platform-express';
-import { ApiTags, ApiOperation, ApiBearerAuth, ApiResponse, ApiConsumes } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiBearerAuth,
+  ApiResponse,
+  ApiConsumes,
+} from '@nestjs/swagger';
 import { ListingsService } from './listings.service';
 import { CreateListingDto } from './dto/create-listing.dto';
 import { UpdateListingDto } from './dto/update-listing.dto';
@@ -30,18 +36,20 @@ import { Roles } from '../auth/decorators/roles.decorator';
 import { UserRole, User } from '@prisma/client';
 import { AuthRequest } from '~/auth/types/auth.types';
 
-
 @ApiTags('Listings')
 @Controller('listings')
 export class ListingsController {
-  constructor(private readonly listingsService: ListingsService) { }
+  constructor(private readonly listingsService: ListingsService) {}
 
   @Post()
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Create a new listing (DRAFT status)' })
   @ApiResponse({ status: 201, description: 'Listing created successfully' })
-  @ApiResponse({ status: 400, description: 'Listing limit reached or invalid data' })
+  @ApiResponse({
+    status: 400,
+    description: 'Listing limit reached or invalid data',
+  })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   create(@Req() req: AuthRequest, @Body() createDto: CreateListingDto) {
     return this.listingsService.create(req.user.id, createDto);
@@ -58,8 +66,14 @@ export class ListingsController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Get my listings' })
-  @ApiResponse({ status: 200, description: 'My listings retrieved successfully' })
-  findMyListings(@Req() req: AuthRequest, @Query('buildingId') buildingId?: string) {
+  @ApiResponse({
+    status: 200,
+    description: 'My listings retrieved successfully',
+  })
+  findMyListings(
+    @Req() req: AuthRequest,
+    @Query('buildingId') buildingId?: string,
+  ) {
     return this.listingsService.findMyListings(req.user.id, buildingId);
   }
 
@@ -83,7 +97,10 @@ export class ListingsController {
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Update listing' })
   @ApiResponse({ status: 200, description: 'Listing updated successfully' })
-  @ApiResponse({ status: 403, description: 'Not authorized to update this listing' })
+  @ApiResponse({
+    status: 403,
+    description: 'Not authorized to update this listing',
+  })
   @ApiResponse({ status: 404, description: 'Listing not found' })
   update(
     @Param('id') id: string,
@@ -98,7 +115,10 @@ export class ListingsController {
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Delete listing (soft delete)' })
   @ApiResponse({ status: 200, description: 'Listing deleted successfully' })
-  @ApiResponse({ status: 403, description: 'Not authorized to delete this listing' })
+  @ApiResponse({
+    status: 403,
+    description: 'Not authorized to delete this listing',
+  })
   @ApiResponse({ status: 404, description: 'Listing not found' })
   remove(@Param('id') id: string, @Req() req: AuthRequest) {
     return this.listingsService.remove(id, req.user.id);
@@ -109,7 +129,10 @@ export class ListingsController {
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Publish a draft listing' })
   @ApiResponse({ status: 200, description: 'Listing published successfully' })
-  @ApiResponse({ status: 400, description: 'Only draft listings can be published' })
+  @ApiResponse({
+    status: 400,
+    description: 'Only draft listings can be published',
+  })
   @ApiResponse({ status: 403, description: 'Not authorized' })
   publish(@Param('id') id: string, @Req() req: AuthRequest) {
     return this.listingsService.publish(id, req.user.id);
@@ -120,7 +143,10 @@ export class ListingsController {
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Pause an active listing' })
   @ApiResponse({ status: 200, description: 'Listing paused successfully' })
-  @ApiResponse({ status: 400, description: 'Only active listings can be paused' })
+  @ApiResponse({
+    status: 400,
+    description: 'Only active listings can be paused',
+  })
   pause(@Param('id') id: string, @Req() req: AuthRequest) {
     return this.listingsService.pause(id, req.user.id);
   }
@@ -130,7 +156,10 @@ export class ListingsController {
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Reactivate a paused listing' })
   @ApiResponse({ status: 200, description: 'Listing activated successfully' })
-  @ApiResponse({ status: 400, description: 'Only paused listings can be activated' })
+  @ApiResponse({
+    status: 400,
+    description: 'Only paused listings can be activated',
+  })
   activate(@Param('id') id: string, @Req() req: AuthRequest) {
     return this.listingsService.activate(id, req.user.id);
   }
@@ -153,7 +182,10 @@ export class ListingsController {
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Approve a pending listing (Admin only)' })
   @ApiResponse({ status: 200, description: 'Listing approved successfully' })
-  @ApiResponse({ status: 400, description: 'Only pending listings can be approved' })
+  @ApiResponse({
+    status: 400,
+    description: 'Only pending listings can be approved',
+  })
   @ApiResponse({ status: 403, description: 'Forbidden - Admin only' })
   approveListing(@Param('id') id: string) {
     return this.listingsService.approveListing(id);
@@ -165,10 +197,13 @@ export class ListingsController {
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Reject a pending listing (Admin only)' })
   @ApiResponse({ status: 200, description: 'Listing rejected successfully' })
-  @ApiResponse({ status: 400, description: 'Only pending listings can be rejected' })
+  @ApiResponse({
+    status: 400,
+    description: 'Only pending listings can be rejected',
+  })
   @ApiResponse({ status: 403, description: 'Forbidden - Admin only' })
-  rejectListing(@Param('id') id: string, @Body() rejectDto: RejectListingDto) {
-    return this.listingsService.rejectListing(id, rejectDto.reason);
+  rejectListing(@Param('id') id: string) {
+    return this.listingsService.rejectListing(id);
   }
 
   // Saved listings (favorites)
@@ -176,7 +211,10 @@ export class ListingsController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Toggle save/unsave listing (add to favorites)' })
-  @ApiResponse({ status: 200, description: 'Listing saved/unsaved successfully' })
+  @ApiResponse({
+    status: 200,
+    description: 'Listing saved/unsaved successfully',
+  })
   @ApiResponse({ status: 404, description: 'Listing not found' })
   toggleSaveListing(@Param('id') id: string, @Req() req: AuthRequest) {
     return this.listingsService.toggleSaveListing(req.user.id, id);
@@ -186,15 +224,24 @@ export class ListingsController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Get my saved listings' })
-  @ApiResponse({ status: 200, description: 'Saved listings retrieved successfully' })
-  getSavedListings(@Req() req: AuthRequest, @Query('buildingId') buildingId?: string) {
+  @ApiResponse({
+    status: 200,
+    description: 'Saved listings retrieved successfully',
+  })
+  getSavedListings(
+    @Req() req: AuthRequest,
+    @Query('buildingId') buildingId?: string,
+  ) {
     return this.listingsService.getSavedListings(req.user.id, buildingId);
   }
 
   // Availability management (for services)
   @Get(':id/availability')
   @ApiOperation({ summary: 'Get listing availability (for services)' })
-  @ApiResponse({ status: 200, description: 'Availability retrieved successfully' })
+  @ApiResponse({
+    status: 200,
+    description: 'Availability retrieved successfully',
+  })
   @ApiResponse({ status: 404, description: 'Listing not found' })
   getAvailability(@Param('id') id: string) {
     return this.listingsService.getAvailability(id);
@@ -204,7 +251,10 @@ export class ListingsController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Update listing availability (for services)' })
-  @ApiResponse({ status: 200, description: 'Availability updated successfully' })
+  @ApiResponse({
+    status: 200,
+    description: 'Availability updated successfully',
+  })
   @ApiResponse({ status: 400, description: 'Invalid time slots' })
   @ApiResponse({ status: 403, description: 'Not authorized' })
   @ApiResponse({ status: 404, description: 'Listing not found' })
@@ -226,7 +276,9 @@ export class ListingsController {
   @ApiBearerAuth()
   @UseInterceptors(FilesInterceptor('photos', 10))
   @ApiConsumes('multipart/form-data')
-  @ApiOperation({ summary: 'Upload photos to a listing (max 10 photos, 5MB each)' })
+  @ApiOperation({
+    summary: 'Upload photos to a listing (max 10 photos, 5MB each)',
+  })
   @ApiResponse({ status: 201, description: 'Photos uploaded successfully' })
   @ApiResponse({ status: 400, description: 'Invalid file or limit exceeded' })
   @ApiResponse({ status: 403, description: 'Not authorized' })
@@ -288,6 +340,10 @@ export class ListingsController {
     @Req() req: AuthRequest,
     @Body() body: { photoOrders: Array<{ photoId: string; order: number }> },
   ) {
-    return this.listingsService.reorderPhotos(id, req.user.id, body.photoOrders);
+    return this.listingsService.reorderPhotos(
+      id,
+      req.user.id,
+      body.photoOrders,
+    );
   }
 }

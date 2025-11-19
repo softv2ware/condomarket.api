@@ -3,8 +3,18 @@ import { ListingsService } from './listings.service';
 import { PrismaService } from '~/prisma';
 import { SellerSubscriptionsService } from '../seller-subscriptions/seller-subscriptions.service';
 import { S3Service } from '../common/s3/s3.service';
-import { NotFoundException, BadRequestException, ForbiddenException } from '@nestjs/common';
-import { ListingStatus, ListingType, SubscriptionTier, CategoryType, AvailabilityType } from '@prisma/client';
+import {
+  NotFoundException,
+  BadRequestException,
+  ForbiddenException,
+} from '@nestjs/common';
+import {
+  ListingStatus,
+  ListingType,
+  SubscriptionTier,
+  CategoryType,
+  AvailabilityType,
+} from '@prisma/client';
 
 describe('ListingsService', () => {
   let service: ListingsService;
@@ -83,7 +93,9 @@ describe('ListingsService', () => {
 
     service = module.get<ListingsService>(ListingsService);
     prisma = module.get<PrismaService>(PrismaService);
-    subscriptionsService = module.get<SellerSubscriptionsService>(SellerSubscriptionsService);
+    subscriptionsService = module.get<SellerSubscriptionsService>(
+      SellerSubscriptionsService,
+    );
     s3Service = module.get<S3Service>(S3Service);
   });
 
@@ -124,9 +136,11 @@ describe('ListingsService', () => {
         name: 'Test Building',
       });
 
-      mockSubscriptionsService.getActiveSubscriptionForBuilding.mockResolvedValue({
-        plan: { tier: SubscriptionTier.STANDARD },
-      });
+      mockSubscriptionsService.getActiveSubscriptionForBuilding.mockResolvedValue(
+        {
+          plan: { tier: SubscriptionTier.STANDARD },
+        },
+      );
 
       const mockListing = {
         id: 'listing-1',
@@ -157,7 +171,9 @@ describe('ListingsService', () => {
         maxListings: 1,
       });
 
-      await expect(service.create(userId, createListingDto)).rejects.toThrow(BadRequestException);
+      await expect(service.create(userId, createListingDto)).rejects.toThrow(
+        BadRequestException,
+      );
       expect(mockPrismaService.listing.create).not.toHaveBeenCalled();
     });
 
@@ -168,7 +184,9 @@ describe('ListingsService', () => {
 
       mockPrismaService.category.findUnique.mockResolvedValue(null);
 
-      await expect(service.create(userId, createListingDto)).rejects.toThrow(NotFoundException);
+      await expect(service.create(userId, createListingDto)).rejects.toThrow(
+        NotFoundException,
+      );
     });
 
     it('should throw NotFoundException when building does not exist', async () => {
@@ -182,7 +200,9 @@ describe('ListingsService', () => {
 
       mockPrismaService.building.findUnique.mockResolvedValue(null);
 
-      await expect(service.create(userId, createListingDto)).rejects.toThrow(NotFoundException);
+      await expect(service.create(userId, createListingDto)).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 
@@ -280,7 +300,9 @@ describe('ListingsService', () => {
     it('should throw NotFoundException when listing does not exist', async () => {
       mockPrismaService.listing.findUnique.mockResolvedValue(null);
 
-      await expect(service.findOne('non-existent')).rejects.toThrow(NotFoundException);
+      await expect(service.findOne('non-existent')).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 
@@ -320,9 +342,9 @@ describe('ListingsService', () => {
 
       mockPrismaService.listing.findUnique.mockResolvedValue(mockListing);
 
-      await expect(service.update(listingId, userId, { title: 'New' })).rejects.toThrow(
-        ForbiddenException,
-      );
+      await expect(
+        service.update(listingId, userId, { title: 'New' }),
+      ).rejects.toThrow(ForbiddenException);
     });
   });
 
@@ -362,7 +384,9 @@ describe('ListingsService', () => {
 
       mockPrismaService.listing.findUnique.mockResolvedValue(mockListing);
 
-      await expect(service.publish(listingId, userId)).rejects.toThrow(BadRequestException);
+      await expect(service.publish(listingId, userId)).rejects.toThrow(
+        BadRequestException,
+      );
     });
   });
 
@@ -397,7 +421,9 @@ describe('ListingsService', () => {
 
       mockPrismaService.listing.findUnique.mockResolvedValue(mockListing);
 
-      await expect(service.pause(listingId, userId)).rejects.toThrow(BadRequestException);
+      await expect(service.pause(listingId, userId)).rejects.toThrow(
+        BadRequestException,
+      );
     });
   });
 
@@ -450,7 +476,9 @@ describe('ListingsService', () => {
 
       mockPrismaService.listing.findUnique.mockResolvedValue(mockListing);
 
-      await expect(service.approveListing('listing-1')).rejects.toThrow(BadRequestException);
+      await expect(service.approveListing('listing-1')).rejects.toThrow(
+        BadRequestException,
+      );
     });
   });
 
@@ -467,7 +495,10 @@ describe('ListingsService', () => {
         status: ListingStatus.REJECTED,
       });
 
-      const result = await service.rejectListing('listing-1', 'Invalid content');
+      const result = await service.rejectListing(
+        'listing-1',
+        'Invalid content',
+      );
 
       expect(result.status).toBe(ListingStatus.REJECTED);
     });
@@ -538,7 +569,9 @@ describe('ListingsService', () => {
           photos: [{ url: 'https://s3.amazonaws.com/test.jpg' }],
         });
 
-      mockS3Service.uploadFiles.mockResolvedValue(['https://s3.amazonaws.com/test.jpg']);
+      mockS3Service.uploadFiles.mockResolvedValue([
+        'https://s3.amazonaws.com/test.jpg',
+      ]);
       mockPrismaService.listingPhoto.createMany.mockResolvedValue({ count: 1 });
 
       const result = await service.uploadPhotos(listingId, userId, mockFiles);
@@ -559,9 +592,9 @@ describe('ListingsService', () => {
         photos: [],
       });
 
-      await expect(service.uploadPhotos(listingId, userId, mockFiles as any)).rejects.toThrow(
-        BadRequestException,
-      );
+      await expect(
+        service.uploadPhotos(listingId, userId, mockFiles as any),
+      ).rejects.toThrow(BadRequestException);
     });
 
     it('should throw BadRequestException for invalid file type', async () => {
@@ -579,9 +612,9 @@ describe('ListingsService', () => {
         photos: [],
       });
 
-      await expect(service.uploadPhotos(listingId, userId, mockFiles)).rejects.toThrow(
-        BadRequestException,
-      );
+      await expect(
+        service.uploadPhotos(listingId, userId, mockFiles),
+      ).rejects.toThrow(BadRequestException);
     });
 
     it('should throw BadRequestException for file size exceeding limit', async () => {
@@ -599,9 +632,9 @@ describe('ListingsService', () => {
         photos: [],
       });
 
-      await expect(service.uploadPhotos(listingId, userId, mockFiles)).rejects.toThrow(
-        BadRequestException,
-      );
+      await expect(
+        service.uploadPhotos(listingId, userId, mockFiles),
+      ).rejects.toThrow(BadRequestException);
     });
   });
 
@@ -638,7 +671,9 @@ describe('ListingsService', () => {
         },
       });
 
-      await expect(service.deletePhoto(photoId, userId)).rejects.toThrow(ForbiddenException);
+      await expect(service.deletePhoto(photoId, userId)).rejects.toThrow(
+        ForbiddenException,
+      );
     });
   });
 
@@ -657,18 +692,30 @@ describe('ListingsService', () => {
         sellerId: userId,
       });
 
-      mockPrismaService.listingAvailability.deleteMany.mockResolvedValue({ count: 0 });
-      mockPrismaService.listingAvailability.createMany.mockResolvedValue({ count: 2 });
+      mockPrismaService.listingAvailability.deleteMany.mockResolvedValue({
+        count: 0,
+      });
+      mockPrismaService.listingAvailability.createMany.mockResolvedValue({
+        count: 2,
+      });
 
       mockPrismaService.listing.findUnique.mockResolvedValueOnce({
         id: listingId,
         availability,
       });
 
-      const result = await service.updateAvailability(listingId, userId, availability);
+      const result = await service.updateAvailability(
+        listingId,
+        userId,
+        availability,
+      );
 
-      expect(mockPrismaService.listingAvailability.deleteMany).toHaveBeenCalled();
-      expect(mockPrismaService.listingAvailability.createMany).toHaveBeenCalled();
+      expect(
+        mockPrismaService.listingAvailability.deleteMany,
+      ).toHaveBeenCalled();
+      expect(
+        mockPrismaService.listingAvailability.createMany,
+      ).toHaveBeenCalled();
     });
 
     it('should throw BadRequestException for invalid time slots', async () => {

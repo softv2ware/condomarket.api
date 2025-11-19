@@ -1,4 +1,9 @@
-import { CanActivate, ExecutionContext, Injectable, Logger } from '@nestjs/common';
+import {
+  CanActivate,
+  ExecutionContext,
+  Injectable,
+  Logger,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { WsException } from '@nestjs/websockets';
 import { Socket } from 'socket.io';
@@ -16,11 +21,11 @@ export class WsJwtGuard implements CanActivate {
   async canActivate(context: ExecutionContext): Promise<boolean> {
     try {
       const client: AuthenticatedSocket = context.switchToWs().getClient();
-      
+
       // Extract token from handshake auth or query
       const token =
-        client.handshake.auth?.token || 
-        client.handshake.query?.token as string;
+        client.handshake.auth?.token ||
+        (client.handshake.query?.token as string);
 
       if (!token) {
         throw new WsException('Missing authentication token');

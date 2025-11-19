@@ -125,10 +125,7 @@ export class CategoriesService {
         parentId: null,
         ...(type && { type }),
         ...(buildingId && {
-          OR: [
-            { buildingId },
-            { buildingId: null },
-          ],
+          OR: [{ buildingId }, { buildingId: null }],
         }),
       },
       include: {
@@ -217,9 +214,7 @@ export class CategoriesService {
     }
 
     // Update slug if name changed
-    const slug = updateDto.name
-      ? this.generateSlug(updateDto.name)
-      : undefined;
+    const slug = updateDto.name ? this.generateSlug(updateDto.name) : undefined;
 
     const updated = await this.prisma.category.update({
       where: { id },

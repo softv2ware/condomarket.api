@@ -1,5 +1,10 @@
 import { Controller, Get, Param, Query, UseGuards } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBearerAuth,
+} from '@nestjs/swagger';
 import { AnalyticsService } from './analytics.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
@@ -17,7 +22,9 @@ export class AnalyticsController {
   // Platform Admin Endpoints
   @Get('platform/overview')
   @Roles(UserRole.PLATFORM_ADMIN)
-  @ApiOperation({ summary: 'Get platform-wide analytics overview (Platform Admin)' })
+  @ApiOperation({
+    summary: 'Get platform-wide analytics overview (Platform Admin)',
+  })
   @ApiResponse({ status: 200, description: 'Returns platform overview' })
   async getPlatformOverview() {
     return this.analyticsService.getPlatformOverview();
@@ -88,7 +95,9 @@ export class AnalyticsController {
   @Roles(UserRole.PLATFORM_ADMIN, UserRole.BUILDING_ADMIN)
   @ApiOperation({ summary: 'Get category distribution in building' })
   @ApiResponse({ status: 200, description: 'Returns category distribution' })
-  async getBuildingCategoryDistribution(@Param('buildingId') buildingId: string) {
+  async getBuildingCategoryDistribution(
+    @Param('buildingId') buildingId: string,
+  ) {
     return this.analyticsService.getBuildingCategoryDistribution(buildingId);
   }
 

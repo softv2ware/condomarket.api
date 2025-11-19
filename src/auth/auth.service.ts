@@ -38,7 +38,9 @@ export class AuthService {
     });
 
     if (existingUser) {
-      throw new ConflictException('User with this email or phone already exists');
+      throw new ConflictException(
+        'User with this email or phone already exists',
+      );
     }
 
     // Hash password
@@ -65,10 +67,12 @@ export class AuthService {
     // Initialize notification preferences for the new user
     try {
       await this.notificationsService.initializePreferences(user.id);
-      this.logger.log(`Initialized notification preferences for user ${user.id}`);
+      this.logger.log(
+        `Initialized notification preferences for user ${user.id}`,
+      );
     } catch (error) {
       this.logger.error(
-        `Failed to initialize notification preferences for user ${user.id}: ${error.message}`,
+        `Failed to initialize notification preferences for user ${user.id}: ${error instanceof Error ? error.message : 'Unknown error'}`,
       );
       // Non-blocking: user registration should succeed even if preferences fail
     }
@@ -104,7 +108,9 @@ export class AuthService {
 
     // Check if user is suspended or banned
     if (user.status === 'SUSPENDED' || user.status === 'BANNED') {
-      throw new UnauthorizedException('Your account has been suspended or banned');
+      throw new UnauthorizedException(
+        'Your account has been suspended or banned',
+      );
     }
 
     // Generate tokens
@@ -118,7 +124,7 @@ export class AuthService {
 
   async refreshToken(refreshToken: string) {
     try {
-      const payload = this.jwtService.verify(refreshToken, {
+      const payload = this.jwtService.verify<{ sub: string; email: string; role: string }>(refreshToken, {
         secret: this.configService.get<string>('jwt.refreshSecret'),
       });
 
@@ -134,7 +140,7 @@ export class AuthService {
       const tokens = await this.generateTokens(user.id, user.email, user.role);
 
       return tokens;
-    } catch (error) {
+    } catch {
       throw new UnauthorizedException('Invalid refresh token');
     }
   }
@@ -154,18 +160,24 @@ export class AuthService {
 
   private async generateTokens(userId: string, email: string, role: string) {
     const payload = { sub: userId, email, role };
-    const jwtSecret = this.configService.get<string>('jwt.secret') || 'default-secret';
+    const jwtSecret =
+      this.configService.get<string>('jwt.secret') || 'default-secret';
     const jwtExpiry = this.configService.get<string>('jwt.expiresIn') || '15m';
-    const refreshSecret = this.configService.get<string>('jwt.refreshSecret') || 'default-refresh-secret';
-    const refreshExpiry = this.configService.get<string>('jwt.refreshExpiresIn') || '7d';
+    const refreshSecret =
+      this.configService.get<string>('jwt.refreshSecret') ||
+      'default-refresh-secret';
+    const refreshExpiry =
+      this.configService.get<string>('jwt.refreshExpiresIn') || '7d';
 
     const [accessToken, refreshToken] = await Promise.all([
       this.jwtService.signAsync(payload, {
         secret: jwtSecret,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         expiresIn: jwtExpiry as any,
       }),
       this.jwtService.signAsync(payload, {
         secret: refreshSecret,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         expiresIn: refreshExpiry as any,
       }),
     ]);
@@ -179,6 +191,7 @@ export class AuthService {
   private excludePassword<T extends { password: string }>(
     user: T,
   ): Omit<T, 'password'> {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { password, ...result } = user;
     return result;
   }
@@ -213,7 +226,11 @@ export class AuthService {
 
     // Send email
     const name = user.profile?.firstName || 'User';
-    await this.emailService.sendVerificationEmail(user.email, name, verificationToken);
+    await this.emailService.sendVerificationEmail(
+      user.email,
+      name,
+      verificationToken,
+    );
   }
 
   async verifyEmail(token: string): Promise<void> {
@@ -273,7 +290,11 @@ export class AuthService {
 
     // Send email
     const name = user.profile?.firstName || 'User';
-    await this.emailService.sendPasswordResetEmail(user.email, name, resetToken);
+    await this.emailService.sendPasswordResetEmail(
+      user.email,
+      name,
+      resetToken,
+    );
   }
 
   async resetPassword(token: string, newPassword: string): Promise<void> {

@@ -106,7 +106,9 @@ export class ReputationService {
     ]);
 
     const completionRate =
-      totalOrders > 0 ? ((totalOrders - cancelledOrders) / totalOrders) * 100 : 0;
+      totalOrders > 0
+        ? ((totalOrders - cancelledOrders) / totalOrders) * 100
+        : 0;
 
     // Calculate response rate and time (from messages)
     const threadIds = await this.prisma.chatThread.findMany({
@@ -120,7 +122,7 @@ export class ReputationService {
 
     const messages = await this.prisma.message.findMany({
       where: {
-        threadId: { in: threadIds.map(t => t.id) },
+        threadId: { in: threadIds.map((t) => t.id) },
         senderId: userId,
       },
       orderBy: { sentAt: 'asc' },
@@ -137,8 +139,8 @@ export class ReputationService {
         take: 10,
       });
 
-      const firstMessage = threadMessages.find(m => m.senderId !== userId);
-      const firstResponse = threadMessages.find(m => m.senderId === userId);
+      const firstMessage = threadMessages.find((m) => m.senderId !== userId);
+      const firstResponse = threadMessages.find((m) => m.senderId === userId);
 
       if (firstMessage && firstResponse) {
         const responseTime =
@@ -149,9 +151,12 @@ export class ReputationService {
     }
 
     const avgResponseTime =
-      responseCount > 0 ? Math.floor(totalResponseTime / responseCount / (1000 * 60)) : null; // in minutes
+      responseCount > 0
+        ? Math.floor(totalResponseTime / responseCount / (1000 * 60))
+        : null; // in minutes
 
-    const responseRate = threadIds.length > 0 ? (responseCount / threadIds.length) * 100 : 0;
+    const responseRate =
+      threadIds.length > 0 ? (responseCount / threadIds.length) * 100 : 0;
 
     // Calculate reliability score (0-100)
     let reliabilityScore = 50; // Base score
@@ -169,8 +174,10 @@ export class ReputationService {
     reliabilityScore = Math.max(0, Math.min(100, reliabilityScore)); // Clamp 0-100
 
     // Determine badges
-    const trustedSeller = totalSales >= 10 && sellerRating !== null && sellerRating >= 4.5;
-    const fastResponder = avgResponseTime !== null && avgResponseTime < 30 && responseRate >= 80;
+    const trustedSeller =
+      totalSales >= 10 && sellerRating !== null && sellerRating >= 4.5;
+    const fastResponder =
+      avgResponseTime !== null && avgResponseTime < 30 && responseRate >= 80;
     const topRated =
       (sellerRating !== null && sellerRating >= 4.8) ||
       (buyerRating !== null && buyerRating >= 4.8);
@@ -231,7 +238,10 @@ export class ReputationService {
         await this.calculateReputation(user.id);
         count++;
       } catch (error) {
-        console.error(`Failed to calculate reputation for user ${user.id}:`, error);
+        console.error(
+          `Failed to calculate reputation for user ${user.id}:`,
+          error,
+        );
       }
     }
 
@@ -267,7 +277,7 @@ export class ReputationService {
       },
     });
 
-    return topUsers.map(rep => ({
+    return topUsers.map((rep) => ({
       ...new ReputationEntity(rep),
       user: rep.user,
     }));
@@ -302,7 +312,7 @@ export class ReputationService {
       },
     });
 
-    return trustedSellers.map(rep => ({
+    return trustedSellers.map((rep) => ({
       ...new ReputationEntity(rep),
       user: rep.user,
     }));

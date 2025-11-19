@@ -1,4 +1,9 @@
-import { ModerationAction, ModerationType, ModerationStatus, Prisma } from '@prisma/client';
+import {
+  ModerationAction,
+  ModerationType,
+  ModerationStatus,
+  Prisma,
+} from '@prisma/client';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class ModerationActionEntity implements Partial<ModerationAction> {

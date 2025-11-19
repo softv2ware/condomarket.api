@@ -218,10 +218,10 @@ export class TransactionsService {
 
     // Verify user has access
     const isBuyerOrSeller =
-      (transaction.order?.buyerId === userId ||
-        transaction.order?.sellerId === userId) ||
-      (transaction.booking?.buyerId === userId ||
-        transaction.booking?.sellerId === userId);
+      transaction.order?.buyerId === userId ||
+      transaction.order?.sellerId === userId ||
+      transaction.booking?.buyerId === userId ||
+      transaction.booking?.sellerId === userId;
 
     if (!isBuyerOrSeller) {
       throw new ForbiddenException(
@@ -319,10 +319,7 @@ export class TransactionsService {
       },
     });
 
-    const totalRevenue = transactions.reduce(
-      (sum, txn) => sum + txn.amount,
-      0,
-    );
+    const totalRevenue = transactions.reduce((sum, txn) => sum + txn.amount, 0);
 
     const thisMonth = new Date();
     thisMonth.setDate(1);

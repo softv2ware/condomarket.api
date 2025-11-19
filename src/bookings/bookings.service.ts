@@ -178,7 +178,9 @@ export class BookingsService {
         },
       });
     } catch (error) {
-      this.logger.error(`Failed to send booking requested notification: ${error.message}`);
+      this.logger.error(
+        `Failed to send booking requested notification: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      );
     }
 
     return booking;
@@ -208,11 +210,17 @@ export class BookingsService {
           },
           // New booking ends during an existing booking
           {
-            AND: [{ startTime: { lt: endTime } }, { endTime: { gte: endTime } }],
+            AND: [
+              { startTime: { lt: endTime } },
+              { endTime: { gte: endTime } },
+            ],
           },
           // New booking completely contains an existing booking
           {
-            AND: [{ startTime: { gte: startTime } }, { endTime: { lte: endTime } }],
+            AND: [
+              { startTime: { gte: startTime } },
+              { endTime: { lte: endTime } },
+            ],
           },
         ],
       },
@@ -375,7 +383,10 @@ export class BookingsService {
     });
 
     // Send notifications based on status change
-    await this.sendBookingStatusNotification(updatedBooking, updateBookingStatusDto.status);
+    await this.sendBookingStatusNotification(
+      updatedBooking,
+      updateBookingStatusDto.status,
+    );
 
     return updatedBooking;
   }
@@ -420,8 +431,12 @@ export class BookingsService {
 
         case BookingStatus.CANCELLED:
           // Notify the other party
-          recipientId = booking.buyerId === booking.sellerId ? booking.buyerId : 
-                        (booking.statusHistory[0]?.changedBy === booking.buyerId ? booking.sellerId : booking.buyerId);
+          recipientId =
+            booking.buyerId === booking.sellerId
+              ? booking.buyerId
+              : booking.statusHistory[0]?.changedBy === booking.buyerId
+                ? booking.sellerId
+                : booking.buyerId;
           notificationType = NotificationType.BOOKING_CANCELLED;
           title = 'Booking Cancelled';
           message = `Booking for ${booking.listing.title} has been cancelled`;
@@ -443,7 +458,9 @@ export class BookingsService {
         },
       });
     } catch (error) {
-      this.logger.error(`Failed to send booking status notification: ${error.message}`);
+      this.logger.error(
+        `Failed to send booking status notification: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      );
     }
   }
 
@@ -489,7 +506,10 @@ export class BookingsService {
       BookingStatus.NO_SHOW,
     ];
 
-    if (sellerOnlyStatuses.some((status) => status === newStatus) && !isSeller) {
+    if (
+      sellerOnlyStatuses.some((status) => status === newStatus) &&
+      !isSeller
+    ) {
       throw new ForbiddenException(
         'Only the seller can perform this status change',
       );
@@ -526,7 +546,9 @@ export class BookingsService {
       });
       this.logger.log(`Chat thread created for booking ${id}`);
     } catch (error) {
-      this.logger.error(`Failed to create chat thread for booking ${id}: ${error.message}`);
+      this.logger.error(
+        `Failed to create chat thread for booking ${id}: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      );
       // Don't fail the booking confirmation if chat creation fails
     }
 

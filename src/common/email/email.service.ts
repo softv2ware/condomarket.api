@@ -31,7 +31,10 @@ export class EmailService {
 
       this.logger.log(`Verification email sent to ${email}`);
     } catch (error) {
-      this.logger.error(`Failed to send verification email to ${email}`, error.stack);
+      this.logger.error(
+        `Failed to send verification email to ${email}`,
+        error.stack,
+      );
       throw new Error('Failed to send verification email');
     }
   }
@@ -56,7 +59,10 @@ export class EmailService {
 
       this.logger.log(`Password reset email sent to ${email}`);
     } catch (error) {
-      this.logger.error(`Failed to send password reset email to ${email}`, error.stack);
+      this.logger.error(
+        `Failed to send password reset email to ${email}`,
+        error.stack,
+      );
       throw new Error('Failed to send password reset email');
     }
   }
@@ -74,7 +80,10 @@ export class EmailService {
 
       this.logger.log(`Welcome email sent to ${email}`);
     } catch (error) {
-      this.logger.error(`Failed to send welcome email to ${email}`, error.stack);
+      this.logger.error(
+        `Failed to send welcome email to ${email}`,
+        error.stack,
+      );
       // Don't throw error for welcome email - it's not critical
     }
   }

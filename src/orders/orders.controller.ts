@@ -75,10 +75,7 @@ export class OrdersController {
   })
   @ApiResponse({ status: 403, description: 'Forbidden' })
   @ApiResponse({ status: 404, description: 'Order not found' })
-  findOne(
-    @Param('id') id: string,
-    @CurrentUser() user: { userId: string },
-  ) {
+  findOne(@Param('id') id: string, @CurrentUser() user: { userId: string }) {
     return this.ordersService.findOne(id, user.userId);
   }
 
@@ -111,10 +108,7 @@ export class OrdersController {
     description: 'Order confirmed successfully',
     type: Order,
   })
-  confirm(
-    @Param('id') id: string,
-    @CurrentUser() user: { userId: string },
-  ) {
+  confirm(@Param('id') id: string, @CurrentUser() user: { userId: string }) {
     return this.ordersService.confirm(id, user.userId);
   }
 
@@ -153,10 +147,7 @@ export class OrdersController {
     description: 'Order marked as completed',
     type: Order,
   })
-  complete(
-    @Param('id') id: string,
-    @CurrentUser() user: { userId: string },
-  ) {
+  complete(@Param('id') id: string, @CurrentUser() user: { userId: string }) {
     return this.ordersService.complete(id, user.userId);
   }
 

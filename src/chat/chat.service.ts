@@ -36,10 +36,16 @@ export class ChatService {
                 select: { title: true, photos: { take: 1 } },
               },
               buyer: {
-                select: { id: true, profile: { select: { firstName: true, lastName: true } } },
+                select: {
+                  id: true,
+                  profile: { select: { firstName: true, lastName: true } },
+                },
               },
               seller: {
-                select: { id: true, profile: { select: { firstName: true, lastName: true } } },
+                select: {
+                  id: true,
+                  profile: { select: { firstName: true, lastName: true } },
+                },
               },
             },
           },
@@ -49,10 +55,16 @@ export class ChatService {
                 select: { title: true, photos: { take: 1 } },
               },
               buyer: {
-                select: { id: true, profile: { select: { firstName: true, lastName: true } } },
+                select: {
+                  id: true,
+                  profile: { select: { firstName: true, lastName: true } },
+                },
               },
               seller: {
-                select: { id: true, profile: { select: { firstName: true, lastName: true } } },
+                select: {
+                  id: true,
+                  profile: { select: { firstName: true, lastName: true } },
+                },
               },
             },
           },
@@ -120,10 +132,28 @@ export class ChatService {
               select: { title: true, photos: { take: 1 } },
             },
             buyer: {
-              select: { id: true, profile: { select: { firstName: true, lastName: true, profilePictureUrl: true } } },
+              select: {
+                id: true,
+                profile: {
+                  select: {
+                    firstName: true,
+                    lastName: true,
+                    profilePictureUrl: true,
+                  },
+                },
+              },
             },
             seller: {
-              select: { id: true, profile: { select: { firstName: true, lastName: true, profilePictureUrl: true } } },
+              select: {
+                id: true,
+                profile: {
+                  select: {
+                    firstName: true,
+                    lastName: true,
+                    profilePictureUrl: true,
+                  },
+                },
+              },
             },
           },
         },
@@ -133,10 +163,28 @@ export class ChatService {
               select: { title: true, photos: { take: 1 } },
             },
             buyer: {
-              select: { id: true, profile: { select: { firstName: true, lastName: true, profilePictureUrl: true } } },
+              select: {
+                id: true,
+                profile: {
+                  select: {
+                    firstName: true,
+                    lastName: true,
+                    profilePictureUrl: true,
+                  },
+                },
+              },
             },
             seller: {
-              select: { id: true, profile: { select: { firstName: true, lastName: true, profilePictureUrl: true } } },
+              select: {
+                id: true,
+                profile: {
+                  select: {
+                    firstName: true,
+                    lastName: true,
+                    profilePictureUrl: true,
+                  },
+                },
+              },
             },
           },
         },
@@ -149,7 +197,9 @@ export class ChatService {
 
     // Check if user is a participant
     if (!thread.participantIds.includes(userId)) {
-      throw new ForbiddenException('You do not have access to this chat thread');
+      throw new ForbiddenException(
+        'You do not have access to this chat thread',
+      );
     }
 
     // Get messages with pagination
@@ -176,7 +226,11 @@ export class ChatService {
           select: {
             id: true,
             profile: {
-              select: { firstName: true, lastName: true, profilePictureUrl: true },
+              select: {
+                firstName: true,
+                lastName: true,
+                profilePictureUrl: true,
+              },
             },
           },
         },
@@ -204,7 +258,9 @@ export class ChatService {
     }
 
     if (!thread.participantIds.includes(userId)) {
-      throw new ForbiddenException('You do not have access to this chat thread');
+      throw new ForbiddenException(
+        'You do not have access to this chat thread',
+      );
     }
 
     const message = await this.prisma.message.create({
@@ -221,7 +277,11 @@ export class ChatService {
           select: {
             id: true,
             profile: {
-              select: { firstName: true, lastName: true, profilePictureUrl: true },
+              select: {
+                firstName: true,
+                lastName: true,
+                profilePictureUrl: true,
+              },
             },
           },
         },
@@ -261,7 +321,9 @@ export class ChatService {
     // Check if within 15 minutes
     const fifteenMinutesAgo = new Date(Date.now() - 15 * 60 * 1000);
     if (message.sentAt < fifteenMinutesAgo) {
-      throw new BadRequestException('Messages can only be edited within 15 minutes');
+      throw new BadRequestException(
+        'Messages can only be edited within 15 minutes',
+      );
     }
 
     return this.prisma.message.update({
@@ -275,7 +337,11 @@ export class ChatService {
           select: {
             id: true,
             profile: {
-              select: { firstName: true, lastName: true, profilePictureUrl: true },
+              select: {
+                firstName: true,
+                lastName: true,
+                profilePictureUrl: true,
+              },
             },
           },
         },
@@ -326,7 +392,9 @@ export class ChatService {
     }
 
     if (!thread.participantIds.includes(userId)) {
-      throw new ForbiddenException('You do not have access to this chat thread');
+      throw new ForbiddenException(
+        'You do not have access to this chat thread',
+      );
     }
 
     // Get all unread messages in this thread

@@ -5,7 +5,6 @@ import { BadRequestException, NotFoundException } from '@nestjs/common';
 
 describe('BlockingService', () => {
   let service: BlockingService;
-  let prisma: PrismaService;
 
   const mockPrismaService = {
     blockedUser: {
@@ -32,7 +31,6 @@ describe('BlockingService', () => {
     }).compile();
 
     service = module.get<BlockingService>(BlockingService);
-    prisma = module.get<PrismaService>(PrismaService);
 
     jest.clearAllMocks();
   });
@@ -74,7 +72,9 @@ describe('BlockingService', () => {
       const userId = 'user-123';
       const dto = { blockedId: userId };
 
-      await expect(service.blockUser(userId, dto)).rejects.toThrow(BadRequestException);
+      await expect(service.blockUser(userId, dto)).rejects.toThrow(
+        BadRequestException,
+      );
     });
 
     it('should throw NotFoundException for non-existent user', async () => {
@@ -133,8 +133,18 @@ describe('BlockingService', () => {
     it('should return list of blocked users', async () => {
       const userId = 'user-123';
       const mockBlocks = [
-        { id: 'block-1', blockerId: userId, blockedId: 'user-456', createdAt: new Date() },
-        { id: 'block-2', blockerId: userId, blockedId: 'user-789', createdAt: new Date() },
+        {
+          id: 'block-1',
+          blockerId: userId,
+          blockedId: 'user-456',
+          createdAt: new Date(),
+        },
+        {
+          id: 'block-2',
+          blockerId: userId,
+          blockedId: 'user-789',
+          createdAt: new Date(),
+        },
       ];
 
       mockPrismaService.blockedUser.findMany.mockResolvedValue(mockBlocks);
@@ -150,8 +160,18 @@ describe('BlockingService', () => {
     it('should return list of users who blocked this user', async () => {
       const userId = 'user-123';
       const mockBlocks = [
-        { id: 'block-1', blockerId: 'user-456', blockedId: userId, createdAt: new Date() },
-        { id: 'block-2', blockerId: 'user-789', blockedId: userId, createdAt: new Date() },
+        {
+          id: 'block-1',
+          blockerId: 'user-456',
+          blockedId: userId,
+          createdAt: new Date(),
+        },
+        {
+          id: 'block-2',
+          blockerId: 'user-789',
+          blockedId: userId,
+          createdAt: new Date(),
+        },
       ];
 
       mockPrismaService.blockedUser.findMany.mockResolvedValue(mockBlocks);

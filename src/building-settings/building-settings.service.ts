@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ForbiddenException,
+} from '@nestjs/common';
 import { PrismaService } from '~/prisma';
 import { CacheService } from '../common/cache/cache.service';
 import { UpdateBuildingSettingsDto } from './dto/update-building-settings.dto';
@@ -82,14 +86,20 @@ export class BuildingSettingsService {
 
     // Check if user is BUILDING_ADMIN or PLATFORM_ADMIN
     if (user.role !== 'BUILDING_ADMIN' && user.role !== 'PLATFORM_ADMIN') {
-      throw new ForbiddenException('Only building or platform admins can update settings');
+      throw new ForbiddenException(
+        'Only building or platform admins can update settings',
+      );
     }
 
     // For building admins, check they manage this building
     if (user.role === 'BUILDING_ADMIN') {
-      const managesBuilding = user.managedBuildings.some((b) => b.id === buildingId);
+      const managesBuilding = user.managedBuildings.some(
+        (b) => b.id === buildingId,
+      );
       if (!managesBuilding) {
-        throw new ForbiddenException('Can only update settings for buildings you manage');
+        throw new ForbiddenException(
+          'Can only update settings for buildings you manage',
+        );
       }
     }
 

@@ -33,11 +33,12 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   constructor(private readonly chatService: ChatService) {}
 
-  async handleConnection(client: AuthenticatedSocket) {
+  handleConnection(client: AuthenticatedSocket) {
     try {
       // Extract token from handshake auth or query
       const token =
-        client.handshake.auth?.token || client.handshake.query?.token;
+        (client.handshake.auth?.token as string | undefined) || 
+        (client.handshake.query?.token as string | undefined);
 
       if (!token) {
         this.logger.warn(`Client ${client.id} connected without token`);
@@ -49,7 +50,9 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       // For now, just log the connection
       this.logger.log(`Client connected: ${client.id}`);
     } catch (error) {
-      this.logger.error(`Connection error: ${error.message}`);
+      this.logger.error(
+        `Connection error: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      );
       client.disconnect();
     }
   }
@@ -95,7 +98,9 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         message: 'Successfully joined thread',
       });
     } catch (error) {
-      this.logger.error(`Error joining thread: ${error.message}`);
+      this.logger.error(
+        `Error joining thread: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      );
       client.emit('error', {
         event: 'join_thread',
         message: 'Failed to join thread',
@@ -125,7 +130,9 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         message: 'Successfully left thread',
       });
     } catch (error) {
-      this.logger.error(`Error leaving thread: ${error.message}`);
+      this.logger.error(
+        `Error leaving thread: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      );
       client.emit('error', {
         event: 'leave_thread',
         message: 'Failed to leave thread',
@@ -157,14 +164,13 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         threadId,
       });
 
-      this.logger.log(
-        `Message sent by user ${userId} in thread ${threadId}`,
-      );
+      this.logger.log(`Message sent by user ${userId} in thread ${threadId}`);
     } catch (error) {
-      this.logger.error(`Error sending message: ${error.message}`);
+      const errorMessage = error instanceof Error ? error.message : 'Failed to send message';
+      this.logger.error(`Error sending message: ${errorMessage}`);
       client.emit('error', {
         event: 'send_message',
-        message: error.message || 'Failed to send message',
+        message: errorMessage,
       });
     }
   }
@@ -174,7 +180,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
    */
   @UseGuards(WsJwtGuard)
   @SubscribeMessage('typing')
-  async handleTyping(
+  handleTyping(
     @ConnectedSocket() client: AuthenticatedSocket,
     @MessageBody() data: { threadId: string; isTyping: boolean },
     @WsUser() userId: string,
@@ -189,7 +195,9 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         isTyping,
       });
     } catch (error) {
-      this.logger.error(`Error handling typing indicator: ${error.message}`);
+      this.logger.error(
+        `Error handling typing indicator: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      );
     }
   }
 
@@ -219,7 +227,9 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         userId,
       });
     } catch (error) {
-      this.logger.error(`Error marking messages as read: ${error.message}`);
+      this.logger.error(
+        `Error marking messages as read: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      );
       client.emit('error', {
         event: 'mark_read',
         message: 'Failed to mark messages as read',

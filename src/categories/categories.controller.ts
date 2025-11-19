@@ -9,7 +9,13 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiBearerAuth, ApiResponse, ApiQuery } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiBearerAuth,
+  ApiResponse,
+  ApiQuery,
+} from '@nestjs/swagger';
 import { CategoriesService } from './categories.service';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
@@ -38,7 +44,10 @@ export class CategoriesController {
   @ApiOperation({ summary: 'Get all categories' })
   @ApiQuery({ name: 'type', enum: CategoryType, required: false })
   @ApiQuery({ name: 'buildingId', required: false })
-  @ApiResponse({ status: 200, description: 'Categories retrieved successfully' })
+  @ApiResponse({
+    status: 200,
+    description: 'Categories retrieved successfully',
+  })
   findAll(
     @Query('type') type?: CategoryType,
     @Query('buildingId') buildingId?: string,
@@ -50,7 +59,10 @@ export class CategoriesController {
   @ApiOperation({ summary: 'Get hierarchical category tree' })
   @ApiQuery({ name: 'type', enum: CategoryType, required: false })
   @ApiQuery({ name: 'buildingId', required: false })
-  @ApiResponse({ status: 200, description: 'Category tree retrieved successfully' })
+  @ApiResponse({
+    status: 200,
+    description: 'Category tree retrieved successfully',
+  })
   getCategoryTree(
     @Query('type') type?: CategoryType,
     @Query('buildingId') buildingId?: string,
@@ -84,7 +96,10 @@ export class CategoriesController {
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Delete category (Admin only)' })
   @ApiResponse({ status: 200, description: 'Category deleted successfully' })
-  @ApiResponse({ status: 400, description: 'Cannot delete category with listings or subcategories' })
+  @ApiResponse({
+    status: 400,
+    description: 'Cannot delete category with listings or subcategories',
+  })
   @ApiResponse({ status: 403, description: 'Forbidden - Admin only' })
   @ApiResponse({ status: 404, description: 'Category not found' })
   remove(@Param('id') id: string) {

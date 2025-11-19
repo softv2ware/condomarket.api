@@ -23,19 +23,19 @@ import type { RedisOptions } from 'ioredis';
             password: configService.get('redis.password'),
             db: configService.get('redis.db', 0),
             keyPrefix: configService.get('redis.keyPrefix', 'condomarket:'),
-            
+
             // Connection options
             connectTimeout: 10000,
             retryStrategy: (times: number) => {
               const delay = Math.min(times * 50, 2000);
               return delay;
             },
-            
+
             // Performance optimizations
             enableReadyCheck: true,
             maxRetriesPerRequest: 3,
             enableOfflineQueue: true,
-            
+
             // Reconnection
             reconnectOnError: (err) => {
               const targetError = 'READONLY';

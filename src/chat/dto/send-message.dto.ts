@@ -12,7 +12,9 @@ export class SendMessageDto {
   @IsOptional()
   type?: MessageType;
 
-  @ApiPropertyOptional({ description: 'Additional metadata for images, files, etc.' })
+  @ApiPropertyOptional({
+    description: 'Additional metadata for images, files, etc.',
+  })
   @IsObject()
   @IsOptional()
   metadata?: Record<string, any>;

@@ -1,4 +1,13 @@
-import { IsString, IsEnum, IsNumber, IsOptional, IsBoolean, IsUUID, Min, MaxLength } from 'class-validator';
+import {
+  IsString,
+  IsEnum,
+  IsNumber,
+  IsOptional,
+  IsBoolean,
+  IsUUID,
+  Min,
+  MaxLength,
+} from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { ListingType, AvailabilityType } from '@prisma/client';
 
@@ -22,7 +31,8 @@ export class CreateListingDto {
 
   @ApiProperty({
     description: 'Detailed description',
-    example: 'A comfortable 3-seater couch in excellent condition. Smoke-free home.',
+    example:
+      'A comfortable 3-seater couch in excellent condition. Smoke-free home.',
   })
   @IsString()
   @MaxLength(5000)
@@ -44,7 +54,7 @@ export class CreateListingDto {
 
   @ApiProperty({
     description: 'Price in the specified currency',
-    example: 150.00,
+    example: 150.0,
     minimum: 0,
   })
   @IsNumber()

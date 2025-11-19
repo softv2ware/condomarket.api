@@ -10,32 +10,41 @@ const correlationIdFormat = winston.format((info) => {
 
 export const createWinstonLogger = (appName: string, logLevel: string) => {
   const isDevelopment = process.env.NODE_ENV !== 'production';
-  
+
   const consoleTransport = new winston.transports.Console({
     format: isDevelopment
       ? winston.format.combine(
           winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
           winston.format.errors({ stack: true }),
           correlationIdFormat(),
-          winston.format.printf(({ timestamp, level, message, context, ...meta }) => {
-            if (!chalk || typeof chalk.gray !== 'function') {
-              // Fallback if chalk isn't loaded
-              const ctx = context ? `[${context}]` : '';
-              const metaStr = Object.keys(meta).length ? JSON.stringify(meta) : '';
-              return `${timestamp} ${level.toUpperCase()} ${ctx} ${message} ${metaStr}`;
-            }
-            
-            const ctx = context ? chalk.cyan(`[${context}]`) : '';
-            const metaStr = Object.keys(meta).length ? chalk.gray(JSON.stringify(meta)) : '';
-            
-            let coloredLevel = level.toUpperCase();
-            if (level === 'info') coloredLevel = chalk.green(coloredLevel);
-            else if (level === 'warn') coloredLevel = chalk.yellow(coloredLevel);
-            else if (level === 'error') coloredLevel = chalk.red(coloredLevel);
-            else if (level === 'debug') coloredLevel = chalk.blue(coloredLevel);
-            
-            return `${chalk.gray(timestamp)} ${coloredLevel} ${ctx} ${message} ${metaStr}`;
-          }),
+          winston.format.printf(
+            ({ timestamp, level, message, context, ...meta }) => {
+              if (!chalk || typeof chalk.gray !== 'function') {
+                // Fallback if chalk isn't loaded
+                const ctx = context ? `[${context}]` : '';
+                const metaStr = Object.keys(meta).length
+                  ? JSON.stringify(meta)
+                  : '';
+                return `${timestamp} ${level.toUpperCase()} ${ctx} ${message} ${metaStr}`;
+              }
+
+              const ctx = context ? chalk.cyan(`[${context}]`) : '';
+              const metaStr = Object.keys(meta).length
+                ? chalk.gray(JSON.stringify(meta))
+                : '';
+
+              let coloredLevel = level.toUpperCase();
+              if (level === 'info') coloredLevel = chalk.green(coloredLevel);
+              else if (level === 'warn')
+                coloredLevel = chalk.yellow(coloredLevel);
+              else if (level === 'error')
+                coloredLevel = chalk.red(coloredLevel);
+              else if (level === 'debug')
+                coloredLevel = chalk.blue(coloredLevel);
+
+              return `${chalk.gray(timestamp)} ${coloredLevel} ${ctx} ${message} ${metaStr}`;
+            },
+          ),
         )
       : winston.format.combine(
           winston.format.timestamp(),
@@ -84,9 +93,11 @@ export const createWinstonLogger = (appName: string, logLevel: string) => {
   }
 
   const logger = winston.createLogger(loggerOptions);
-  
+
   // Verify transports are added
-  console.log(`Winston logger created with ${logger.transports.length} transport(s)`);
-  
+  console.log(
+    `Winston logger created with ${logger.transports.length} transport(s)`,
+  );
+
   return logger;
 };

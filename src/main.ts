@@ -4,7 +4,10 @@ import { ConfigService } from '@nestjs/config';
 import { ValidationPipe, VersioningType } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { apiReference } from '@scalar/nestjs-api-reference';
-import { WINSTON_MODULE_NEST_PROVIDER, WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import {
+  WINSTON_MODULE_NEST_PROVIDER,
+  WINSTON_MODULE_PROVIDER,
+} from 'nest-winston';
 import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
 import helmet from 'helmet';
 
@@ -13,7 +16,9 @@ async function bootstrap() {
 
   const configService = app.get(ConfigService);
   const port = configService.get<number>('app.port') || 3000;
-  const corsOrigins = configService.get<string[]>('app.corsOrigins') || ['http://localhost:3000'];
+  const corsOrigins = configService.get<string[]>('app.corsOrigins') || [
+    'http://localhost:3000',
+  ];
 
   // Security - Helmet with CSP configured for Scalar
   app.use(
@@ -22,7 +27,12 @@ async function bootstrap() {
         directives: {
           defaultSrc: ["'self'"],
           styleSrc: ["'self'", "'unsafe-inline'", 'https://cdn.jsdelivr.net'],
-          scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", 'https://cdn.jsdelivr.net'],
+          scriptSrc: [
+            "'self'",
+            "'unsafe-inline'",
+            "'unsafe-eval'",
+            'https://cdn.jsdelivr.net',
+          ],
           imgSrc: ["'self'", 'data:', 'https:'],
           fontSrc: ["'self'", 'data:', 'https://cdn.jsdelivr.net'],
           connectSrc: ["'self'"],
@@ -106,20 +116,28 @@ async function bootstrap() {
   app.enableShutdownHooks();
 
   await app.listen(port);
-  
+
   // Switch to Winston logger after app is fully initialized
   app.useLogger(app.get(WINSTON_MODULE_NEST_PROVIDER));
-  
+
   // Use console.log for startup messages as workaround
-  console.log(`\x1b[32m[INFO]\x1b[0m Application is running on: http://localhost:${port}`);
-  console.log(`\x1b[32m[INFO]\x1b[0m API Reference available at: http://localhost:${port}/reference`);
-  console.log(`\x1b[32m[INFO]\x1b[0m Environment: ${process.env.NODE_ENV || 'development'}`);
+  console.log(
+    `\x1b[32m[INFO]\x1b[0m Application is running on: http://localhost:${port}`,
+  );
+  console.log(
+    `\x1b[32m[INFO]\x1b[0m API Reference available at: http://localhost:${port}/reference`,
+  );
+  console.log(
+    `\x1b[32m[INFO]\x1b[0m Environment: ${process.env.NODE_ENV || 'development'}`,
+  );
 
   // Handle graceful shutdown
   const signals = ['SIGTERM', 'SIGINT'];
   signals.forEach((signal) => {
     process.on(signal, async () => {
-      console.log(`\x1b[33m[WARN]\x1b[0m Received ${signal}, starting graceful shutdown...`);
+      console.log(
+        `\x1b[33m[WARN]\x1b[0m Received ${signal}, starting graceful shutdown...`,
+      );
       await app.close();
       console.log(`\x1b[32m[INFO]\x1b[0m Application closed successfully`);
       process.exit(0);

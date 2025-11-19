@@ -77,8 +77,12 @@ describe('SellerSubscriptionsController', () => {
       ],
     }).compile();
 
-    controller = module.get<SellerSubscriptionsController>(SellerSubscriptionsController);
-    service = module.get<SellerSubscriptionsService>(SellerSubscriptionsService);
+    controller = module.get<SellerSubscriptionsController>(
+      SellerSubscriptionsController,
+    );
+    service = module.get<SellerSubscriptionsService>(
+      SellerSubscriptionsService,
+    );
 
     jest.clearAllMocks();
   });
@@ -94,7 +98,9 @@ describe('SellerSubscriptionsController', () => {
         buildingId: mockBuilding.id,
       };
 
-      mockSellerSubscriptionsService.subscribe.mockResolvedValue(mockSubscription);
+      mockSellerSubscriptionsService.subscribe.mockResolvedValue(
+        mockSubscription,
+      );
 
       const result = await controller.create(mockUser.id, createDto);
 
@@ -148,7 +154,9 @@ describe('SellerSubscriptionsController', () => {
   describe('getMySubscriptions', () => {
     it('should return all subscriptions for the user', async () => {
       const subscriptions = [mockSubscription];
-      mockSellerSubscriptionsService.getMySubscriptions.mockResolvedValue(subscriptions);
+      mockSellerSubscriptionsService.getMySubscriptions.mockResolvedValue(
+        subscriptions,
+      );
 
       const result = await controller.getMySubscriptions(mockUser.id);
 
@@ -170,7 +178,9 @@ describe('SellerSubscriptionsController', () => {
         mockSubscription,
         { ...mockSubscription, id: 'sub2', buildingId: 'building2' },
       ];
-      mockSellerSubscriptionsService.getMySubscriptions.mockResolvedValue(subscriptions);
+      mockSellerSubscriptionsService.getMySubscriptions.mockResolvedValue(
+        subscriptions,
+      );
 
       const result = await controller.getMySubscriptions(mockUser.id);
 
@@ -181,12 +191,17 @@ describe('SellerSubscriptionsController', () => {
 
   describe('findOne', () => {
     it('should return a subscription by id for the owner', async () => {
-      mockSellerSubscriptionsService.findOne.mockResolvedValue(mockSubscription);
+      mockSellerSubscriptionsService.findOne.mockResolvedValue(
+        mockSubscription,
+      );
 
       const result = await controller.findOne(mockSubscription.id, mockUser.id);
 
       expect(result).toEqual(mockSubscription);
-      expect(service.findOne).toHaveBeenCalledWith(mockSubscription.id, mockUser.id);
+      expect(service.findOne).toHaveBeenCalledWith(
+        mockSubscription.id,
+        mockUser.id,
+      );
     });
 
     it('should throw NotFoundException when subscription does not exist', async () => {
@@ -195,7 +210,9 @@ describe('SellerSubscriptionsController', () => {
         new Error('Subscription not found'),
       );
 
-      await expect(controller.findOne(nonExistentId, mockUser.id)).rejects.toThrow();
+      await expect(
+        controller.findOne(nonExistentId, mockUser.id),
+      ).rejects.toThrow();
       expect(service.findOne).toHaveBeenCalledWith(nonExistentId, mockUser.id);
     });
 
@@ -205,8 +222,13 @@ describe('SellerSubscriptionsController', () => {
         new Error('Subscription not found'),
       );
 
-      await expect(controller.findOne(mockSubscription.id, otherUserId)).rejects.toThrow();
-      expect(service.findOne).toHaveBeenCalledWith(mockSubscription.id, otherUserId);
+      await expect(
+        controller.findOne(mockSubscription.id, otherUserId),
+      ).rejects.toThrow();
+      expect(service.findOne).toHaveBeenCalledWith(
+        mockSubscription.id,
+        otherUserId,
+      );
     });
   });
 
@@ -226,9 +248,15 @@ describe('SellerSubscriptionsController', () => {
         plan: newPlan,
       };
 
-      mockSellerSubscriptionsService.changePlan.mockResolvedValue(updatedSubscription);
+      mockSellerSubscriptionsService.changePlan.mockResolvedValue(
+        updatedSubscription,
+      );
 
-      const result = await controller.changePlan(mockSubscription.id, mockUser.id, changePlanDto);
+      const result = await controller.changePlan(
+        mockSubscription.id,
+        mockUser.id,
+        changePlanDto,
+      );
 
       expect(result).toEqual(updatedSubscription);
       expect(result.plan.tier).toBe(SubscriptionTier.PREMIUM);
@@ -255,7 +283,9 @@ describe('SellerSubscriptionsController', () => {
         plan: mockPlan,
       };
 
-      mockSellerSubscriptionsService.changePlan.mockResolvedValue(downgradedSubscription);
+      mockSellerSubscriptionsService.changePlan.mockResolvedValue(
+        downgradedSubscription,
+      );
 
       const result = await controller.changePlan(
         premiumSubscription.id,
@@ -301,7 +331,11 @@ describe('SellerSubscriptionsController', () => {
       );
 
       await expect(
-        controller.changePlan(cancelledSubscription.id, mockUser.id, changePlanDto),
+        controller.changePlan(
+          cancelledSubscription.id,
+          mockUser.id,
+          changePlanDto,
+        ),
       ).rejects.toThrow();
     });
   });
@@ -315,13 +349,23 @@ describe('SellerSubscriptionsController', () => {
         endDate: new Date(),
       };
 
-      mockSellerSubscriptionsService.cancel.mockResolvedValue(cancelledSubscription);
+      mockSellerSubscriptionsService.cancel.mockResolvedValue(
+        cancelledSubscription,
+      );
 
-      const result = await controller.cancel(mockSubscription.id, mockUser.id, cancelDto);
+      const result = await controller.cancel(
+        mockSubscription.id,
+        mockUser.id,
+        cancelDto,
+      );
 
       expect(result).toEqual(cancelledSubscription);
       expect(result.status).toBe(SubscriptionStatus.CANCELLED);
-      expect(service.cancel).toHaveBeenCalledWith(mockSubscription.id, mockUser.id, cancelDto);
+      expect(service.cancel).toHaveBeenCalledWith(
+        mockSubscription.id,
+        mockUser.id,
+        cancelDto,
+      );
     });
 
     it('should cancel subscription without reason', async () => {
@@ -331,12 +375,18 @@ describe('SellerSubscriptionsController', () => {
         endDate: new Date(),
       };
 
-      mockSellerSubscriptionsService.cancel.mockResolvedValue(cancelledSubscription);
+      mockSellerSubscriptionsService.cancel.mockResolvedValue(
+        cancelledSubscription,
+      );
 
       const result = await controller.cancel(mockSubscription.id, mockUser.id);
 
       expect(result).toEqual(cancelledSubscription);
-      expect(service.cancel).toHaveBeenCalledWith(mockSubscription.id, mockUser.id, undefined);
+      expect(service.cancel).toHaveBeenCalledWith(
+        mockSubscription.id,
+        mockUser.id,
+        undefined,
+      );
     });
 
     it('should throw BadRequestException when cancelling already cancelled subscription', async () => {
@@ -366,14 +416,22 @@ describe('SellerSubscriptionsController', () => {
         subscriptionTier: SubscriptionTier.FREE,
       };
 
-      mockSellerSubscriptionsService.canCreateListing.mockResolvedValue(response);
+      mockSellerSubscriptionsService.canCreateListing.mockResolvedValue(
+        response,
+      );
 
-      const result = await controller.canCreateListing(mockUser.id, mockBuilding.id);
+      const result = await controller.canCreateListing(
+        mockUser.id,
+        mockBuilding.id,
+      );
 
       expect(result).toEqual(response);
       expect(result.canCreate).toBe(true);
       expect(result.remainingSlots).toBe(1);
-      expect(service.canCreateListing).toHaveBeenCalledWith(mockUser.id, mockBuilding.id);
+      expect(service.canCreateListing).toHaveBeenCalledWith(
+        mockUser.id,
+        mockBuilding.id,
+      );
     });
 
     it('should return false when listing limit reached', async () => {
@@ -386,14 +444,22 @@ describe('SellerSubscriptionsController', () => {
         subscriptionTier: SubscriptionTier.FREE,
       };
 
-      mockSellerSubscriptionsService.canCreateListing.mockResolvedValue(response);
+      mockSellerSubscriptionsService.canCreateListing.mockResolvedValue(
+        response,
+      );
 
-      const result = await controller.canCreateListing(mockUser.id, mockBuilding.id);
+      const result = await controller.canCreateListing(
+        mockUser.id,
+        mockBuilding.id,
+      );
 
       expect(result).toEqual(response);
       expect(result.canCreate).toBe(false);
       expect(result.remainingSlots).toBe(0);
-      expect(service.canCreateListing).toHaveBeenCalledWith(mockUser.id, mockBuilding.id);
+      expect(service.canCreateListing).toHaveBeenCalledWith(
+        mockUser.id,
+        mockBuilding.id,
+      );
     });
 
     it('should return false when no active subscription', async () => {
@@ -405,14 +471,22 @@ describe('SellerSubscriptionsController', () => {
         remainingSlots: 0,
       };
 
-      mockSellerSubscriptionsService.canCreateListing.mockResolvedValue(response);
+      mockSellerSubscriptionsService.canCreateListing.mockResolvedValue(
+        response,
+      );
 
-      const result = await controller.canCreateListing(mockUser.id, mockBuilding.id);
+      const result = await controller.canCreateListing(
+        mockUser.id,
+        mockBuilding.id,
+      );
 
       expect(result).toEqual(response);
       expect(result.canCreate).toBe(false);
       expect(result.reason).toBeDefined();
-      expect(service.canCreateListing).toHaveBeenCalledWith(mockUser.id, mockBuilding.id);
+      expect(service.canCreateListing).toHaveBeenCalledWith(
+        mockUser.id,
+        mockBuilding.id,
+      );
     });
 
     it('should show correct slots for PREMIUM plan', async () => {
@@ -425,13 +499,21 @@ describe('SellerSubscriptionsController', () => {
         subscriptionTier: SubscriptionTier.PREMIUM,
       };
 
-      mockSellerSubscriptionsService.canCreateListing.mockResolvedValue(response);
+      mockSellerSubscriptionsService.canCreateListing.mockResolvedValue(
+        response,
+      );
 
-      const result = await controller.canCreateListing(mockUser.id, mockBuilding.id);
+      const result = await controller.canCreateListing(
+        mockUser.id,
+        mockBuilding.id,
+      );
 
       expect(result).toEqual(response);
       expect(result.maxListings).toBe(999999);
-      expect(service.canCreateListing).toHaveBeenCalledWith(mockUser.id, mockBuilding.id);
+      expect(service.canCreateListing).toHaveBeenCalledWith(
+        mockUser.id,
+        mockBuilding.id,
+      );
     });
   });
 
@@ -460,20 +542,32 @@ describe('SellerSubscriptionsController', () => {
       const subscriptions = [mockSubscription];
       mockSellerSubscriptionsService.findAll.mockResolvedValue(subscriptions);
 
-      const result = await controller.findAll(undefined, SubscriptionStatus.ACTIVE);
+      const result = await controller.findAll(
+        undefined,
+        SubscriptionStatus.ACTIVE,
+      );
 
       expect(result).toEqual(subscriptions);
-      expect(service.findAll).toHaveBeenCalledWith(undefined, SubscriptionStatus.ACTIVE);
+      expect(service.findAll).toHaveBeenCalledWith(
+        undefined,
+        SubscriptionStatus.ACTIVE,
+      );
     });
 
     it('should filter by both buildingId and status', async () => {
       const subscriptions = [mockSubscription];
       mockSellerSubscriptionsService.findAll.mockResolvedValue(subscriptions);
 
-      const result = await controller.findAll(mockBuilding.id, SubscriptionStatus.ACTIVE);
+      const result = await controller.findAll(
+        mockBuilding.id,
+        SubscriptionStatus.ACTIVE,
+      );
 
       expect(result).toEqual(subscriptions);
-      expect(service.findAll).toHaveBeenCalledWith(mockBuilding.id, SubscriptionStatus.ACTIVE);
+      expect(service.findAll).toHaveBeenCalledWith(
+        mockBuilding.id,
+        SubscriptionStatus.ACTIVE,
+      );
     });
   });
 
@@ -494,7 +588,9 @@ describe('SellerSubscriptionsController', () => {
         buildingId: 'all',
       };
 
-      mockSellerSubscriptionsService.getSubscriptionStats.mockResolvedValue(stats);
+      mockSellerSubscriptionsService.getSubscriptionStats.mockResolvedValue(
+        stats,
+      );
 
       const result = await controller.getStats();
 
@@ -517,13 +613,17 @@ describe('SellerSubscriptionsController', () => {
         buildingId: mockBuilding.id,
       };
 
-      mockSellerSubscriptionsService.getSubscriptionStats.mockResolvedValue(stats);
+      mockSellerSubscriptionsService.getSubscriptionStats.mockResolvedValue(
+        stats,
+      );
 
       const result = await controller.getStats(mockBuilding.id);
 
       expect(result).toEqual(stats);
       expect(result.buildingId).toBe(mockBuilding.id);
-      expect(service.getSubscriptionStats).toHaveBeenCalledWith(mockBuilding.id);
+      expect(service.getSubscriptionStats).toHaveBeenCalledWith(
+        mockBuilding.id,
+      );
     });
   });
 
@@ -542,7 +642,10 @@ describe('SellerSubscriptionsController', () => {
         overriddenSubscription,
       );
 
-      const result = await controller.overrideSubscription(mockSubscription.id, overrideDto);
+      const result = await controller.overrideSubscription(
+        mockSubscription.id,
+        overrideDto,
+      );
 
       expect(result).toEqual(overriddenSubscription);
       expect(service.overrideSubscription).toHaveBeenCalledWith(
@@ -567,7 +670,10 @@ describe('SellerSubscriptionsController', () => {
         cancelledSubscription,
       );
 
-      const result = await controller.overrideSubscription(mockSubscription.id, overrideDto);
+      const result = await controller.overrideSubscription(
+        mockSubscription.id,
+        overrideDto,
+      );
 
       expect(result).toEqual(cancelledSubscription);
       expect(result.status).toBe(SubscriptionStatus.CANCELLED);
@@ -589,7 +695,9 @@ describe('SellerSubscriptionsController', () => {
         new Error('Subscription not found'),
       );
 
-      await expect(controller.overrideSubscription(nonExistentId, overrideDto)).rejects.toThrow();
+      await expect(
+        controller.overrideSubscription(nonExistentId, overrideDto),
+      ).rejects.toThrow();
       expect(service.overrideSubscription).toHaveBeenCalledWith(
         nonExistentId,
         overrideDto.status,
@@ -605,7 +713,9 @@ describe('SellerSubscriptionsController', () => {
         status: SubscriptionStatus.GRACE_PERIOD,
       };
 
-      mockSellerSubscriptionsService.findOne.mockResolvedValue(gracePeriodSubscription);
+      mockSellerSubscriptionsService.findOne.mockResolvedValue(
+        gracePeriodSubscription,
+      );
 
       const result = await controller.findOne(mockSubscription.id, mockUser.id);
 
@@ -619,7 +729,9 @@ describe('SellerSubscriptionsController', () => {
         endDate: new Date(),
       };
 
-      mockSellerSubscriptionsService.findOne.mockResolvedValue(expiredSubscription);
+      mockSellerSubscriptionsService.findOne.mockResolvedValue(
+        expiredSubscription,
+      );
 
       const result = await controller.findOne(mockSubscription.id, mockUser.id);
 
@@ -635,9 +747,15 @@ describe('SellerSubscriptionsController', () => {
         endDate: new Date(),
       };
 
-      mockSellerSubscriptionsService.cancel.mockResolvedValue(cancelledSubscription);
+      mockSellerSubscriptionsService.cancel.mockResolvedValue(
+        cancelledSubscription,
+      );
 
-      const result = await controller.cancel(mockSubscription.id, mockUser.id, cancelDto);
+      const result = await controller.cancel(
+        mockSubscription.id,
+        mockUser.id,
+        cancelDto,
+      );
 
       expect(result.status).toBe(SubscriptionStatus.CANCELLED);
       expect(result.endDate).toBeDefined();

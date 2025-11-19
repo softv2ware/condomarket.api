@@ -9,7 +9,12 @@ import {
   Delete,
   Patch,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBearerAuth,
+} from '@nestjs/swagger';
 import { NotificationsService } from './notifications.service';
 import { JwtAuthGuard } from '~/auth/guards/jwt-auth.guard';
 import { CurrentUser } from '~/auth/decorators/current-user.decorator';
@@ -47,7 +52,10 @@ export class NotificationsController {
 
   @Get('unread-count')
   @ApiOperation({ summary: 'Get unread notification count' })
-  @ApiResponse({ status: 200, schema: { properties: { count: { type: 'number' } } } })
+  @ApiResponse({
+    status: 200,
+    schema: { properties: { count: { type: 'number' } } },
+  })
   async getUnreadCount(@CurrentUser('id') userId: string) {
     return this.notificationsService.getUnreadCount(userId);
   }
@@ -71,14 +79,23 @@ export class NotificationsController {
 
   @Patch('read')
   @ApiOperation({ summary: 'Mark notifications as read' })
-  @ApiResponse({ status: 200, schema: { properties: { count: { type: 'number' } } } })
-  async markAsRead(@CurrentUser('id') userId: string, @Body() dto: MarkReadDto) {
+  @ApiResponse({
+    status: 200,
+    schema: { properties: { count: { type: 'number' } } },
+  })
+  async markAsRead(
+    @CurrentUser('id') userId: string,
+    @Body() dto: MarkReadDto,
+  ) {
     return this.notificationsService.markAsRead(userId, dto.notificationIds);
   }
 
   @Patch('read-all')
   @ApiOperation({ summary: 'Mark all notifications as read' })
-  @ApiResponse({ status: 200, schema: { properties: { count: { type: 'number' } } } })
+  @ApiResponse({
+    status: 200,
+    schema: { properties: { count: { type: 'number' } } },
+  })
   async markAllAsRead(@CurrentUser('id') userId: string) {
     return this.notificationsService.markAllAsRead(userId);
   }

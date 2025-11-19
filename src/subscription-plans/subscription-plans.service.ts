@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ConflictException,
+} from '@nestjs/common';
 import { CreateSubscriptionPlanDto } from './dto/create-subscription-plan.dto';
 import { UpdateSubscriptionPlanDto } from './dto/update-subscription-plan.dto';
 import { PrismaService } from '~/prisma';
@@ -50,8 +54,8 @@ export class SubscriptionPlansService {
   }
 
   async findAll(buildingId?: string) {
-    const cacheKey = buildingId 
-      ? `subscription-plans:building=${buildingId}` 
+    const cacheKey = buildingId
+      ? `subscription-plans:building=${buildingId}`
       : 'subscription-plans:all';
 
     return this.cacheService.wrap(
@@ -60,7 +64,9 @@ export class SubscriptionPlansService {
         return this.prisma.subscriptionPlan.findMany({
           where: {
             isActive: true,
-            ...(buildingId ? { OR: [{ buildingId }, { buildingId: null }] } : {}),
+            ...(buildingId
+              ? { OR: [{ buildingId }, { buildingId: null }] }
+              : {}),
           },
           include: {
             building: {
@@ -75,10 +81,7 @@ export class SubscriptionPlansService {
               },
             },
           },
-          orderBy: [
-            { sortPriority: 'desc' },
-            { monthlyPrice: 'asc' },
-          ],
+          orderBy: [{ sortPriority: 'desc' }, { monthlyPrice: 'asc' }],
         });
       },
       1800, // 30 minutes TTL - plans change infrequently
@@ -107,7 +110,9 @@ export class SubscriptionPlansService {
         });
 
         if (!plan) {
-          throw new NotFoundException(`Subscription plan with ID ${id} not found`);
+          throw new NotFoundException(
+            `Subscription plan with ID ${id} not found`,
+          );
         }
 
         return plan;
@@ -137,7 +142,10 @@ export class SubscriptionPlansService {
     return plan;
   }
 
-  async update(id: string, updateSubscriptionPlanDto: UpdateSubscriptionPlanDto) {
+  async update(
+    id: string,
+    updateSubscriptionPlanDto: UpdateSubscriptionPlanDto,
+  ) {
     const plan = await this.prisma.subscriptionPlan.findUnique({
       where: { id },
     });

@@ -69,14 +69,23 @@ export class CacheService implements OnModuleInit {
   async delByPattern(pattern: string): Promise<number> {
     try {
       if (!this.isRedisEnabled) {
-        this.logger.debug(`Pattern deletion not supported in memory cache: ${pattern}`);
+        this.logger.debug(
+          `Pattern deletion not supported in memory cache: ${pattern}`,
+        );
         return 0;
       }
 
       // Access the underlying Redis store
-      const store = (this.cacheManager as { store?: { client?: unknown } }).store;
+      const store = (this.cacheManager as { store?: { client?: unknown } })
+        .store;
       if (store && store.client) {
-        const redis = store.client as { scanStream: (options: { match: string; count: number }) => NodeJS.EventEmitter; del: (...keys: string[]) => Promise<number> };
+        const redis = store.client as {
+          scanStream: (options: {
+            match: string;
+            count: number;
+          }) => NodeJS.EventEmitter;
+          del: (...keys: string[]) => Promise<number>;
+        };
         const keys: string[] = [];
         const stream = redis.scanStream({
           match: `${pattern}*`,
@@ -93,7 +102,9 @@ export class CacheService implements OnModuleInit {
             }
           });
           stream.on('end', () => {
-            this.logger.debug(`Cache DEL pattern: ${pattern} - deleted ${deletedCount} keys`);
+            this.logger.debug(
+              `Cache DEL pattern: ${pattern} - deleted ${deletedCount} keys`,
+            );
             resolve(deletedCount);
           });
           stream.on('error', reject);
@@ -113,7 +124,14 @@ export class CacheService implements OnModuleInit {
    */
   async reset(): Promise<void> {
     try {
-      const store = (this.cacheManager as { store?: { reset?: () => Promise<void>; client?: { flushdb: () => Promise<void> } } }).store;
+      const store = (
+        this.cacheManager as {
+          store?: {
+            reset?: () => Promise<void>;
+            client?: { flushdb: () => Promise<void> };
+          };
+        }
+      ).store;
       if (store && store.reset) {
         await store.reset();
         this.logger.debug('Cache RESET: all keys cleared');
@@ -134,7 +152,7 @@ export class CacheService implements OnModuleInit {
    */
   async mget<T>(...keys: string[]): Promise<(T | undefined)[]> {
     try {
-      const promises = keys.map(key => this.get<T>(key));
+      const promises = keys.map((key) => this.get<T>(key));
       return await Promise.all(promises);
     } catch (error) {
       this.logger.error(`Cache MGET error:`, error);
@@ -145,10 +163,12 @@ export class CacheService implements OnModuleInit {
   /**
    * Set multiple keys at once
    */
-  async mset(entries: Array<{ key: string; value: unknown; ttl?: number }>): Promise<void> {
+  async mset(
+    entries: Array<{ key: string; value: unknown; ttl?: number }>,
+  ): Promise<void> {
     try {
       await Promise.all(
-        entries.map(({ key, value, ttl }) => this.set(key, value, ttl))
+        entries.map(({ key, value, ttl }) => this.set(key, value, ttl)),
       );
       this.logger.debug(`Cache MSET: ${entries.length} keys set`);
     } catch (error) {
@@ -178,7 +198,11 @@ export class CacheService implements OnModuleInit {
         return null;
       }
 
-      const store = (this.cacheManager as { store?: { client?: { ttl: (key: string) => Promise<number> } } }).store;
+      const store = (
+        this.cacheManager as {
+          store?: { client?: { ttl: (key: string) => Promise<number> } };
+        }
+      ).store;
       if (store && store.client) {
         const ttl = await store.client.ttl(key);
         return ttl > 0 ? ttl : null;
@@ -193,11 +217,7 @@ export class CacheService implements OnModuleInit {
   /**
    * Wrap a function with caching
    */
-  async wrap<T>(
-    key: string,
-    fn: () => Promise<T>,
-    ttl?: number,
-  ): Promise<T> {
+  async wrap<T>(key: string, fn: () => Promise<T>, ttl?: number): Promise<T> {
     try {
       return await this.cacheManager.wrap(key, fn, ttl);
     } catch (error) {

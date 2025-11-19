@@ -1,4 +1,7 @@
-import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from '~/prisma';
 import { CacheService } from '../common/cache/cache.service';
 import { CreateBuildingDto } from './dto/create-building.dto';
@@ -10,7 +13,7 @@ export class BuildingsService {
   constructor(
     private prisma: PrismaService,
     private readonly cacheService: CacheService,
-  ) {}
+  ) { }
 
   async create(createBuildingDto: CreateBuildingDto) {
     return this.prisma.building.create({
@@ -221,13 +224,19 @@ export class BuildingsService {
     });
 
     if (!unit) {
-      throw new NotFoundException(`Unit with ID ${unitId} not found in this building`);
+      throw new NotFoundException(
+        `Unit with ID ${unitId} not found in this building`,
+      );
     }
 
     return unit;
   }
 
-  async canUserAccessBuilding(userId: string, buildingId: string, userRole: string): Promise<boolean> {
+  async canUserAccessBuilding(
+    userId: string,
+    buildingId: string,
+    userRole: string,
+  ): Promise<boolean> {
     // Platform admins can access all buildings
     if (userRole === 'PLATFORM_ADMIN') {
       return true;

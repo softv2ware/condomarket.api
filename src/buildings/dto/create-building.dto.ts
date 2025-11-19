@@ -31,7 +31,10 @@ export class CreateBuildingDto {
   @IsOptional()
   country?: string;
 
-  @ApiPropertyOptional({ enum: BuildingType, example: BuildingType.APARTMENT_COMPLEX })
+  @ApiPropertyOptional({
+    enum: BuildingType,
+    example: BuildingType.APARTMENT_COMPLEX,
+  })
   @IsEnum(BuildingType)
   @IsOptional()
   type?: BuildingType;

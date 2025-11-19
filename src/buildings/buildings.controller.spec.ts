@@ -21,12 +21,6 @@ describe('BuildingsController', () => {
     getUnit: jest.fn(),
   };
 
-  const mockUser = {
-    id: 'user-1',
-    email: 'admin@example.com',
-    role: 'PLATFORM_ADMIN',
-  };
-
   const mockBuilding = {
     id: 'building-1',
     name: 'Test Building',
@@ -74,7 +68,7 @@ describe('BuildingsController', () => {
         city: 'Test City',
         state: 'TS',
         zipCode: '12345',
-        type: 'APARTMENT_COMPLEX' as any,
+        type: 'APARTMENT_COMPLEX',
       };
 
       mockBuildingsService.create.mockResolvedValue(mockBuilding);
@@ -82,8 +76,8 @@ describe('BuildingsController', () => {
       const result = await controller.create(createBuildingDto);
 
       expect(result).toEqual(mockBuilding);
-      expect(service.create).toHaveBeenCalledWith(createBuildingDto);
-      expect(service.create).toHaveBeenCalledTimes(1);
+      expect(mockBuildingsService.create).toHaveBeenCalledWith(createBuildingDto);
+      expect(mockBuildingsService.create).toHaveBeenCalledTimes(1);
     });
   });
 
@@ -95,7 +89,7 @@ describe('BuildingsController', () => {
       const result = await controller.findAll();
 
       expect(result).toEqual(buildings);
-      expect(service.findAll).toHaveBeenCalledTimes(1);
+      expect(mockBuildingsService.findAll).toHaveBeenCalledTimes(1);
     });
 
     it('should return empty array when no buildings exist', async () => {
@@ -104,7 +98,7 @@ describe('BuildingsController', () => {
       const result = await controller.findAll();
 
       expect(result).toEqual([]);
-      expect(service.findAll).toHaveBeenCalledTimes(1);
+      expect(mockBuildingsService.findAll).toHaveBeenCalledTimes(1);
     });
   });
 
@@ -115,8 +109,8 @@ describe('BuildingsController', () => {
       const result = await controller.findOne('building-1');
 
       expect(result).toEqual(mockBuilding);
-      expect(service.findOne).toHaveBeenCalledWith('building-1');
-      expect(service.findOne).toHaveBeenCalledTimes(1);
+      expect(mockBuildingsService.findOne).toHaveBeenCalledWith('building-1');
+      expect(mockBuildingsService.findOne).toHaveBeenCalledTimes(1);
     });
 
     it('should throw NotFoundException when building not found', async () => {
@@ -127,7 +121,7 @@ describe('BuildingsController', () => {
       await expect(controller.findOne('non-existent')).rejects.toThrow(
         NotFoundException,
       );
-      expect(service.findOne).toHaveBeenCalledWith('non-existent');
+      expect(mockBuildingsService.findOne).toHaveBeenCalledWith('non-existent');
     });
   });
 
@@ -144,8 +138,11 @@ describe('BuildingsController', () => {
       const result = await controller.update('building-1', updateBuildingDto);
 
       expect(result).toEqual(updatedBuilding);
-      expect(service.update).toHaveBeenCalledWith('building-1', updateBuildingDto);
-      expect(service.update).toHaveBeenCalledTimes(1);
+      expect(mockBuildingsService.update).toHaveBeenCalledWith(
+        'building-1',
+        updateBuildingDto,
+      );
+      expect(mockBuildingsService.update).toHaveBeenCalledTimes(1);
     });
 
     it('should throw NotFoundException when updating non-existent building', async () => {
@@ -171,8 +168,8 @@ describe('BuildingsController', () => {
       const result = await controller.remove('building-1');
 
       expect(result).toEqual(archivedBuilding);
-      expect(service.remove).toHaveBeenCalledWith('building-1');
-      expect(service.remove).toHaveBeenCalledTimes(1);
+      expect(mockBuildingsService.remove).toHaveBeenCalledWith('building-1');
+      expect(mockBuildingsService.remove).toHaveBeenCalledTimes(1);
     });
 
     it('should throw NotFoundException when archiving non-existent building', async () => {
@@ -207,8 +204,11 @@ describe('BuildingsController', () => {
       const result = await controller.createUnit('building-1', createUnitDto);
 
       expect(result).toEqual(mockUnit);
-      expect(service.createUnit).toHaveBeenCalledWith('building-1', createUnitDto);
-      expect(service.createUnit).toHaveBeenCalledTimes(1);
+      expect(mockBuildingsService.createUnit).toHaveBeenCalledWith(
+        'building-1',
+        createUnitDto,
+      );
+      expect(mockBuildingsService.createUnit).toHaveBeenCalledTimes(1);
     });
 
     it('should throw NotFoundException when building not found', async () => {
@@ -251,8 +251,8 @@ describe('BuildingsController', () => {
       const result = await controller.getUnits('building-1');
 
       expect(result).toEqual(mockUnits);
-      expect(service.getUnits).toHaveBeenCalledWith('building-1');
-      expect(service.getUnits).toHaveBeenCalledTimes(1);
+      expect(mockBuildingsService.getUnits).toHaveBeenCalledWith('building-1');
+      expect(mockBuildingsService.getUnits).toHaveBeenCalledTimes(1);
     });
   });
 
@@ -271,8 +271,8 @@ describe('BuildingsController', () => {
       const result = await controller.getUnit('building-1', 'unit-1');
 
       expect(result).toEqual(mockUnit);
-      expect(service.getUnit).toHaveBeenCalledWith('building-1', 'unit-1');
-      expect(service.getUnit).toHaveBeenCalledTimes(1);
+      expect(mockBuildingsService.getUnit).toHaveBeenCalledWith('building-1', 'unit-1');
+      expect(mockBuildingsService.getUnit).toHaveBeenCalledTimes(1);
     });
 
     it('should throw NotFoundException when unit not found', async () => {
@@ -280,9 +280,9 @@ describe('BuildingsController', () => {
         new NotFoundException('Unit not found'),
       );
 
-      await expect(controller.getUnit('building-1', 'non-existent')).rejects.toThrow(
-        NotFoundException,
-      );
+      await expect(
+        controller.getUnit('building-1', 'non-existent'),
+      ).rejects.toThrow(NotFoundException);
     });
   });
 });

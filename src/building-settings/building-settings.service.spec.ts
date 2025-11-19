@@ -2,7 +2,6 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { BuildingSettingsService } from './building-settings.service';
 import { PrismaService } from '~/prisma';
 import { NotFoundException, ForbiddenException } from '@nestjs/common';
-import { ReportStatus } from '@prisma/client';
 
 describe('BuildingSettingsService', () => {
   let service: BuildingSettingsService;
@@ -69,7 +68,9 @@ describe('BuildingSettingsService', () => {
       };
 
       mockPrismaService.building.findUnique.mockResolvedValue(mockBuilding);
-      mockPrismaService.buildingSettings.findUnique.mockResolvedValue(mockSettings);
+      mockPrismaService.buildingSettings.findUnique.mockResolvedValue(
+        mockSettings,
+      );
 
       const result = await service.getSettings(buildingId);
 
@@ -106,7 +107,9 @@ describe('BuildingSettingsService', () => {
     it('should throw NotFoundException for non-existent building', async () => {
       mockPrismaService.building.findUnique.mockResolvedValue(null);
 
-      await expect(service.getSettings('building-123')).rejects.toThrow(NotFoundException);
+      await expect(service.getSettings('building-123')).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 
@@ -133,10 +136,16 @@ describe('BuildingSettingsService', () => {
 
       mockPrismaService.building.findUnique.mockResolvedValue(mockBuilding);
       mockPrismaService.user.findUnique.mockResolvedValue(mockUser);
-      mockPrismaService.buildingSettings.findUnique.mockResolvedValue(mockSettings);
+      mockPrismaService.buildingSettings.findUnique.mockResolvedValue(
+        mockSettings,
+      );
       mockPrismaService.buildingSettings.update.mockResolvedValue(mockSettings);
 
-      const result = await service.updateSettings(buildingId, userId, updateDto);
+      const result = await service.updateSettings(
+        buildingId,
+        userId,
+        updateDto,
+      );
 
       expect(result).toBeDefined();
       expect(result.requireListingApproval).toBe(true);
@@ -160,10 +169,16 @@ describe('BuildingSettingsService', () => {
 
       mockPrismaService.building.findUnique.mockResolvedValue(mockBuilding);
       mockPrismaService.user.findUnique.mockResolvedValue(mockUser);
-      mockPrismaService.buildingSettings.findUnique.mockResolvedValue(mockSettings);
+      mockPrismaService.buildingSettings.findUnique.mockResolvedValue(
+        mockSettings,
+      );
       mockPrismaService.buildingSettings.update.mockResolvedValue(mockSettings);
 
-      const result = await service.updateSettings(buildingId, userId, updateDto);
+      const result = await service.updateSettings(
+        buildingId,
+        userId,
+        updateDto,
+      );
 
       expect(result).toBeDefined();
       expect(mockPrismaService.buildingSettings.update).toHaveBeenCalled();
@@ -182,9 +197,9 @@ describe('BuildingSettingsService', () => {
       mockPrismaService.building.findUnique.mockResolvedValue(mockBuilding);
       mockPrismaService.user.findUnique.mockResolvedValue(mockUser);
 
-      await expect(service.updateSettings(buildingId, userId, updateDto)).rejects.toThrow(
-        ForbiddenException,
-      );
+      await expect(
+        service.updateSettings(buildingId, userId, updateDto),
+      ).rejects.toThrow(ForbiddenException);
     });
 
     it('should throw ForbiddenException for building admin of different building', async () => {
@@ -200,9 +215,9 @@ describe('BuildingSettingsService', () => {
       mockPrismaService.building.findUnique.mockResolvedValue(mockBuilding);
       mockPrismaService.user.findUnique.mockResolvedValue(mockUser);
 
-      await expect(service.updateSettings(buildingId, userId, updateDto)).rejects.toThrow(
-        ForbiddenException,
-      );
+      await expect(
+        service.updateSettings(buildingId, userId, updateDto),
+      ).rejects.toThrow(ForbiddenException);
     });
   });
 

@@ -18,7 +18,7 @@ export class ListingsExampleService {
    */
   async getListing(listingId: string) {
     const cacheKey = this.cache.listingKey(listingId);
-    
+
     // Try to get from cache first
     const cached = await this.cache.get(cacheKey);
     if (cached) {
@@ -60,7 +60,7 @@ export class ListingsExampleService {
           },
         });
       },
-      600 // 10 minutes TTL
+      600, // 10 minutes TTL
     );
   }
 
@@ -79,7 +79,7 @@ export class ListingsExampleService {
 
     // Also invalidate related caches
     await this.cache.delByPattern(
-      this.cache.buildingKey(updated.buildingId, 'listings')
+      this.cache.buildingKey(updated.buildingId, 'listings'),
     );
 
     return updated;
@@ -89,19 +89,19 @@ export class ListingsExampleService {
    * Example 4: Batch operations for multiple listings
    */
   async getMultipleListings(listingIds: string[]) {
-    const cacheKeys = listingIds.map(id => this.cache.listingKey(id));
-    
+    const cacheKeys = listingIds.map((id) => this.cache.listingKey(id));
+
     // Get all from cache in one operation
     const cachedListings = await this.cache.mget(...cacheKeys);
 
     // Find which ones were missing
     const missingIndices = cachedListings
       .map((listing, index) => (listing ? null : index))
-      .filter(index => index !== null) as number[];
+      .filter((index) => index !== null);
 
     if (missingIndices.length > 0) {
       // Fetch missing ones from database
-      const missingIds = missingIndices.map(i => listingIds[i]);
+      const missingIds = missingIndices.map((i) => listingIds[i]);
       const fromDb = await this.prisma.listing.findMany({
         where: { id: { in: missingIds } },
         include: {
@@ -112,11 +112,11 @@ export class ListingsExampleService {
 
       // Cache the newly fetched listings
       await this.cache.mset(
-        fromDb.map(listing => ({
+        fromDb.map((listing) => ({
           key: this.cache.listingKey(listing.id),
           value: listing,
           ttl: 600,
-        }))
+        })),
       );
 
       // Merge results
@@ -150,7 +150,7 @@ export class ListingsExampleService {
           orderBy: { createdAt: 'desc' },
         });
       },
-      300 // 5 minutes - search results can be slightly stale
+      300, // 5 minutes - search results can be slightly stale
     );
   }
 
@@ -158,7 +158,10 @@ export class ListingsExampleService {
    * Example 6: Building-scoped cache with automatic prefix
    */
   async getBuildingListings(buildingId: string, page: number = 1) {
-    const cacheKey = this.cache.buildingKey(buildingId, `listings:page:${page}`);
+    const cacheKey = this.cache.buildingKey(
+      buildingId,
+      `listings:page:${page}`,
+    );
 
     return this.cache.wrap(
       cacheKey,
@@ -170,7 +173,7 @@ export class ListingsExampleService {
           orderBy: { createdAt: 'desc' },
         });
       },
-      600
+      600,
     );
   }
 
@@ -180,10 +183,12 @@ export class ListingsExampleService {
   async clearBuildingCache(buildingId: string) {
     // This deletes ALL keys matching "building:{buildingId}:*"
     const deletedCount = await this.cache.delByPattern(
-      this.cache.buildingKey(buildingId, '')
+      this.cache.buildingKey(buildingId, ''),
     );
-    
-    console.log(`Cleared ${deletedCount} cache keys for building ${buildingId}`);
+
+    console.log(
+      `Cleared ${deletedCount} cache keys for building ${buildingId}`,
+    );
   }
 
   /**
@@ -231,7 +236,7 @@ export class ListingsExampleService {
    */
   async getCacheStats(listingId: string) {
     const cacheKey = this.cache.listingKey(listingId);
-    
+
     return {
       exists: await this.cache.exists(cacheKey),
       ttl: await this.cache.ttl(cacheKey),
@@ -240,59 +245,61 @@ export class ListingsExampleService {
   }
 
   // Helper method
-  private buildFilters(filters: Record<string, unknown>): Prisma.ListingWhereInput {
+  private buildFilters(
+    filters: Record<string, unknown>,
+  ): Prisma.ListingWhereInput {
     const where: Prisma.ListingWhereInput = {};
-    
+
     if (filters.category) {
       where.categoryId = filters.category as string;
     }
-    
+
     if (filters.minPrice || filters.maxPrice) {
       where.price = {};
       if (filters.minPrice) where.price.gte = filters.minPrice as number;
       if (filters.maxPrice) where.price.lte = filters.maxPrice as number;
     }
-    
+
     return where;
   }
 }
 
 /**
  * BEST PRACTICES FOR CACHING:
- * 
+ *
  * 1. Use appropriate TTLs based on data volatility:
  *    - Frequently updated: 60-300 seconds
  *    - Moderately updated: 300-1800 seconds (5-30 minutes)
  *    - Rarely updated: 3600+ seconds (1+ hours)
- * 
+ *
  * 2. Always handle cache failures gracefully:
  *    - The CacheService already does this
  *    - Failed cache operations won't crash your app
- * 
+ *
  * 3. Invalidate strategically:
  *    - Use pattern deletion for related data
  *    - Lazy invalidation (TTL) for non-critical data
  *    - Immediate invalidation for critical data
- * 
+ *
  * 4. Batch operations when possible:
  *    - Use mget/mset instead of multiple get/set calls
  *    - Reduces network round trips with Redis
- * 
+ *
  * 5. Use cache wrapping for cleaner code:
  *    - Automatic cache-aside pattern
  *    - Handles cache miss internally
  *    - More maintainable code
- * 
+ *
  * 6. Monitor cache performance:
  *    - Watch logs for HIT/MISS ratios
  *    - Adjust TTLs based on metrics
  *    - Use Redis MONITOR command for debugging
- * 
+ *
  * 7. Namespace your keys:
  *    - Use the helper methods (userKey, buildingKey, etc.)
  *    - Makes pattern deletion easier
  *    - Prevents key collisions
- * 
+ *
  * 8. Consider cache warming:
  *    - Pre-populate frequently accessed data
  *    - Reduces cold start issues

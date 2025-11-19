@@ -93,21 +93,18 @@ export class AnalyticsService {
   }
 
   async getSubscriptionMetrics() {
-    const [
-      totalSubscriptions,
-      activeSubscriptions,
-      subscriptionsByTier,
-    ] = await Promise.all([
-      this.prisma.sellerSubscription.count(),
-      this.prisma.sellerSubscription.count({
-        where: { status: 'ACTIVE' },
-      }),
-      this.prisma.sellerSubscription.groupBy({
-        by: ['planId'],
-        _count: true,
-        where: { status: 'ACTIVE' },
-      }),
-    ]);
+    const [totalSubscriptions, activeSubscriptions, subscriptionsByTier] =
+      await Promise.all([
+        this.prisma.sellerSubscription.count(),
+        this.prisma.sellerSubscription.count({
+          where: { status: 'ACTIVE' },
+        }),
+        this.prisma.sellerSubscription.groupBy({
+          by: ['planId'],
+          _count: true,
+          where: { status: 'ACTIVE' },
+        }),
+      ]);
 
     return {
       totalSubscriptions,
@@ -164,10 +161,7 @@ export class AnalyticsService {
         buildingId,
         status: 'ACTIVE',
       },
-      orderBy: [
-        { viewCount: 'desc' },
-        { orderCount: 'desc' },
-      ],
+      orderBy: [{ viewCount: 'desc' }, { orderCount: 'desc' }],
       take: limit,
       include: {
         seller: {
@@ -267,7 +261,9 @@ export class AnalyticsService {
 
     const categoryDetails = await this.prisma.category.findMany({
       where: {
-        id: { in: categories.map((c) => c.categoryId).filter(Boolean) as string[] },
+        id: {
+          in: categories.map((c) => c.categoryId).filter(Boolean),
+        },
       },
     });
 

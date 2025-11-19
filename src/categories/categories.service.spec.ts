@@ -6,7 +6,6 @@ import { CategoryType } from '@prisma/client';
 
 describe('CategoriesService', () => {
   let service: CategoriesService;
-  let prisma: PrismaService;
 
   const mockPrismaService = {
     category: {
@@ -33,7 +32,6 @@ describe('CategoriesService', () => {
     }).compile();
 
     service = module.get<CategoriesService>(CategoriesService);
-    prisma = module.get<PrismaService>(PrismaService);
   });
 
   afterEach(() => {
@@ -71,7 +69,9 @@ describe('CategoriesService', () => {
 
       mockPrismaService.category.findUnique.mockResolvedValue(null);
 
-      await expect(service.create(dtoWithParent)).rejects.toThrow(NotFoundException);
+      await expect(service.create(dtoWithParent)).rejects.toThrow(
+        NotFoundException,
+      );
     });
 
     it('should throw BadRequestException when parent and child types mismatch', async () => {
@@ -86,7 +86,9 @@ describe('CategoriesService', () => {
         type: CategoryType.SERVICE, // Different type
       });
 
-      await expect(service.create(dtoWithParent)).rejects.toThrow(BadRequestException);
+      await expect(service.create(dtoWithParent)).rejects.toThrow(
+        BadRequestException,
+      );
     });
 
     it('should throw NotFoundException when building does not exist', async () => {
@@ -97,7 +99,9 @@ describe('CategoriesService', () => {
 
       mockPrismaService.building.findUnique.mockResolvedValue(null);
 
-      await expect(service.create(dtoWithBuilding)).rejects.toThrow(NotFoundException);
+      await expect(service.create(dtoWithBuilding)).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 
@@ -127,7 +131,8 @@ describe('CategoriesService', () => {
     it('should filter by type', async () => {
       mockPrismaService.category.findMany.mockResolvedValue([]);
 
-      await service.findAll(CategoryType.PRODUCT);
+      const result = await service.findAll(CategoryType.PRODUCT);
+      expect(result).toEqual([]);
 
       expect(mockPrismaService.category.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -141,7 +146,8 @@ describe('CategoriesService', () => {
     it('should filter by buildingId', async () => {
       mockPrismaService.category.findMany.mockResolvedValue([]);
 
-      await service.findAll(undefined, 'building-1');
+      const result = await service.findAll(undefined, 'building-1');
+      expect(result).toEqual([]);
 
       expect(mockPrismaService.category.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -190,6 +196,15 @@ describe('CategoriesService', () => {
       const mockCategory = {
         id: 'category-1',
         name: 'Electronics',
+        type: CategoryType.PRODUCT,
+        slug: 'electronics',
+        description: null,
+        icon: null,
+        parentId: null,
+        buildingId: null,
+        isActive: true,
+        createdAt: new Date(),
+        updatedAt: new Date(),
       };
 
       mockPrismaService.category.findUnique.mockResolvedValue(mockCategory);
@@ -202,7 +217,9 @@ describe('CategoriesService', () => {
     it('should throw NotFoundException when category does not exist', async () => {
       mockPrismaService.category.findUnique.mockResolvedValue(null);
 
-      await expect(service.findOne('non-existent')).rejects.toThrow(NotFoundException);
+      await expect(service.findOne('non-existent')).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 
@@ -293,7 +310,7 @@ describe('CategoriesService', () => {
       mockPrismaService.category.findUnique.mockResolvedValue(mockCategory);
       mockPrismaService.category.delete.mockResolvedValue(mockCategory);
 
-      const result = await service.remove('category-1');
+      await service.remove('category-1');
 
       expect(mockPrismaService.category.delete).toHaveBeenCalledWith({
         where: { id: 'category-1' },
@@ -311,7 +328,9 @@ describe('CategoriesService', () => {
 
       mockPrismaService.category.findUnique.mockResolvedValue(mockCategory);
 
-      await expect(service.remove('category-1')).rejects.toThrow(BadRequestException);
+      await expect(service.remove('category-1')).rejects.toThrow(
+        BadRequestException,
+      );
     });
 
     it('should throw BadRequestException when category has subcategories', async () => {
@@ -325,13 +344,17 @@ describe('CategoriesService', () => {
 
       mockPrismaService.category.findUnique.mockResolvedValue(mockCategory);
 
-      await expect(service.remove('category-1')).rejects.toThrow(BadRequestException);
+      await expect(service.remove('category-1')).rejects.toThrow(
+        BadRequestException,
+      );
     });
 
     it('should throw NotFoundException when category does not exist', async () => {
       mockPrismaService.category.findUnique.mockResolvedValue(null);
 
-      await expect(service.remove('non-existent')).rejects.toThrow(NotFoundException);
+      await expect(service.remove('non-existent')).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 });

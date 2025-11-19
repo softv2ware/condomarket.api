@@ -8,7 +8,12 @@ import {
   BadRequestException,
   ConflictException,
 } from '@nestjs/common';
-import { ReviewType, ReviewStatus, OrderStatus, BookingStatus } from '@prisma/client';
+import {
+  ReviewType,
+  ReviewStatus,
+  OrderStatus,
+  BookingStatus,
+} from '@prisma/client';
 
 describe('ReviewsService', () => {
   let service: ReviewsService;
@@ -80,8 +85,18 @@ describe('ReviewsService', () => {
         comment: 'Great product!',
         type: ReviewType.ORDER,
         status: ReviewStatus.ACTIVE,
-        reviewer: { id: userId, profile: { firstName: 'John', lastName: 'Doe', profilePictureUrl: null } },
-        reviewee: { id: 'seller-1', profile: { firstName: 'Jane', lastName: 'Smith' } },
+        reviewer: {
+          id: userId,
+          profile: {
+            firstName: 'John',
+            lastName: 'Doe',
+            profilePictureUrl: null,
+          },
+        },
+        reviewee: {
+          id: 'seller-1',
+          profile: { firstName: 'Jane', lastName: 'Smith' },
+        },
         listing: { id: 'listing-1', title: 'Test Product' },
       };
 
@@ -145,14 +160,18 @@ describe('ReviewsService', () => {
     });
 
     it('should throw BadRequestException when neither orderId nor bookingId provided', async () => {
-      await expect(service.create(userId, { rating: 5 } as any)).rejects.toThrow(
-        BadRequestException,
-      );
+      await expect(
+        service.create(userId, { rating: 5 } as any),
+      ).rejects.toThrow(BadRequestException);
     });
 
     it('should throw BadRequestException when both orderId and bookingId provided', async () => {
       await expect(
-        service.create(userId, { orderId: 'order-1', bookingId: 'booking-1', rating: 5 }),
+        service.create(userId, {
+          orderId: 'order-1',
+          bookingId: 'booking-1',
+          rating: 5,
+        }),
       ).rejects.toThrow(BadRequestException);
     });
 
@@ -391,7 +410,9 @@ describe('ReviewsService', () => {
       mockPrismaService.review.findUnique.mockResolvedValue(mockReview);
 
       await expect(
-        service.respondToReview(reviewId, sellerId, { response: 'Second response' }),
+        service.respondToReview(reviewId, sellerId, {
+          response: 'Second response',
+        }),
       ).rejects.toThrow(ConflictException);
     });
 
@@ -516,7 +537,11 @@ describe('ReviewsService', () => {
         status: ReviewStatus.FLAGGED,
       });
 
-      const result = await service.reportReview('review-1', 'user-1', 'Inappropriate content');
+      const result = await service.reportReview(
+        'review-1',
+        'user-1',
+        'Inappropriate content',
+      );
 
       expect(result.success).toBe(true);
       expect(mockPrismaService.review.update).toHaveBeenCalledWith({

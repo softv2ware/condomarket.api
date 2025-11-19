@@ -80,9 +80,9 @@ describe('Stage 6: Chat, Reviews, and Notifications (e2e)', () => {
 
       // Should have 19 notification types × 3 channels = 57 preferences
       expect(preferences.length).toBe(57);
-      
+
       // All should be enabled by default
-      const allEnabled = preferences.every(pref => pref.enabled);
+      const allEnabled = preferences.every((pref) => pref.enabled);
       expect(allEnabled).toBe(true);
     });
 
@@ -184,7 +184,7 @@ describe('Stage 6: Chat, Reviews, and Notifications (e2e)', () => {
       expect(response.body.status).toBe('PENDING');
 
       // Wait a bit for notification to be created
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise((resolve) => setTimeout(resolve, 100));
 
       // Verify ORDER_PLACED notification was sent to seller
       const notifications = await prisma.notification.findMany({
@@ -207,7 +207,7 @@ describe('Stage 6: Chat, Reviews, and Notifications (e2e)', () => {
       expect(response.body.status).toBe('CONFIRMED');
 
       // Wait for chat thread creation
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise((resolve) => setTimeout(resolve, 100));
 
       // Verify chat thread was created
       const threads = await prisma.chatThread.findMany({
@@ -240,7 +240,7 @@ describe('Stage 6: Chat, Reviews, and Notifications (e2e)', () => {
 
       expect(response.body.status).toBe('READY');
 
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise((resolve) => setTimeout(resolve, 100));
 
       // Verify ORDER_READY notification
       const notifications = await prisma.notification.findMany({
@@ -261,7 +261,7 @@ describe('Stage 6: Chat, Reviews, and Notifications (e2e)', () => {
 
       expect(response.body.status).toBe('DELIVERED');
 
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise((resolve) => setTimeout(resolve, 100));
 
       // Verify ORDER_DELIVERED notification
       const notifications = await prisma.notification.findMany({
@@ -296,7 +296,9 @@ describe('Stage 6: Chat, Reviews, and Notifications (e2e)', () => {
         .expect(201);
 
       messageId = response.body.id;
-      expect(response.body.content).toBe('Hello, when can I pick up the order?');
+      expect(response.body.content).toBe(
+        'Hello, when can I pick up the order?',
+      );
       expect(response.body.senderId).toBe(buyerId);
     });
 
@@ -308,7 +310,9 @@ describe('Stage 6: Chat, Reviews, and Notifications (e2e)', () => {
         .expect(200);
 
       expect(response.body.messages.length).toBe(1);
-      expect(response.body.messages[0].content).toBe('Hello, when can I pick up the order?');
+      expect(response.body.messages[0].content).toBe(
+        'Hello, when can I pick up the order?',
+      );
     });
 
     it('should edit a message within 15 minutes', async () => {
@@ -320,7 +324,9 @@ describe('Stage 6: Chat, Reviews, and Notifications (e2e)', () => {
         })
         .expect(200);
 
-      expect(response.body.content).toBe('Hello, when can I pick up the order? Thanks!');
+      expect(response.body.content).toBe(
+        'Hello, when can I pick up the order? Thanks!',
+      );
       expect(response.body.editedAt).toBeTruthy();
     });
 
@@ -360,7 +366,7 @@ describe('Stage 6: Chat, Reviews, and Notifications (e2e)', () => {
         .set('Authorization', `Bearer ${buyerToken}`)
         .expect(200);
 
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise((resolve) => setTimeout(resolve, 100));
 
       // Verify ORDER_COMPLETED notification sent to seller
       const notifications = await prisma.notification.findMany({
@@ -390,7 +396,7 @@ describe('Stage 6: Chat, Reviews, and Notifications (e2e)', () => {
       expect(response.body.rating).toBe(5);
       expect(response.body.reviewerId).toBe(buyerId);
 
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise((resolve) => setTimeout(resolve, 100));
 
       // Verify REVIEW_RECEIVED notification sent to seller
       const notifications = await prisma.notification.findMany({
@@ -413,9 +419,11 @@ describe('Stage 6: Chat, Reviews, and Notifications (e2e)', () => {
         })
         .expect(200);
 
-      expect(response.body.sellerResponse).toBe('Thank you for your purchase! Glad you liked it.');
+      expect(response.body.sellerResponse).toBe(
+        'Thank you for your purchase! Glad you liked it.',
+      );
 
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise((resolve) => setTimeout(resolve, 100));
 
       // Verify REVIEW_RESPONSE notification sent to buyer
       const notifications = await prisma.notification.findMany({
@@ -434,7 +442,8 @@ describe('Stage 6: Chat, Reviews, and Notifications (e2e)', () => {
         .set('Authorization', `Bearer ${buyerToken}`)
         .send({
           rating: 4,
-          comment: 'Great product, fast delivery! Update: packaging could be better.',
+          comment:
+            'Great product, fast delivery! Update: packaging could be better.',
         })
         .expect(200);
 
@@ -476,7 +485,7 @@ describe('Stage 6: Chat, Reviews, and Notifications (e2e)', () => {
         .send({
           title: 'Cleaning Service',
           description: 'Professional cleaning service',
-          price: 50.00,
+          price: 50.0,
           type: 'SERVICE',
           categoryId: category?.id,
           status: 'ACTIVE',
@@ -497,14 +506,14 @@ describe('Stage 6: Chat, Reviews, and Notifications (e2e)', () => {
           listingId: serviceListingId,
           startTime: startTime.toISOString(),
           endTime: endTime.toISOString(),
-          totalAmount: 50.00,
+          totalAmount: 50.0,
         })
         .expect(201);
 
       bookingId = response.body.id;
       expect(response.body.status).toBe('PENDING');
 
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise((resolve) => setTimeout(resolve, 100));
 
       // Verify BOOKING_REQUESTED notification
       const notifications = await prisma.notification.findMany({
@@ -525,7 +534,7 @@ describe('Stage 6: Chat, Reviews, and Notifications (e2e)', () => {
 
       expect(response.body.status).toBe('CONFIRMED');
 
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise((resolve) => setTimeout(resolve, 100));
 
       // Verify chat thread was created
       const threads = await prisma.chatThread.findMany({
@@ -555,7 +564,7 @@ describe('Stage 6: Chat, Reviews, and Notifications (e2e)', () => {
 
       expect(response.body.status).toBe('IN_PROGRESS');
 
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise((resolve) => setTimeout(resolve, 100));
 
       // Verify BOOKING_STARTED notification
       const notifications = await prisma.notification.findMany({
@@ -576,7 +585,7 @@ describe('Stage 6: Chat, Reviews, and Notifications (e2e)', () => {
 
       expect(response.body.status).toBe('COMPLETED');
 
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise((resolve) => setTimeout(resolve, 100));
 
       // Verify BOOKING_COMPLETED notification
       const notifications = await prisma.notification.findMany({
@@ -656,7 +665,7 @@ describe('Stage 6: Chat, Reviews, and Notifications (e2e)', () => {
 
       // Find the updated preference
       const emailPref = response.body.find(
-        p => p.type === 'ORDER_PLACED' && p.channel === 'EMAIL'
+        (p) => p.type === 'ORDER_PLACED' && p.channel === 'EMAIL',
       );
       expect(emailPref.enabled).toBe(false);
     });
@@ -824,18 +833,18 @@ describe('Stage 6: Chat, Reviews, and Notifications (e2e)', () => {
         where: { userId: sellerId },
       });
 
-      // Buyer should have notifications for: ORDER_CONFIRMED, ORDER_READY, ORDER_DELIVERED, 
+      // Buyer should have notifications for: ORDER_CONFIRMED, ORDER_READY, ORDER_DELIVERED,
       // BOOKING_CONFIRMED, BOOKING_STARTED, REVIEW_RESPONSE
       expect(buyerNotifications).toBeGreaterThanOrEqual(6);
 
-      // Seller should have notifications for: ORDER_PLACED, ORDER_COMPLETED, 
+      // Seller should have notifications for: ORDER_PLACED, ORDER_COMPLETED,
       // BOOKING_REQUESTED, BOOKING_COMPLETED, REVIEW_RECEIVED
       expect(sellerNotifications).toBeGreaterThanOrEqual(5);
     });
 
     it('should verify chat threads created', async () => {
       const threads = await prisma.chatThread.count();
-      
+
       // Should have 2 threads (one for order, one for booking)
       expect(threads).toBe(2);
     });

@@ -1,5 +1,19 @@
-import { Controller, Post, Body, HttpCode, HttpStatus, UseGuards, Req } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
+import {
+  Controller,
+  Post,
+  Body,
+  HttpCode,
+  HttpStatus,
+  UseGuards,
+  Req,
+} from '@nestjs/common';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBearerAuth,
+} from '@nestjs/swagger';
+import { Request } from 'express';
 import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
@@ -8,7 +22,8 @@ import { VerifyEmailDto } from './dto/verify-email.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
-import { Public } from './decorators/public.decorator';
+
+type AuthRequest = Request & { user: { sub: string } };
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -48,7 +63,7 @@ export class AuthController {
   @ApiOperation({ summary: 'Send email verification link' })
   @ApiResponse({ status: 200, description: 'Verification email sent' })
   @ApiResponse({ status: 400, description: 'Email already verified' })
-  async sendVerificationEmail(@Req() req) {
+  async sendVerificationEmail(@Req() req: AuthRequest) {
     await this.authService.sendVerificationEmail(req.user.sub);
     return { message: 'Verification email sent successfully' };
   }
@@ -66,10 +81,15 @@ export class AuthController {
   @Post('forgot-password')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Request password reset' })
-  @ApiResponse({ status: 200, description: 'Password reset email sent if user exists' })
+  @ApiResponse({
+    status: 200,
+    description: 'Password reset email sent if user exists',
+  })
   async forgotPassword(@Body() forgotPasswordDto: ForgotPasswordDto) {
     await this.authService.forgotPassword(forgotPasswordDto.email);
-    return { message: 'If the email exists, a password reset link has been sent' };
+    return {
+      message: 'If the email exists, a password reset link has been sent',
+    };
   }
 
   @Post('reset-password')

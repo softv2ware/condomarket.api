@@ -1,4 +1,9 @@
-import { Injectable, NotFoundException, BadRequestException, Logger } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+  Logger,
+} from '@nestjs/common';
 import { PrismaService } from '~/prisma';
 import { NotificationType, NotificationChannel, Prisma } from '@prisma/client';
 import { FirebaseService } from '~/common/firebase/firebase.service';
@@ -73,7 +78,12 @@ export class NotificationsService {
 
     // Send push notification if PUSH channel is enabled
     if (channels.includes(NotificationChannel.PUSH)) {
-      await this.sendPushNotification(dto.userId, dto.title, dto.message, dto.data);
+      await this.sendPushNotification(
+        dto.userId,
+        dto.title,
+        dto.message,
+        dto.data,
+      );
     }
 
     // TODO: Implement EMAIL channel (Stage 7 - Email service)
@@ -136,7 +146,10 @@ export class NotificationsService {
       //   await this.removeInvalidTokens(userId, failedTokens);
       // }
     } catch (error) {
-      this.logger.error(`Failed to send push notification: ${error.message}`, error.stack);
+      this.logger.error(
+        `Failed to send push notification: ${error.message}`,
+        error.stack,
+      );
     }
   }
 
@@ -171,12 +184,15 @@ export class NotificationsService {
     ]);
 
     return {
-      data: notifications.map((n) => new NotificationEntity({
-        ...n,
-        data: n.data as Record<string, any> | undefined,
-        readAt: n.readAt || undefined,
-        createdAt: n.sentAt,
-      })),
+      data: notifications.map(
+        (n) =>
+          new NotificationEntity({
+            ...n,
+            data: n.data as Record<string, any> | undefined,
+            readAt: n.readAt || undefined,
+            createdAt: n.sentAt,
+          }),
+      ),
       meta: {
         total,
         page,
@@ -189,7 +205,10 @@ export class NotificationsService {
   /**
    * Get a single notification by ID
    */
-  async getNotificationById(id: string, userId: string): Promise<NotificationEntity> {
+  async getNotificationById(
+    id: string,
+    userId: string,
+  ): Promise<NotificationEntity> {
     const notification = await this.prisma.notification.findUnique({
       where: { id },
     });
@@ -213,7 +232,10 @@ export class NotificationsService {
   /**
    * Mark specific notifications as read
    */
-  async markAsRead(userId: string, notificationIds: string[]): Promise<{ count: number }> {
+  async markAsRead(
+    userId: string,
+    notificationIds: string[],
+  ): Promise<{ count: number }> {
     const result = await this.prisma.notification.updateMany({
       where: {
         id: { in: notificationIds },
@@ -262,7 +284,9 @@ export class NotificationsService {
   /**
    * Get user's notification preferences
    */
-  async getPreferences(userId: string): Promise<NotificationPreferenceEntity[]> {
+  async getPreferences(
+    userId: string,
+  ): Promise<NotificationPreferenceEntity[]> {
     const preferences = await this.prisma.notificationPreference.findMany({
       where: { userId },
       orderBy: [{ type: 'asc' }, { channel: 'asc' }],

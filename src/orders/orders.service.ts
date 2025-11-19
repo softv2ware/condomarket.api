@@ -165,7 +165,9 @@ export class OrdersService {
         },
       });
     } catch (error) {
-      this.logger.error(`Failed to send order placed notification: ${error.message}`);
+      this.logger.error(
+        `Failed to send order placed notification: ${error.message}`,
+      );
     }
 
     return order;
@@ -325,7 +327,10 @@ export class OrdersService {
     });
 
     // Send notifications based on status change
-    await this.sendOrderStatusNotification(updatedOrder, updateOrderStatusDto.status);
+    await this.sendOrderStatusNotification(
+      updatedOrder,
+      updateOrderStatusDto.status,
+    );
 
     return updatedOrder;
   }
@@ -377,8 +382,12 @@ export class OrdersService {
 
         case OrderStatus.CANCELLED:
           // Notify the other party
-          recipientId = order.buyerId === order.sellerId ? order.buyerId : 
-                        (order.statusHistory[0]?.changedBy === order.buyerId ? order.sellerId : order.buyerId);
+          recipientId =
+            order.buyerId === order.sellerId
+              ? order.buyerId
+              : order.statusHistory[0]?.changedBy === order.buyerId
+                ? order.sellerId
+                : order.buyerId;
           notificationType = NotificationType.ORDER_CANCELLED;
           title = 'Order Cancelled';
           message = `Order for ${order.listing.title} has been cancelled`;
@@ -400,7 +409,9 @@ export class OrdersService {
         },
       });
     } catch (error) {
-      this.logger.error(`Failed to send order status notification: ${error.message}`);
+      this.logger.error(
+        `Failed to send order status notification: ${error.message}`,
+      );
     }
   }
 
@@ -450,7 +461,7 @@ export class OrdersService {
       OrderStatus.READY_FOR_PICKUP,
       OrderStatus.OUT_FOR_DELIVERY,
     ];
-    
+
     if (
       sellerOnlyStatuses.some((status) => status === newStatus) &&
       !isSeller
@@ -492,7 +503,9 @@ export class OrdersService {
       });
       this.logger.log(`Chat thread created for order ${id}`);
     } catch (error) {
-      this.logger.error(`Failed to create chat thread for order ${id}: ${error.message}`);
+      this.logger.error(
+        `Failed to create chat thread for order ${id}: ${error.message}`,
+      );
       // Don't fail the order confirmation if chat creation fails
     }
 

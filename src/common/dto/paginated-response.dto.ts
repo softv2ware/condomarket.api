@@ -29,7 +29,7 @@ export function createPaginatedResponse<T>(
   limit: number,
 ): PaginatedResponseDto<T> {
   const totalPages = Math.ceil(total / limit);
-  
+
   return new PaginatedResponseDto(data, {
     page,
     limit,

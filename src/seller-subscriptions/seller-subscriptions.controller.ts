@@ -9,7 +9,12 @@ import {
   UseGuards,
   Query,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiBearerAuth,
+  ApiQuery,
+} from '@nestjs/swagger';
 import { SellerSubscriptionsService } from './seller-subscriptions.service';
 import { CreateSellerSubscriptionDto } from './dto/create-seller-subscription.dto';
 import { ChangePlanDto } from './dto/change-plan.dto';
@@ -93,7 +98,11 @@ export class SellerSubscriptionsController {
     @CurrentUser('id') userId: string,
     @Body() changePlanDto: ChangePlanDto,
   ) {
-    return this.sellerSubscriptionsService.changePlan(id, userId, changePlanDto);
+    return this.sellerSubscriptionsService.changePlan(
+      id,
+      userId,
+      changePlanDto,
+    );
   }
 
   @Post('admin/:id/override')
