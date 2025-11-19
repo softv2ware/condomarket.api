@@ -112,73 +112,114 @@ export class ListingsService {
       return this.searchWithFullText(searchDto);
     }
 
-    const where: any = {
-      status,
-      ...(type && { type }),
-      ...(categoryId && { categoryId }),
-      ...(buildingId && { buildingId }),
-      ...(minPrice !== undefined || maxPrice !== undefined
-        ? {
-            price: {
-              ...(minPrice !== undefined && { gte: minPrice }),
-              ...(maxPrice !== undefined && { lte: maxPrice }),
-            },
-          }
-        : {}),
-    };
+    // Build cache key from search parameters
+    const cacheKey = `listings:all:status=${status}:type=${type}:cat=${categoryId}:bldg=${buildingId}:min=${minPrice}:max=${maxPrice}:page=${page}:limit=${limit}`;
 
-    const [listings, total] = await Promise.all([
-      this.prisma.listing.findMany({
-        where,
-        skip,
-        take: limit,
-        include: {
-          category: true,
-          building: {
-            select: {
-              id: true,
-              name: true,
-            },
-          },
-          seller: {
-            select: {
-              id: true,
-              profile: {
+    return this.cacheService.wrap(
+      cacheKey,
+      async () => {
+        const where: any = {
+          status,
+          ...(type && { type }),
+          ...(categoryId && { categoryId }),
+          ...(buildingId && { buildingId }),
+          ...(minPrice !== undefined || maxPrice !== undefined
+            ? {
+                price: {
+                  ...(minPrice !== undefined && { gte: minPrice }),
+                  ...(maxPrice !== undefined && { lte: maxPrice }),
+                },
+              }
+            : {}),
+        };
+
+        const [listings, total] = await Promise.all([
+          this.prisma.listing.findMany({
+            where,
+            skip,
+            take: limit,
+            include: {
+              category: true,
+              building: {
                 select: {
-                  firstName: true,
-                  lastName: true,
+                  id: true,
+                  name: true,
                 },
               },
+              seller: {
+                select: {
+                  id: true,
+                  profile: {
+                    select: {
+                      firstName: true,
+                      lastName: true,
+                    },
+                  },
+                },
+              },
+              photos: {
+                where: { isMain: true },
+                take: 1,
+              },
             },
-          },
-          photos: {
-            where: { isMain: true },
-            take: 1,
-          },
-        },
-        orderBy: [
-          { subscriptionTierSnapshot: 'desc' }, // Premium first
-          { publishedAt: 'desc' },
-        ],
-      }),
-      this.prisma.listing.count({ where }),
-    ]);
+            orderBy: [
+              { subscriptionTierSnapshot: 'desc' }, // Premium first
+              { publishedAt: 'desc' },
+            ],
+          }),
+          this.prisma.listing.count({ where }),
+        ]);
 
-    return {
-      data: listings,
-      meta: {
-        total,
-        page,
-        limit,
-        totalPages: Math.ceil(total / limit),
+        return {
+          data: listings,
+          meta: {
+            total,
+            page,
+            limit,
+            totalPages: Math.ceil(total / limit),
+          },
+        };
       },
-    };
+      300, // 5 minutes TTL
+    );
   }
 
   /**
    * Search listings with PostgreSQL full-text search
    */
   async searchWithFullText(searchDto: SearchListingsDto) {
+    const {
+      q,
+      type,
+      categoryId,
+      buildingId,
+      minPrice,
+      maxPrice,
+      status = ListingStatus.ACTIVE,
+      page = 1,
+      limit = 20,
+    } = searchDto;
+
+    const skip = (page - 1) * limit;
+
+    if (!q || q.trim().length === 0) {
+      throw new BadRequestException('Search query is required');
+    }
+
+    // Build cache key from search parameters
+    const cacheKey = `listings:search:q=${q}:status=${status}:type=${type}:cat=${categoryId}:bldg=${buildingId}:min=${minPrice}:max=${maxPrice}:page=${page}:limit=${limit}`;
+
+    return this.cacheService.wrap(
+      cacheKey,
+      async () => this.executeFullTextSearch(searchDto),
+      300, // 5 minutes TTL for search results
+    );
+  }
+
+  /**
+   * Execute full-text search (extracted for caching)
+   */
+  private async executeFullTextSearch(searchDto: SearchListingsDto) {
     const {
       q,
       type,
@@ -429,39 +470,49 @@ export class ListingsService {
    * Get featured/highlighted listings (PREMIUM tier)
    */
   async findFeatured(buildingId?: string) {
-    return this.prisma.listing.findMany({
-      where: {
-        status: ListingStatus.ACTIVE,
-        subscriptionTierSnapshot: 'PREMIUM',
-        ...(buildingId && { buildingId }),
-      },
-      include: {
-        category: true,
-        building: {
-          select: {
-            id: true,
-            name: true,
+    const cacheKey = buildingId 
+      ? `listings:featured:building=${buildingId}` 
+      : 'listings:featured:all';
+
+    return this.cacheService.wrap(
+      cacheKey,
+      async () => {
+        return this.prisma.listing.findMany({
+          where: {
+            status: ListingStatus.ACTIVE,
+            subscriptionTierSnapshot: 'PREMIUM',
+            ...(buildingId && { buildingId }),
           },
-        },
-        seller: {
-          select: {
-            id: true,
-            profile: {
+          include: {
+            category: true,
+            building: {
               select: {
-                firstName: true,
-                lastName: true,
+                id: true,
+                name: true,
               },
             },
+            seller: {
+              select: {
+                id: true,
+                profile: {
+                  select: {
+                    firstName: true,
+                    lastName: true,
+                  },
+                },
+              },
+            },
+            photos: {
+              where: { isMain: true },
+              take: 1,
+            },
           },
-        },
-        photos: {
-          where: { isMain: true },
-          take: 1,
-        },
+          orderBy: { publishedAt: 'desc' },
+          take: 10,
+        });
       },
-      orderBy: { publishedAt: 'desc' },
-      take: 10,
-    });
+      600, // 10 minutes TTL - featured listings don't change often
+    );
   }
 
   /**
@@ -560,7 +611,7 @@ export class ListingsService {
       ? this.generateSlug(updateDto.title)
       : undefined;
 
-    return this.prisma.listing.update({
+    const updated = await this.prisma.listing.update({
       where: { id },
       data: {
         ...updateDto,
@@ -573,6 +624,16 @@ export class ListingsService {
         availability: true,
       },
     });
+
+    // Invalidate caches
+    await Promise.all([
+      this.cacheService.del(`listing:${id}`),
+      this.cacheService.delByPattern(`listings:all:*`),
+      this.cacheService.delByPattern(`listings:search:*`),
+      this.cacheService.delByPattern(`listings:featured:*`),
+    ]);
+
+    return updated;
   }
 
   /**
@@ -593,10 +654,20 @@ export class ListingsService {
     }
 
     // Soft delete by setting status to EXPIRED
-    return this.prisma.listing.update({
+    const deleted = await this.prisma.listing.update({
       where: { id },
       data: { status: ListingStatus.EXPIRED },
     });
+
+    // Invalidate caches
+    await Promise.all([
+      this.cacheService.del(`listing:${id}`),
+      this.cacheService.delByPattern(`listings:all:*`),
+      this.cacheService.delByPattern(`listings:search:*`),
+      this.cacheService.delByPattern(`listings:featured:*`),
+    ]);
+
+    return deleted;
   }
 
   /**
@@ -628,7 +699,7 @@ export class ListingsService {
       ? ListingStatus.ACTIVE
       : ListingStatus.PENDING_APPROVAL;
 
-    return this.prisma.listing.update({
+    const published = await this.prisma.listing.update({
       where: { id },
       data: {
         status: newStatus,
@@ -639,6 +710,16 @@ export class ListingsService {
         photos: true,
       },
     });
+
+    // Invalidate caches - published listing now appears in search
+    await Promise.all([
+      this.cacheService.del(`listing:${id}`),
+      this.cacheService.delByPattern(`listings:all:*`),
+      this.cacheService.delByPattern(`listings:search:*`),
+      this.cacheService.delByPattern(`listings:featured:*`),
+    ]);
+
+    return published;
   }
 
   /**

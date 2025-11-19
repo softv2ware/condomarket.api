@@ -4,13 +4,17 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { PrismaService } from '~/prisma';
+import { CacheService } from '../common/cache/cache.service';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
 import { CategoryType } from '@prisma/client';
 
 @Injectable()
 export class CategoriesService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly cacheService: CacheService,
+  ) {}
 
   /**
    * Create a new category (platform-wide or building-specific)
@@ -48,7 +52,7 @@ export class CategoriesService {
     // Generate slug from name
     const slug = this.generateSlug(createDto.name);
 
-    return this.prisma.category.create({
+    const created = await this.prisma.category.create({
       data: {
         ...createDto,
         slug,
@@ -63,39 +67,52 @@ export class CategoriesService {
         },
       },
     });
+
+    // Invalidate all category caches
+    await this.cacheService.delByPattern('categories:*');
+
+    return created;
   }
 
   /**
    * Get all categories with optional filters
    */
   async findAll(type?: CategoryType, buildingId?: string) {
-    return this.prisma.category.findMany({
-      where: {
-        ...(type && { type }),
-        ...(buildingId && {
-          OR: [
-            { buildingId }, // Building-specific
-            { buildingId: null }, // Platform-wide
-          ],
-        }),
-      },
-      include: {
-        parent: true,
-        building: {
-          select: {
-            id: true,
-            name: true,
+    const cacheKey = `categories:all:type=${type}:building=${buildingId}`;
+
+    return this.cacheService.wrap(
+      cacheKey,
+      async () => {
+        return this.prisma.category.findMany({
+          where: {
+            ...(type && { type }),
+            ...(buildingId && {
+              OR: [
+                { buildingId }, // Building-specific
+                { buildingId: null }, // Platform-wide
+              ],
+            }),
           },
-        },
-        _count: {
-          select: {
-            listings: true,
-            children: true,
+          include: {
+            parent: true,
+            building: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+            _count: {
+              select: {
+                listings: true,
+                children: true,
+              },
+            },
           },
-        },
+          orderBy: [{ type: 'asc' }, { name: 'asc' }],
+        });
       },
-      orderBy: [{ type: 'asc' }, { name: 'asc' }],
-    });
+      3600, // 1 hour TTL - categories are very static
+    );
   }
 
   /**
@@ -204,7 +221,7 @@ export class CategoriesService {
       ? this.generateSlug(updateDto.name)
       : undefined;
 
-    return this.prisma.category.update({
+    const updated = await this.prisma.category.update({
       where: { id },
       data: {
         ...updateDto,
@@ -221,6 +238,11 @@ export class CategoriesService {
         },
       },
     });
+
+    // Invalidate all category caches
+    await this.cacheService.delByPattern('categories:*');
+
+    return updated;
   }
 
   /**
@@ -255,9 +277,14 @@ export class CategoriesService {
       );
     }
 
-    return this.prisma.category.delete({
+    const deleted = await this.prisma.category.delete({
       where: { id },
     });
+
+    // Invalidate all category caches
+    await this.cacheService.delByPattern('categories:*');
+
+    return deleted;
   }
 
   /**

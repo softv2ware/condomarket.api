@@ -1,12 +1,16 @@
 import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { PrismaService } from '~/prisma';
+import { CacheService } from '../common/cache/cache.service';
 import { CreateBuildingDto } from './dto/create-building.dto';
 import { UpdateBuildingDto } from './dto/update-building.dto';
 import { CreateUnitDto } from './dto/create-unit.dto';
 
 @Injectable()
 export class BuildingsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private readonly cacheService: CacheService,
+  ) {}
 
   async create(createBuildingDto: CreateBuildingDto) {
     return this.prisma.building.create({
@@ -31,69 +35,81 @@ export class BuildingsService {
   }
 
   async findAll() {
-    return this.prisma.building.findMany({
-      include: {
-        admin: {
-          select: {
-            id: true,
-            email: true,
-            profile: {
+    return this.cacheService.wrap(
+      'buildings:all',
+      async () => {
+        return this.prisma.building.findMany({
+          include: {
+            admin: {
               select: {
-                firstName: true,
-                lastName: true,
+                id: true,
+                email: true,
+                profile: {
+                  select: {
+                    firstName: true,
+                    lastName: true,
+                  },
+                },
+              },
+            },
+            _count: {
+              select: {
+                units: true,
+                residents: true,
               },
             },
           },
-        },
-        _count: {
-          select: {
-            units: true,
-            residents: true,
+          orderBy: {
+            createdAt: 'desc',
           },
-        },
+        });
       },
-      orderBy: {
-        createdAt: 'desc',
-      },
-    });
+      1800, // 30 minutes TTL - buildings rarely change
+    );
   }
 
   async findOne(id: string) {
-    const building = await this.prisma.building.findUnique({
-      where: { id },
-      include: {
-        admin: {
-          select: {
-            id: true,
-            email: true,
-            profile: {
+    return this.cacheService.wrap(
+      `building:${id}`,
+      async () => {
+        const building = await this.prisma.building.findUnique({
+          where: { id },
+          include: {
+            admin: {
               select: {
-                firstName: true,
-                lastName: true,
+                id: true,
+                email: true,
+                profile: {
+                  select: {
+                    firstName: true,
+                    lastName: true,
+                  },
+                },
+              },
+            },
+            _count: {
+              select: {
+                units: true,
+                residents: true,
               },
             },
           },
-        },
-        _count: {
-          select: {
-            units: true,
-            residents: true,
-          },
-        },
+        });
+
+        if (!building) {
+          throw new NotFoundException(`Building with ID ${id} not found`);
+        }
+
+        return building;
       },
-    });
-
-    if (!building) {
-      throw new NotFoundException(`Building with ID ${id} not found`);
-    }
-
-    return building;
+      1800, // 30 minutes TTL
+    );
   }
 
   async update(id: string, updateBuildingDto: UpdateBuildingDto) {
     await this.findOne(id); // Check if exists
 
-    return this.prisma.building.update({
+    const updated = await this.prisma.building.update({
       where: { id },
       data: updateBuildingDto,
       include: {
@@ -111,17 +127,33 @@ export class BuildingsService {
         },
       },
     });
+
+    // Invalidate caches
+    await Promise.all([
+      this.cacheService.del(`building:${id}`),
+      this.cacheService.del('buildings:all'),
+    ]);
+
+    return updated;
   }
 
   async remove(id: string) {
     await this.findOne(id); // Check if exists
 
-    return this.prisma.building.update({
+    const removed = await this.prisma.building.update({
       where: { id },
       data: {
         status: 'ARCHIVED',
       },
     });
+
+    // Invalidate caches
+    await Promise.all([
+      this.cacheService.del(`building:${id}`),
+      this.cacheService.del('buildings:all'),
+    ]);
+
+    return removed;
   }
 
   // Unit management

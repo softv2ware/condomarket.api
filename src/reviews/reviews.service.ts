@@ -8,6 +8,7 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '~/prisma';
 import { NotificationsService } from '~/notifications/notifications.service';
+import { CacheService } from '../common/cache/cache.service';
 import { CreateReviewDto } from './dto/create-review.dto';
 import { EditReviewDto } from './dto/edit-review.dto';
 import { RespondToReviewDto } from './dto/respond-to-review.dto';
@@ -28,6 +29,7 @@ export class ReviewsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly notificationsService: NotificationsService,
+    private readonly cacheService: CacheService,
   ) {}
 
   /**
@@ -177,6 +179,9 @@ export class ReviewsService {
       this.logger.error(`Failed to send review received notification: ${error.message}`);
     }
 
+    // Invalidate review caches
+    await this.cacheService.delByPattern('reviews:list:*');
+
     return review;
   }
 
@@ -184,6 +189,23 @@ export class ReviewsService {
    * Get reviews with filters
    */
   async getReviews(dto: GetReviewsDto) {
+    const { page = 1, limit = 20, listingId, userId, type, minRating } = dto;
+    const skip = (page - 1) * limit;
+
+    // Build cache key from query parameters
+    const cacheKey = `reviews:list:listing=${listingId}:user=${userId}:type=${type}:minRating=${minRating}:page=${page}:limit=${limit}`;
+
+    return this.cacheService.wrap(
+      cacheKey,
+      async () => this.executeGetReviews(dto),
+      300, // 5 minutes TTL
+    );
+  }
+
+  /**
+   * Execute getReviews query (extracted for caching)
+   */
+  private async executeGetReviews(dto: GetReviewsDto) {
     const { page = 1, limit = 20, listingId, userId, type, minRating } = dto;
     const skip = (page - 1) * limit;
 
@@ -552,7 +574,7 @@ export class ReviewsService {
       updateData.comment = dto.comment;
     }
 
-    return this.prisma.review.update({
+    const updated = await this.prisma.review.update({
       where: { id: reviewId },
       data: updateData,
       include: {
@@ -574,6 +596,11 @@ export class ReviewsService {
         },
       },
     });
+
+    // Invalidate review caches
+    await this.cacheService.delByPattern('reviews:list:*');
+
+    return updated;
   }
 
   /**

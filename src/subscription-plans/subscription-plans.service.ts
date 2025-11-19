@@ -2,10 +2,14 @@ import { Injectable, NotFoundException, ConflictException } from '@nestjs/common
 import { CreateSubscriptionPlanDto } from './dto/create-subscription-plan.dto';
 import { UpdateSubscriptionPlanDto } from './dto/update-subscription-plan.dto';
 import { PrismaService } from '~/prisma';
+import { CacheService } from '../common/cache/cache.service';
 
 @Injectable()
 export class SubscriptionPlansService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly cacheService: CacheService,
+  ) {}
 
   async create(createSubscriptionPlanDto: CreateSubscriptionPlanDto) {
     // Check if plan with this tier already exists
@@ -27,7 +31,7 @@ export class SubscriptionPlansService {
       });
     }
 
-    return this.prisma.subscriptionPlan.create({
+    const created = await this.prisma.subscriptionPlan.create({
       data: createSubscriptionPlanDto,
       include: {
         building: {
@@ -38,57 +42,78 @@ export class SubscriptionPlansService {
         },
       },
     });
+
+    // Invalidate all subscription plan caches
+    await this.cacheService.delByPattern('subscription-plan*');
+
+    return created;
   }
 
   async findAll(buildingId?: string) {
-    return this.prisma.subscriptionPlan.findMany({
-      where: {
-        isActive: true,
-        ...(buildingId ? { OR: [{ buildingId }, { buildingId: null }] } : {}),
-      },
-      include: {
-        building: {
-          select: {
-            id: true,
-            name: true,
+    const cacheKey = buildingId 
+      ? `subscription-plans:building=${buildingId}` 
+      : 'subscription-plans:all';
+
+    return this.cacheService.wrap(
+      cacheKey,
+      async () => {
+        return this.prisma.subscriptionPlan.findMany({
+          where: {
+            isActive: true,
+            ...(buildingId ? { OR: [{ buildingId }, { buildingId: null }] } : {}),
           },
-        },
-        _count: {
-          select: {
-            subscriptions: true,
+          include: {
+            building: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+            _count: {
+              select: {
+                subscriptions: true,
+              },
+            },
           },
-        },
+          orderBy: [
+            { sortPriority: 'desc' },
+            { monthlyPrice: 'asc' },
+          ],
+        });
       },
-      orderBy: [
-        { sortPriority: 'desc' },
-        { monthlyPrice: 'asc' },
-      ],
-    });
+      1800, // 30 minutes TTL - plans change infrequently
+    );
   }
 
   async findOne(id: string) {
-    const plan = await this.prisma.subscriptionPlan.findUnique({
-      where: { id },
-      include: {
-        building: {
-          select: {
-            id: true,
-            name: true,
+    return this.cacheService.wrap(
+      `subscription-plan:${id}`,
+      async () => {
+        const plan = await this.prisma.subscriptionPlan.findUnique({
+          where: { id },
+          include: {
+            building: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+            _count: {
+              select: {
+                subscriptions: true,
+              },
+            },
           },
-        },
-        _count: {
-          select: {
-            subscriptions: true,
-          },
-        },
+        });
+
+        if (!plan) {
+          throw new NotFoundException(`Subscription plan with ID ${id} not found`);
+        }
+
+        return plan;
       },
-    });
-
-    if (!plan) {
-      throw new NotFoundException(`Subscription plan with ID ${id} not found`);
-    }
-
-    return plan;
+      1800, // 30 minutes TTL
+    );
   }
 
   async findByTier(tier: string) {
@@ -129,7 +154,7 @@ export class SubscriptionPlansService {
       });
     }
 
-    return this.prisma.subscriptionPlan.update({
+    const updated = await this.prisma.subscriptionPlan.update({
       where: { id },
       data: updateSubscriptionPlanDto,
       include: {
@@ -141,6 +166,11 @@ export class SubscriptionPlansService {
         },
       },
     });
+
+    // Invalidate all subscription plan caches
+    await this.cacheService.delByPattern('subscription-plan*');
+
+    return updated;
   }
 
   async remove(id: string) {
@@ -160,9 +190,14 @@ export class SubscriptionPlansService {
     }
 
     // Soft delete by setting isActive to false
-    return this.prisma.subscriptionPlan.update({
+    const removed = await this.prisma.subscriptionPlan.update({
       where: { id },
       data: { isActive: false },
     });
+
+    // Invalidate all subscription plan caches
+    await this.cacheService.delByPattern('subscription-plan*');
+
+    return removed;
   }
 }
