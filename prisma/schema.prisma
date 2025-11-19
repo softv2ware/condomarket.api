@@ -63,6 +63,15 @@ model User {
   createdAt DateTime   @default(now())
   updatedAt DateTime   @updatedAt
 
+  // Email verification
+  emailVerified             Boolean   @default(false)
+  verificationToken         String?   @unique
+  verificationTokenExpiry   DateTime?
+
+  // Password reset
+  resetPasswordToken        String?   @unique
+  resetPasswordTokenExpiry  DateTime?
+
   profile               UserProfile?
   residences            ResidentBuilding[]
   managedBuildings      Building[]               @relation("BuildingAdmin")
