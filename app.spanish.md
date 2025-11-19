@@ -94,30 +94,30 @@ mindmap
 
 ```mermaid
 graph TB
-    subgraph Productos["🛍️ PRODUCTOS"]
-        P1[🪑 Muebles]
-        P2[📱 Electrónica]
-        P3[🧸 Juguetes & Ropa]
-        P4[📚 Libros & Juegos]
-        P5[🔌 Electrodomésticos]
+    subgraph Productos[PRODUCTOS]
+        P1[Muebles]
+        P2[Electronica]
+        P3[Juguetes y Ropa]
+        P4[Libros y Juegos]
+        P5[Electrodomesticos]
     end
     
-    subgraph Servicios["🔧 SERVICIOS"]
-        S1[🔨 Reparaciones]
-        S2[📖 Tutorías]
-        S3[🐕 Cuidado Mascotas]
-        S4[🧹 Limpieza]
-        S5[💻 Soporte Tech]
-        S6[📸 Fotografía]
+    subgraph Servicios[SERVICIOS]
+        S1[Reparaciones]
+        S2[Tutorias]
+        S3[Cuidado Mascotas]
+        S4[Limpieza]
+        S5[Soporte Tech]
+        S6[Fotografia]
     end
     
-    Usuario[👤 TÚ] --> Productos
+    Usuario[TU] --> Productos
     Usuario --> Servicios
     
-    Productos --> Vender[💰 Vender]
-    Productos --> Comprar[🛒 Comprar]
-    Servicios --> Ofrecer[🌟 Ofrecer]
-    Servicios --> Reservar[📅 Reservar]
+    Productos --> Vender[Vender]
+    Productos --> Comprar[Comprar]
+    Servicios --> Ofrecer[Ofrecer]
+    Servicios --> Reservar[Reservar]
     
     style Usuario fill:#FF6B6B,stroke:#C92A2A,stroke-width:3px,color:#fff
     style Productos fill:#4ECDC4,stroke:#1A535C,stroke-width:2px,color:#000
@@ -128,6 +128,10 @@ graph TB
     style Reservar fill:#51CF66,stroke:#2F9E44,stroke-width:2px,color:#fff
 ```
 
+**🛍️ PRODUCTOS:** 🪑 Muebles • 📱 Electrónica • 🧸 Juguetes & Ropa • 📚 Libros & Juegos • 🔌 Electrodomésticos
+
+**🔧 SERVICIOS:** 🔨 Reparaciones • 📖 Tutorías • 🐕 Cuidado Mascotas • 🧹 Limpieza • 💻 Soporte Tech • 📸 Fotografía
+
 </div>
 
 ## 🚀 Cómo Funciona
@@ -136,36 +140,36 @@ graph TB
 
 ```mermaid
 sequenceDiagram
-    participant C as 🛒 Comprador
-    participant CM as 🏢 CondoMarket
-    participant V as 💼 Vendedor
-    participant A as 🔑 Admin
+    participant C as Comprador
+    participant CM as CondoMarket
+    participant V as Vendedor
+    participant A as Admin
     
-    Note over A,CM: Fase 1: Verificación
+    Note over A,CM: Fase 1 Verificacion
     A->>CM: Verifica residentes
-    CM->>C: ✅ Cuenta activada
-    CM->>V: ✅ Cuenta activada
+    CM->>C: Cuenta activada
+    CM->>V: Cuenta activada
     
-    Note over V,CM: Fase 2: Publicación
-    V->>CM: 📝 Publica artículo/servicio
-    CM->>CM: 🔍 Revisión automática
+    Note over V,CM: Fase 2 Publicacion
+    V->>CM: Publica articulo servicio
+    CM->>CM: Revision automatica
     
-    Note over C,CM: Fase 3: Descubrimiento
-    C->>CM: 🔎 Busca en su edificio
-    CM->>C: 📋 Muestra anuncios
+    Note over C,CM: Fase 3 Descubrimiento
+    C->>CM: Busca en su edificio
+    CM->>C: Muestra anuncios
     
-    Note over C,V: Fase 4: Conexión
-    C->>V: 💬 Inicia chat
-    V->>C: 💬 Responde
-    C->>V: 🤝 Acuerdan términos
+    Note over C,V: Fase 4 Conexion
+    C->>V: Inicia chat
+    V->>C: Responde
+    C->>V: Acuerdan terminos
     
-    Note over C,V: Fase 5: Transacción
-    C->>V: 🏢 Se encuentran en el edificio
-    V->>C: 📦 Entrega/Servicio
+    Note over C,V: Fase 5 Transaccion
+    C->>V: Se encuentran en el edificio
+    V->>C: Entrega Servicio
     
-    Note over C,CM: Fase 6: Reputación
-    C->>CM: ⭐ Califica experiencia
-    CM->>V: 🏆 Actualiza reputación
+    Note over C,CM: Fase 6 Reputacion
+    C->>CM: Califica experiencia
+    CM->>V: Actualiza reputacion
 ```
 
 </div>
@@ -538,19 +542,19 @@ graph TB
 
 ```mermaid
 sequenceDiagram
-    participant S as 👩 Sarah<br/>(Vendedora)
-    participant CM as 🏢 CondoMarket
-    participant C as 👤 Compradores
+    participant S as Sarah Vendedora
+    participant CM as CondoMarket
+    participant C as Compradores
     
-    Note over S: Necesita mudarse<br/>este fin de semana
-    S->>CM: 📝 Publica 5 muebles
-    CM->>C: 🔔 Notifica vecinos
-    C->>S: 💬 "¿Aún disponible?"
-    S->>C: ✅ "Sí, piso 8"
-    Note over S,C: 2 horas después
-    C->>S: 🏢 Recoge en el lobby
-    S->>C: 💰 Vende todo
-    Note over S: ¡Mudanza exitosa!<br/>Sin complicaciones
+    Note over S: Necesita mudarse este fin de semana
+    S->>CM: Publica 5 muebles
+    CM->>C: Notifica vecinos
+    C->>S: Aun disponible?
+    S->>C: Si piso 8
+    Note over S,C: 2 horas despues
+    C->>S: Recoge en el lobby
+    S->>C: Vende todo
+    Note over S: Mudanza exitosa Sin complicaciones
 ```
 
 **Resultado:** ✨ Todo vendido en horas, sin estrés de coordinación
@@ -562,19 +566,19 @@ sequenceDiagram
 
 ```mermaid
 sequenceDiagram
-    participant J as 👨 John<br/>(Cliente)
-    participant CM as 🏢 CondoMarket
-    participant M as 👩 María<br/>(Plomera)
+    participant J as John Cliente
+    participant CM as CondoMarket
+    participant M as Maria Plomera
     
-    Note over J: Domingo 8pm<br/>Lavabo goteando
-    J->>CM: 🔍 Busca "plomería"
-    CM->>J: 📋 Encuentra a María
-    J->>M: 💬 "¿Puedes ayudar?"
-    M->>J: ✅ "Subo en 10 min"
+    Note over J: Domingo 8pm Lavabo goteando
+    J->>CM: Busca plomeria
+    CM->>J: Encuentra a Maria
+    J->>M: Puedes ayudar?
+    M->>J: Subo en 10 min
     Note over J,M: Misma noche
-    M->>J: 🔧 Repara el problema
-    J->>M: ⭐⭐⭐⭐⭐ 5 estrellas
-    Note over M: ¡Nueva cliente<br/>recurrente!
+    M->>J: Repara el problema
+    J->>M: 5 estrellas
+    Note over M: Nueva cliente recurrente
 ```
 
 **Resultado:** 🚀 Problema resuelto en 1 hora, nueva relación de confianza
@@ -877,19 +881,28 @@ graph LR
 ### ⭐ Recomendaciones de Vecinos
 ```mermaid
 graph TB
-    P[📢 Pregunta:<br/>"¿Buen plomero?"]
-    P --> R1[👤 María: "Plomería XYZ"]
-    P --> R2[👤 Juan: "Plomería XYZ"]
-    P --> R3[👤 Ana: "Plomería ABC"]
+    P[Pregunta Buen plomero]
+    P --> R1[Maria Plomeria XYZ]
+    P --> R2[Juan Plomeria XYZ]
+    P --> R3[Ana Plomeria ABC]
     
-    R1 & R2 --> V[✅ 2 votos<br/>Plomería XYZ]
-    R3 --> V2[1 voto<br/>Plomería ABC]
+    R1 & R2 --> V[2 votos Plomeria XYZ]
+    R3 --> V2[1 voto Plomeria ABC]
     
-    V -->|Ganador| F[🏆 Recomendación<br/>Confiable]
+    V -->|Ganador| F[Recomendacion Confiable]
     
     style P fill:#FFE66D,stroke:#F4A261,stroke-width:2px
     style F fill:#51CF66,stroke:#2F9E44,stroke-width:3px,color:#fff
 ```
+
+**📢 Pregunta:** "¿Buen plomero?"
+
+**👥 Respuestas:**
+- 👤 María: "Plomería XYZ" ✅
+- 👤 Juan: "Plomería XYZ" ✅  
+- 👤 Ana: "Plomería ABC"
+
+**🏆 Resultado:** Plomería XYZ (2 votos) - Recomendación confiable
 
 **Encuentra servicios confiables**
 - 🌟 Votación comunitaria
@@ -903,15 +916,15 @@ graph TB
 ### 🚨 Ayuda de Emergencia
 ```mermaid
 sequenceDiagram
-    participant U as 👤 Usuario
-    participant CM as 🏢 CondoMarket
-    participant V as 👥 Vecinos
+    participant U as Usuario
+    participant CM as CondoMarket
+    participant V as Vecinos
     
-    U->>CM: 🚨 Necesito ayuda!
-    CM->>V: 🔔 Alerta vecinos
-    Note over V: Vecinos<br/>disponibles
-    V->>U: 🤝 "Voy para allá"
-    Note over U,V: Problema resuelto<br/>en minutos
+    U->>CM: Necesito ayuda
+    CM->>V: Alerta vecinos
+    Note over V: Vecinos disponibles
+    V->>U: Voy para alla
+    Note over U,V: Problema resuelto en minutos
 ```
 
 **Red de apoyo instantánea**
