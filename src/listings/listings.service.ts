@@ -7,6 +7,7 @@ import {
 import { PrismaService } from '~/prisma';
 import { SellerSubscriptionsService } from '../seller-subscriptions/seller-subscriptions.service';
 import { S3Service } from '../common/s3/s3.service';
+import { CacheService } from '../common/cache/cache.service';
 import { CreateListingDto } from './dto/create-listing.dto';
 import { UpdateListingDto } from './dto/update-listing.dto';
 import { SearchListingsDto } from './dto/search-listings.dto';
@@ -18,6 +19,7 @@ export class ListingsService {
     private readonly prisma: PrismaService,
     private readonly subscriptionsService: SellerSubscriptionsService,
     private readonly s3Service: S3Service,
+    private readonly cacheService: CacheService,
   ) {}
 
   /**
@@ -466,40 +468,74 @@ export class ListingsService {
    * Get single listing by ID
    */
   async findOne(id: string, incrementView = false) {
-    const listing = await this.prisma.listing.findUnique({
-      where: { id },
-      include: {
-        category: true,
-        building: true,
-        seller: {
-          select: {
-            id: true,
-            email: true,
-            profile: true,
+    // Don't cache if we need to increment view count
+    if (incrementView) {
+      const listing = await this.prisma.listing.findUnique({
+        where: { id },
+        include: {
+          category: true,
+          building: true,
+          seller: {
+            select: {
+              id: true,
+              email: true,
+              profile: true,
+            },
+          },
+          photos: {
+            orderBy: { order: 'asc' },
+          },
+          availability: {
+            orderBy: { dayOfWeek: 'asc' },
           },
         },
-        photos: {
-          orderBy: { order: 'asc' },
-        },
-        availability: {
-          orderBy: { dayOfWeek: 'asc' },
-        },
-      },
-    });
+      });
 
-    if (!listing) {
-      throw new NotFoundException('Listing not found');
-    }
+      if (!listing) {
+        throw new NotFoundException('Listing not found');
+      }
 
-    // Increment view count if requested
-    if (incrementView) {
       await this.prisma.listing.update({
         where: { id },
         data: { viewCount: { increment: 1 } },
       });
+
+      return listing;
     }
 
-    return listing;
+    // Cache for 10 minutes (600s) for read-only requests
+    return this.cacheService.wrap(
+      `listing:${id}`,
+      async () => {
+        const listing = await this.prisma.listing.findUnique({
+          where: { id },
+          include: {
+            category: true,
+            building: true,
+            seller: {
+              select: {
+                id: true,
+                email: true,
+                profile: true,
+              },
+            },
+            photos: {
+              orderBy: { order: 'asc' },
+            },
+            availability: {
+              orderBy: { dayOfWeek: 'asc' },
+            },
+          },
+        });
+
+        if (!listing) {
+          throw new NotFoundException('Listing not found');
+        }
+
+        return listing;
+      },
+      600, // 10 minutes TTL
+    );
   }
 
   /**
