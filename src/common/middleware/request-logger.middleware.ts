@@ -7,7 +7,9 @@ import { Logger } from 'winston';
 export class RequestLoggerMiddleware implements NestMiddleware {
   constructor(
     @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
-  ) {}
+  ) {
+    console.log(`RequestLoggerMiddleware: Logger has ${this.logger.transports?.length || 0} transports`);
+  }
 
   use(req: Request, res: Response, next: NextFunction) {
     const { method, originalUrl, ip, correlationId } = req;

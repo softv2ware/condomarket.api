@@ -1,5 +1,6 @@
 import { utilities as nestWinstonModuleUtilities } from 'nest-winston';
 import * as winston from 'winston';
+import chalk from 'chalk';
 
 // Custom format to include correlation ID
 const correlationIdFormat = winston.format((info) => {
@@ -11,17 +12,29 @@ export const createWinstonLogger = (appName: string, logLevel: string) => {
   const isDevelopment = process.env.NODE_ENV !== 'production';
   
   const consoleTransport = new winston.transports.Console({
-    format: winston.format.combine(
-      winston.format.timestamp(),
-      winston.format.ms(),
-      correlationIdFormat(),
-      isDevelopment
-        ? nestWinstonModuleUtilities.format.nestLike(appName, {
-            colors: true,
-            prettyPrint: true,
-          })
-        : winston.format.json(),
-    ),
+    format: isDevelopment
+      ? winston.format.combine(
+          winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
+          winston.format.errors({ stack: true }),
+          correlationIdFormat(),
+          winston.format.printf(({ timestamp, level, message, context, ...meta }) => {
+            const ctx = context ? chalk.cyan(`[${context}]`) : '';
+            const metaStr = Object.keys(meta).length ? chalk.gray(JSON.stringify(meta)) : '';
+            
+            let coloredLevel = level.toUpperCase();
+            if (level === 'info') coloredLevel = chalk.green(coloredLevel);
+            else if (level === 'warn') coloredLevel = chalk.yellow(coloredLevel);
+            else if (level === 'error') coloredLevel = chalk.red(coloredLevel);
+            else if (level === 'debug') coloredLevel = chalk.blue(coloredLevel);
+            
+            return `${chalk.gray(timestamp)} ${coloredLevel} ${ctx} ${message} ${metaStr}`;
+          }),
+        )
+      : winston.format.combine(
+          winston.format.timestamp(),
+          winston.format.errors({ stack: true }),
+          winston.format.json(),
+        ),
   });
 
   const transports: winston.transport[] = [consoleTransport];
@@ -50,6 +63,7 @@ export const createWinstonLogger = (appName: string, logLevel: string) => {
   const loggerOptions: winston.LoggerOptions = {
     level: logLevel,
     transports,
+    silent: false, // Ensure logger is not silenced
   };
 
   // Only add file-based exception handlers in production
@@ -62,5 +76,10 @@ export const createWinstonLogger = (appName: string, logLevel: string) => {
     ];
   }
 
-  return winston.createLogger(loggerOptions);
+  const logger = winston.createLogger(loggerOptions);
+  
+  // Verify transports are added
+  console.log(`Winston logger created with ${logger.transports.length} transport(s)`);
+  
+  return logger;
 };

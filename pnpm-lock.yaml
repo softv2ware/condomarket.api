@@ -80,6 +80,9 @@ importers:
       cache-manager-ioredis-yet:
         specifier: ^2.1.2
         version: 2.1.2
+      chalk:
+        specifier: ^4.1.2
+        version: 4.1.2
       class-transformer:
         specifier: ^0.5.1
         version: 0.5.1
