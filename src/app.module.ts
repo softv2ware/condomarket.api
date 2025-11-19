@@ -25,6 +25,7 @@ import { ChatModule } from './chat/chat.module';
 import { ReviewsModule } from './reviews/reviews.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { ReportsModule } from './reports/reports.module';
+import { ModerationModule } from './moderation/moderation.module';
 import appConfig from './config/app.config';
 import databaseConfig from './config/database.config';
 import jwtConfig from './config/jwt.config';
@@ -70,6 +71,7 @@ import firebaseConfig from './config/firebase.config';
     ReviewsModule,
     NotificationsModule,
     ReportsModule,
+    ModerationModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { OrdersService } from '../../orders/orders.service';
 import { BookingsService } from '../../bookings/bookings.service';
+import { ModerationService } from '../../moderation/moderation.service';
 
 @Injectable()
 export class SchedulerService {
@@ -10,6 +11,7 @@ export class SchedulerService {
   constructor(
     private ordersService: OrdersService,
     private bookingsService: BookingsService,
+    private moderationService: ModerationService,
   ) {}
 
   // Run every hour to check for expired orders
@@ -36,6 +38,18 @@ export class SchedulerService {
     }
   }
 
+  // Run every hour to check for expired moderation actions
+  @Cron(CronExpression.EVERY_HOUR)
+  async handleModerationExpiration() {
+    this.logger.log('Running moderation expiration check...');
+    try {
+      const count = await this.moderationService.processExpiredActions();
+      this.logger.log(`Expired ${count} moderation actions`);
+    } catch (error) {
+      this.logger.error('Error expiring moderation actions:', error);
+    }
+  }
+
   // You can add more cron jobs here as needed
-  // For example, reminder notifications, report generation, etc.
+  // For example, reminder notifications, report generation, reputation recalculation, etc.
 }
