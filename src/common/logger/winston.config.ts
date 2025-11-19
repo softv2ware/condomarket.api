@@ -1,6 +1,6 @@
 import { utilities as nestWinstonModuleUtilities } from 'nest-winston';
 import * as winston from 'winston';
-import chalk from 'chalk';
+import * as chalk from 'chalk';
 
 // Custom format to include correlation ID
 const correlationIdFormat = winston.format((info) => {
@@ -18,6 +18,13 @@ export const createWinstonLogger = (appName: string, logLevel: string) => {
           winston.format.errors({ stack: true }),
           correlationIdFormat(),
           winston.format.printf(({ timestamp, level, message, context, ...meta }) => {
+            if (!chalk || typeof chalk.gray !== 'function') {
+              // Fallback if chalk isn't loaded
+              const ctx = context ? `[${context}]` : '';
+              const metaStr = Object.keys(meta).length ? JSON.stringify(meta) : '';
+              return `${timestamp} ${level.toUpperCase()} ${ctx} ${message} ${metaStr}`;
+            }
+            
             const ctx = context ? chalk.cyan(`[${context}]`) : '';
             const metaStr = Object.keys(meta).length ? chalk.gray(JSON.stringify(meta)) : '';
             
