@@ -3,6 +3,7 @@ import { Cron, CronExpression } from '@nestjs/schedule';
 import { OrdersService } from '../../orders/orders.service';
 import { BookingsService } from '../../bookings/bookings.service';
 import { ModerationService } from '../../moderation/moderation.service';
+import { ReputationService } from '../../reputation/reputation.service';
 
 @Injectable()
 export class SchedulerService {
@@ -12,6 +13,7 @@ export class SchedulerService {
     private ordersService: OrdersService,
     private bookingsService: BookingsService,
     private moderationService: ModerationService,
+    private reputationService: ReputationService,
   ) {}
 
   // Run every hour to check for expired orders
@@ -50,6 +52,17 @@ export class SchedulerService {
     }
   }
 
+  // Run daily to recalculate all user reputations
+  @Cron(CronExpression.EVERY_DAY_AT_2AM)
+  async handleReputationRecalculation() {
+    this.logger.log('Running reputation recalculation...');
+    try {
+      const count = await this.reputationService.recalculateAllReputations();
+      this.logger.log(`Recalculated reputation for ${count} users`);
+    } catch (error) {
+      this.logger.error('Error recalculating reputations:', error);
+    }
+  }
+
   // You can add more cron jobs here as needed
-  // For example, reminder notifications, report generation, reputation recalculation, etc.
 }
