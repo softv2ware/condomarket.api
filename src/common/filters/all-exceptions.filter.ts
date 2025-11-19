@@ -45,12 +45,13 @@ export class AllExceptionsFilter implements ExceptionFilter {
       timestamp: new Date().toISOString(),
       path: request.url,
       method: request.method,
+      correlationId: request.correlationId,
       error,
       message,
     };
 
     this.logger.error(
-      `${request.method} ${request.url}`,
+      `${request.method} ${request.url} [${request.correlationId}]`,
       JSON.stringify(errorResponse),
       exception instanceof Error ? exception.stack : undefined,
     );

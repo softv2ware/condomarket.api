@@ -5,6 +5,8 @@ import {
   HttpHealthIndicator,
   PrismaHealthIndicator,
   HealthCheck,
+  MemoryHealthIndicator,
+  DiskHealthIndicator,
 } from '@nestjs/terminus';
 import { PrismaService } from '../prisma/prisma.service';
 
@@ -16,16 +18,21 @@ export class HealthController {
     private http: HttpHealthIndicator,
     private prismaHealth: PrismaHealthIndicator,
     private prisma: PrismaService,
+    private memory: MemoryHealthIndicator,
+    private disk: DiskHealthIndicator,
   ) {}
 
   @Get()
   @HealthCheck()
-  @ApiOperation({ summary: 'Health check endpoint' })
+  @ApiOperation({ summary: 'Comprehensive health check endpoint' })
   @ApiResponse({ status: 200, description: 'Service is healthy' })
   @ApiResponse({ status: 503, description: 'Service is unhealthy' })
   check() {
     return this.health.check([
       () => this.prismaHealth.pingCheck('database', this.prisma),
+      () => this.memory.checkHeap('memory_heap', 300 * 1024 * 1024), // 300MB
+      () => this.memory.checkRSS('memory_rss', 300 * 1024 * 1024), // 300MB
+      () => this.disk.checkStorage('disk', { path: '/', thresholdPercent: 0.9 }),
     ]);
   }
 
@@ -45,5 +52,30 @@ export class HealthController {
     return this.health.check([
       () => this.prismaHealth.pingCheck('database', this.prisma),
     ]);
+  }
+
+  @Get('metrics')
+  @ApiOperation({ summary: 'Application metrics' })
+  @ApiResponse({ status: 200, description: 'Returns application metrics' })
+  async metrics() {
+    const memoryUsage = process.memoryUsage();
+    const uptime = process.uptime();
+    
+    return {
+      uptime: `${Math.floor(uptime)}s`,
+      timestamp: new Date().toISOString(),
+      memory: {
+        heapUsed: `${Math.round(memoryUsage.heapUsed / 1024 / 1024)}MB`,
+        heapTotal: `${Math.round(memoryUsage.heapTotal / 1024 / 1024)}MB`,
+        rss: `${Math.round(memoryUsage.rss / 1024 / 1024)}MB`,
+        external: `${Math.round(memoryUsage.external / 1024 / 1024)}MB`,
+      },
+      nodejs: {
+        version: process.version,
+        platform: process.platform,
+        arch: process.arch,
+      },
+      environment: process.env.NODE_ENV || 'development',
+    };
   }
 }

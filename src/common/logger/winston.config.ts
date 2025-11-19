@@ -1,16 +1,27 @@
 import { utilities as nestWinstonModuleUtilities } from 'nest-winston';
 import * as winston from 'winston';
 
+// Custom format to include correlation ID
+const correlationIdFormat = winston.format((info) => {
+  // Correlation ID can be added to the logger context
+  return info;
+});
+
 export const createWinstonLogger = (appName: string, logLevel: string) => {
+  const isDevelopment = process.env.NODE_ENV !== 'production';
+  
   const transports: winston.transport[] = [
     new winston.transports.Console({
       format: winston.format.combine(
         winston.format.timestamp(),
         winston.format.ms(),
-        nestWinstonModuleUtilities.format.nestLike(appName, {
-          colors: true,
-          prettyPrint: true,
-        }),
+        correlationIdFormat(),
+        isDevelopment
+          ? nestWinstonModuleUtilities.format.nestLike(appName, {
+              colors: true,
+              prettyPrint: true,
+            })
+          : winston.format.json(),
       ),
     }),
   ];

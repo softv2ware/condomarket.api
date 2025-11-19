@@ -2,7 +2,7 @@ import 'tsconfig-paths/register';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ConfigService } from '@nestjs/config';
-import { ValidationPipe } from '@nestjs/common';
+import { ValidationPipe, VersioningType } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { apiReference } from '@scalar/nestjs-api-reference';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
@@ -58,6 +58,12 @@ async function bootstrap() {
     }),
   );
 
+  // Enable versioning
+  app.enableVersioning({
+    type: VersioningType.URI,
+    defaultVersion: '1',
+  });
+
   // Swagger configuration
   const config = new DocumentBuilder()
     .setTitle('CondoMarket API')
@@ -85,8 +91,24 @@ async function bootstrap() {
     }),
   );
 
+  // Enable graceful shutdown
+  app.enableShutdownHooks();
+
   await app.listen(port);
-  console.log(`Application is running on: http://localhost:${port}`);
-  console.log(`API Reference available at: http://localhost:${port}/reference`);
+  const logger = app.get(WINSTON_MODULE_NEST_PROVIDER);
+  logger.log(`Application is running on: http://localhost:${port}`);
+  logger.log(`API Reference available at: http://localhost:${port}/reference`);
+  logger.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
+
+  // Handle graceful shutdown
+  const signals = ['SIGTERM', 'SIGINT'];
+  signals.forEach((signal) => {
+    process.on(signal, async () => {
+      logger.log(`Received ${signal}, starting graceful shutdown...`);
+      await app.close();
+      logger.log('Application closed successfully');
+      process.exit(0);
+    });
+  });
 }
 bootstrap();

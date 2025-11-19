@@ -1,8 +1,10 @@
-import { Module } from '@nestjs/common';
+import { Module, NestModule, MiddlewareConsumer } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { CorrelationIdMiddleware } from './common/middleware/correlation-id.middleware';
+import { RequestLoggerMiddleware } from './common/middleware/request-logger.middleware';
 import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
 import { BuildingsModule } from './buildings/buildings.module';
@@ -29,18 +31,21 @@ import { ModerationModule } from './moderation/moderation.module';
 import { ReputationModule } from './reputation/reputation.module';
 import { BlockingModule } from './blocking/blocking.module';
 import { BuildingSettingsModule } from './building-settings/building-settings.module';
+import { AnalyticsModule } from './analytics/analytics.module';
 import appConfig from './config/app.config';
 import databaseConfig from './config/database.config';
 import jwtConfig from './config/jwt.config';
 import redisConfig from './config/redis.config';
 import firebaseConfig from './config/firebase.config';
+import cacheConfig from './config/cache.config';
+import { CacheModule } from './common/cache/cache.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
       validate,
-      load: [appConfig, databaseConfig, jwtConfig, redisConfig, firebaseConfig],
+      load: [appConfig, databaseConfig, jwtConfig, redisConfig, firebaseConfig, cacheConfig],
       envFilePath: ['.env.local', '.env'],
     }),
     ThrottlerModule.forRootAsync({
@@ -55,6 +60,7 @@ import firebaseConfig from './config/firebase.config';
     }),
     LoggerModule,
     PrismaModule,
+    CacheModule,
     HealthModule,
     S3Module,
     SchedulerModule,
@@ -78,8 +84,15 @@ import firebaseConfig from './config/firebase.config';
     ReputationModule,
     BlockingModule,
     BuildingSettingsModule,
+    AnalyticsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer
+      .apply(CorrelationIdMiddleware, RequestLoggerMiddleware)
+      .forRoutes('*');
+  }
+}
