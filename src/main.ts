@@ -11,9 +11,6 @@ import helmet from 'helmet';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  // Use Winston logger
-  app.useLogger(app.get(WINSTON_MODULE_NEST_PROVIDER));
-
   const configService = app.get(ConfigService);
   const port = configService.get<number>('app.port') || 3000;
   const corsOrigins = configService.get<string[]>('app.corsOrigins') || ['http://localhost:3000'];
@@ -109,6 +106,10 @@ async function bootstrap() {
   app.enableShutdownHooks();
 
   await app.listen(port);
+  
+  // Switch to Winston logger after app is fully initialized
+  app.useLogger(app.get(WINSTON_MODULE_NEST_PROVIDER));
+  
   const logger = app.get(WINSTON_MODULE_NEST_PROVIDER);
   logger.log(`Application is running on: http://localhost:${port}`);
   logger.log(`API Reference available at: http://localhost:${port}/reference`);
@@ -125,4 +126,8 @@ async function bootstrap() {
     });
   });
 }
-bootstrap();
+
+bootstrap().catch((error) => {
+  console.error('Failed to start application:', error);
+  process.exit(1);
+});

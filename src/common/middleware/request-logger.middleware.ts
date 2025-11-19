@@ -1,9 +1,13 @@
-import { Injectable, NestMiddleware, Logger } from '@nestjs/common';
+import { Injectable, NestMiddleware, Inject } from '@nestjs/common';
 import { Request, Response, NextFunction } from 'express';
+import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import { Logger } from 'winston';
 
 @Injectable()
 export class RequestLoggerMiddleware implements NestMiddleware {
-  private readonly logger = new Logger('HTTP');
+  constructor(
+    @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
+  ) {}
 
   use(req: Request, res: Response, next: NextFunction) {
     const { method, originalUrl, ip, correlationId } = req;
@@ -11,7 +15,7 @@ export class RequestLoggerMiddleware implements NestMiddleware {
     const startTime = Date.now();
 
     // Log request
-    this.logger.log({
+    this.logger.info('Incoming request', {
       type: 'request',
       method,
       url: originalUrl,
@@ -36,11 +40,11 @@ export class RequestLoggerMiddleware implements NestMiddleware {
       };
 
       if (statusCode >= 500) {
-        this.logger.error(logData);
+        this.logger.error('Request failed', logData);
       } else if (statusCode >= 400) {
-        this.logger.warn(logData);
+        this.logger.warn('Request warning', logData);
       } else {
-        this.logger.log(logData);
+        this.logger.info('Request completed', logData);
       }
     });
 

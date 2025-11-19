@@ -10,21 +10,21 @@ const correlationIdFormat = winston.format((info) => {
 export const createWinstonLogger = (appName: string, logLevel: string) => {
   const isDevelopment = process.env.NODE_ENV !== 'production';
   
-  const transports: winston.transport[] = [
-    new winston.transports.Console({
-      format: winston.format.combine(
-        winston.format.timestamp(),
-        winston.format.ms(),
-        correlationIdFormat(),
-        isDevelopment
-          ? nestWinstonModuleUtilities.format.nestLike(appName, {
-              colors: true,
-              prettyPrint: true,
-            })
-          : winston.format.json(),
-      ),
-    }),
-  ];
+  const consoleTransport = new winston.transports.Console({
+    format: winston.format.combine(
+      winston.format.timestamp(),
+      winston.format.ms(),
+      correlationIdFormat(),
+      isDevelopment
+        ? nestWinstonModuleUtilities.format.nestLike(appName, {
+            colors: true,
+            prettyPrint: true,
+          })
+        : winston.format.json(),
+    ),
+  });
+
+  const transports: winston.transport[] = [consoleTransport];
 
   // Add file transports in production
   if (process.env.NODE_ENV === 'production') {
@@ -47,14 +47,20 @@ export const createWinstonLogger = (appName: string, logLevel: string) => {
     );
   }
 
-  return winston.createLogger({
+  const loggerOptions: winston.LoggerOptions = {
     level: logLevel,
     transports,
-    exceptionHandlers: [
+  };
+
+  // Only add file-based exception handlers in production
+  if (process.env.NODE_ENV === 'production') {
+    loggerOptions.exceptionHandlers = [
       new winston.transports.File({ filename: 'logs/exceptions.log' }),
-    ],
-    rejectionHandlers: [
+    ];
+    loggerOptions.rejectionHandlers = [
       new winston.transports.File({ filename: 'logs/rejections.log' }),
-    ],
-  });
+    ];
+  }
+
+  return winston.createLogger(loggerOptions);
 };
