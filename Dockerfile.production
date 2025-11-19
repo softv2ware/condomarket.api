@@ -2,7 +2,7 @@
 FROM node:20-alpine AS base
 
 # Install pnpm globally
-RUN npm install -g pnpm@8
+RUN npm install -g pnpm@10
 
 # ==========================================
 # Dependencies stage

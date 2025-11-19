@@ -4,7 +4,7 @@ FROM node:20-alpine AS development
 WORKDIR /usr/src/app
 
 # Install pnpm
-RUN npm install -g pnpm
+RUN npm install -g pnpm@10
 
 # Copy package files
 COPY package.json pnpm-lock.yaml ./
