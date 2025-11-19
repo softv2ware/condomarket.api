@@ -36,7 +36,6 @@ export class HealthController {
       () => this.prismaHealth.pingCheck('database', this.prisma),
       () => this.memory.checkHeap('memory_heap', 300 * 1024 * 1024), // 300MB
       () => this.memory.checkRSS('memory_rss', 300 * 1024 * 1024), // 300MB
-      () => this.disk.checkStorage('disk', { path: '/', thresholdPercent: 0.9 }),
     ];
 
     // Add Redis check if enabled

@@ -7,12 +7,14 @@ import {
   Param,
   UseGuards,
 } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from '~/auth/guards/jwt-auth.guard';
 import { CurrentUser } from '~/auth/decorators/current-user.decorator';
 import { BlockingService } from './blocking.service';
 import { BlockUserDto } from './dto/block-user.dto';
 import { BlockedUserEntity } from './entities/blocked-user.entity';
 
+@ApiTags('Blocking')
 @Controller('blocking')
 @UseGuards(JwtAuthGuard)
 export class BlockingController {

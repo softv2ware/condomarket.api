@@ -6,6 +6,7 @@ import {
   Param,
   UseGuards,
 } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from '~/auth/guards/jwt-auth.guard';
 import { RolesGuard } from '~/auth/guards/roles.guard';
 import { Roles } from '~/auth/decorators/roles.decorator';
@@ -14,6 +15,7 @@ import { BuildingSettingsService } from './building-settings.service';
 import { UpdateBuildingSettingsDto } from './dto/update-building-settings.dto';
 import { BuildingSettingsEntity } from './entities/building-settings.entity';
 
+@ApiTags('BuildingSettings')
 @Controller('buildings/:buildingId/settings')
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class BuildingSettingsController {
