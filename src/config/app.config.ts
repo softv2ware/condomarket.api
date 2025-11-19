@@ -20,4 +20,6 @@ export default registerAs('app', () => ({
     maxFileSize: parseInt(process.env.MAX_FILE_SIZE || '5242880', 10), // 5MB
     destination: process.env.UPLOAD_DESTINATION || './uploads',
   },
+
+  frontendUrl: process.env.FRONTEND_URL || 'http://localhost:3000',
 }));

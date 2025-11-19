@@ -11,6 +11,7 @@ import { RolesGuard } from './guards/roles.guard';
 import { PrismaModule } from '../common/prisma/prisma.module';
 import { SubscriptionPlansModule } from '../subscription-plans/subscription-plans.module';
 import { NotificationsModule } from '../notifications/notifications.module';
+import { EmailModule } from '../common/email/email.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { NotificationsModule } from '../notifications/notifications.module';
     PrismaModule,
     SubscriptionPlansModule,
     NotificationsModule,
+    EmailModule,
   ],
   controllers: [AuthController],
   providers: [

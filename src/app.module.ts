@@ -38,14 +38,16 @@ import jwtConfig from './config/jwt.config';
 import redisConfig from './config/redis.config';
 import firebaseConfig from './config/firebase.config';
 import cacheConfig from './config/cache.config';
+import emailConfig from './config/email.config';
 import { CacheModule } from './common/cache/cache.module';
+import { EmailModule } from './common/email/email.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
       validate,
-      load: [appConfig, databaseConfig, jwtConfig, redisConfig, firebaseConfig, cacheConfig],
+      load: [appConfig, databaseConfig, jwtConfig, redisConfig, firebaseConfig, cacheConfig, emailConfig],
       envFilePath: ['.env.local', '.env'],
     }),
     ThrottlerModule.forRootAsync({
@@ -61,6 +63,7 @@ import { CacheModule } from './common/cache/cache.module';
     LoggerModule,
     PrismaModule,
     CacheModule,
+    EmailModule,
     HealthModule,
     S3Module,
     SchedulerModule,
